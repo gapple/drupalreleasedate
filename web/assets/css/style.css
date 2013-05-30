@@ -1,0 +1,13 @@
+.container {
+  text-align: center;
+}
+.hero-unit {
+  padding: 40px 20px;
+}
+.estimate .value {
+  font-size: 200%;
+}
+.estimate .note {
+  font-size: 75%;
+  color: #777;
+}

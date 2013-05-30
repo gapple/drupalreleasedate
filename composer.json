@@ -1,0 +1,17 @@
+{
+    "name": "gapple/drupalreleasedate",
+    "description": "Release date predictor for Drupal Core",
+    "authors": [
+        {
+            "name": "Geoff Appleby",
+            "email": "geoff@gapple.ca"
+        }
+    ],
+    "require": {
+        "silex/silex": "1.0.*@dev",
+        "twig/twig": ">=1.8,<2.0-dev"
+    },
+    "require-dev": {
+        "twitter/bootstrap": "2.3.*"
+    }
+}
