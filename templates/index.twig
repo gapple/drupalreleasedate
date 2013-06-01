@@ -1,13 +1,15 @@
 {% extends "layout.twig" %}
 
-{% block hero %}
-  <h1>Drupal 8 Release</h1>
-  Estimated to occur on
-  <div class="estimate">
-    <h2 class="value">{{ estimate.value ? estimate.value : 'N/A' }}</h2>
-    <div class="note">{{ estimate.note }}</div>
-  </div>
-  <div>
-    <a href="https://drupal.org/core/release-cycle">Drupal core release cycle</a>
+{% block content %}
+  <div class="hero-unit">
+    <h1>Drupal 8 Release</h1>
+    Estimated to occur on
+    <div class="estimate">
+      <h2 class="value">{{ estimate.value ? estimate.value : 'N/A' }}</h2>
+      <div class="note">{{ estimate.note }}</div>
+    </div>
+    <div>
+      <a href="https://drupal.org/core/release-cycle">Drupal core release cycle</a>
+    </div>
   </div>
 {% endblock %}

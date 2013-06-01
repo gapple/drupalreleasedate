@@ -11,14 +11,19 @@
   </head>
   <body>
     <div class="container">
-      <div class="hero-unit">
-        {% block hero %}
-        {% endblock %}
-      </div>
+      {% block content %}
+      {% endblock %}
 
       <footer>
-        Built by <a href="https://drupal.org/user/490940">gapple</a>
-        | On twitter <a href="https://twitter.com/gappleca">@gappleca</a>
+        <ul class="nav">
+          <li><a href="/">Home</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+
+        <div class="credits">
+          Built by <a href="https://drupal.org/user/490940">gapple</a>
+          | On twitter <a href="https://twitter.com/gappleca">@gappleca</a>
+        </div>
       </footer>
     </div>
   </body>
