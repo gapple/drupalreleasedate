@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+
+    <title>{% block title %}Drupal Release Date{% endblock %}</title>
+
+    {% include('googleanalytics.twig') %}
+  </head>
+  <body>
+    <div class="container">
+      <div class="hero-unit">
+        {% block hero %}
+        {% endblock %}
+      </div>
+
+      <footer>
+        Built by <a href="https://drupal.org/user/490940">gapple</a>
+        | On twitter <a href="https://twitter.com/gappleca">@gappleca</a>
+      </footer>
+    </div>
+  </body>
+</html>
+
