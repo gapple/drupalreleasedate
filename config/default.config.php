@@ -7,3 +7,12 @@
  */
 
 $app['debug'] = false;
+
+
+$config['twig'] = array(
+    'cache' => APPROOT . 'cache/twig',
+);
+
+$config['google'] = array();
+
+$config['cronkey'] = '';
