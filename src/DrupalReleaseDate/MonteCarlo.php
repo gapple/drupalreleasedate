@@ -29,6 +29,11 @@ class MonteCarlo {
                 $sample = $this->sampleSet->getSample($i);
                 $runDuration += $sample->getDuration();
                 $runIssues -= $sample->getResolved();
+
+                // Failsafe for if simulation goes in the wrong direction.
+                if ($runIssues > $currentIssues * 2) {
+                  return 0;
+                }
             }
             while ($runIssues > 0);
 
