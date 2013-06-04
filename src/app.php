@@ -1,7 +1,12 @@
 <?php
 require_once('bootstrap.php');
 
-$app->get('/', function () use ($app) {
+use Silex\Application;
+
+use DrupalReleaseDate\SampleSet;
+use DrupalReleaseDate\MonteCarlo;
+
+$app->get('/', function (Application $app) {
 
     $estimate = array(
         'value' => 'N/A',
@@ -29,10 +34,61 @@ $app->get('/', function () use ($app) {
     ));
 });
 
-$app->get('/about', function () use ($app) {
+$app->get('about', function (Application $app) {
     return $app['twig']->render('about.twig', array(
 
     ));
+});
+
+$app->get('cron', function () {
+  return '';
+});
+
+// Handle request to update estimate value, protected by key.
+$app->get('cron/update-estimate', function () {
+    // ignore request without key provided
+    return '';
+});
+$app->get('cron/update-estimate/{key}', function (Application $app, $key) use ($config) {
+
+    // Check key in request
+    if (!isset($config['cronkey']) || $key != $config['cronkey']) {
+        return '';
+    }
+
+    // Run estimate simulation
+    $samples = new SampleSet();
+    $sql = "
+        SELECT " . $app['db']->quoteIdentifier('when') . ", " . $app['db']->quoteIdentifier('critical_bugs') . "," . $app['db']->quoteIdentifier('critical_tasks') . "
+            FROM " . $app['db']->quoteIdentifier('samples') . "
+            WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
+            ORDER BY " . $app['db']->quoteIdentifier('when') . " ASC
+    ";
+    $results = $app['db']->query($sql);
+    while ($result = $results->fetchObject()) {
+        $samples->addSample(strtotime($result->when), $result->critical_bugs + $result->critical_tasks);
+    }
+
+    set_time_limit(300);
+
+    $monteCarlo = new MonteCarlo($samples);
+    $estimateDuration = $monteCarlo->run();
+
+    if ($estimateDuration) {
+        $estimate = date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME'] + $estimateDuration);
+    }
+    else {
+        $estimate = '0000-00-00 00:00:00';
+    }
+
+     // store in database
+     $app['db']->insert('estimates', array(
+         '`when`' => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
+         'version' => 8,
+         'estimate' => $estimate,
+     ));
+
+     return '';
 });
 
 $app->run();
