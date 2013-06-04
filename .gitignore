@@ -1,4 +1,4 @@
 vendor
 logs
 config/*
-web/assets/*/bootstrap*
+web/assets/*
