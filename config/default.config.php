@@ -8,7 +8,14 @@
 
 $app['debug'] = false;
 
+// For connection options
+// @see http://silex.sensiolabs.org/doc/providers/doctrine.html
+$config['db'] = array(
 
+);
+
+// For available options
+// @see http://silex.sensiolabs.org/doc/providers/twig.html
 $config['twig'] = array(
     'cache' => APPROOT . 'cache/twig',
 );

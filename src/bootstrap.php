@@ -1,14 +1,16 @@
 <?php
 require_once APPROOT . 'vendor/autoload.php';
 
-use Symfony\Component\HttpFoundation\Request;
-
 $app = new Silex\Application();
 
 $config = array();
 if (file_exists(APPROOT . 'config/config.php')) {
     require_once(APPROOT . 'config/config.php');
 }
+
+$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+    'db.options' => $config['db'],
+));
 
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => APPROOT . '/templates',
