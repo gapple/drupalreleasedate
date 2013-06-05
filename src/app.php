@@ -52,7 +52,7 @@ $app->get('cron/update-estimate', function () {
 $app->get('cron/update-estimate/{key}', function (Application $app, $key) use ($config) {
 
     // Check key in request
-    if (!isset($config['cronkey']) || $key != $config['cronkey']) {
+    if (!isset($config['cron.key']) || $key != $config['cron.key']) {
         return '';
     }
 
@@ -69,26 +69,47 @@ $app->get('cron/update-estimate/{key}', function (Application $app, $key) use ($
         $samples->addSample(strtotime($result->when), $result->critical_bugs + $result->critical_tasks);
     }
 
-    set_time_limit(300);
+    // Insert empty before run, update if succsesful.
+    $app['db']->insert($app['db']->quoteIdentifier('estimates'), array(
+        $app['db']->quoteIdentifier('when') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
+        $app['db']->quoteIdentifier('version') => 8,
+        $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
+        $app['db']->quoteIdentifier('note') => 'Timeout during run',
+    ));
+    // Close connection during processing to prevent "Database has gone away" exception.
+    $app['db']->close();
+
+    if (!empty($config['cron.timeout'])) {
+        set_time_limit($config['cron.timeout']);
+    }
 
     $monteCarlo = new MonteCarlo($samples);
-    $estimateDuration = $monteCarlo->run();
+    $estimateDuration = $monteCarlo->run(250000);
 
+    $update = array();
     if ($estimateDuration) {
-        $estimate = date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME'] + $estimateDuration);
+        $update += array(
+            $app['db']->quoteIdentifier('estimate') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME'] + $estimateDuration),
+            $app['db']->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
+        );
     }
-    else {
-        $estimate = '0000-00-00 00:00:00';
+    else if ($estimateDuration === 0) {
+        $update += array(
+            $app['db']->quoteIdentifier('note') => 'Run failed due to increasing issue count',
+        );
+    }
+    if (!empty($update)) {
+        $app['db']->connect();
+        $app['db']->update($app['db']->quoteIdentifier('estimates'),
+            $update,
+            array(
+                $app['db']->quoteIdentifier('when') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
+                $app['db']->quoteIdentifier('version') => 8,
+            )
+        );
     }
 
-     // store in database
-     $app['db']->insert('estimates', array(
-         '`when`' => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
-         'version' => 8,
-         'estimate' => $estimate,
-     ));
-
-     return '';
+    return '';
 });
 
 $app->run();

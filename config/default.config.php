@@ -22,4 +22,5 @@ $config['twig'] = array(
 
 $config['google'] = array();
 
-$config['cronkey'] = '';
+$config['cron.key'] = '';
+$config['cron.timeout'] = 600;
