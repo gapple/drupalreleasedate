@@ -17,6 +17,7 @@ $app->get('/', function (Application $app) {
         SELECT " . $app['db']->quoteIdentifier('estimate') . "
             FROM " . $app['db']->quoteIdentifier('estimates') . "
             WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
+                AND " . $app['db']->quoteIdentifier('estimate')  ." IS NOT NULL
             ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
     ";
     $result = $app['db']->fetchColumn($sql, array(), 0);
@@ -73,7 +74,7 @@ $app->get('cron/update-estimate/{key}', function (Application $app, $key) use ($
     $app['db']->insert($app['db']->quoteIdentifier('estimates'), array(
         $app['db']->quoteIdentifier('when') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
         $app['db']->quoteIdentifier('version') => 8,
-        $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
+        $app['db']->quoteIdentifier('estimate') => null,
         $app['db']->quoteIdentifier('note') => 'Timeout during run',
     ));
     // Close connection during processing to prevent "Database has gone away" exception.
