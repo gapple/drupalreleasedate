@@ -80,12 +80,12 @@ $app->get('cron/update-estimate/{key}', function (Application $app, $key) use ($
     // Close connection during processing to prevent "Database has gone away" exception.
     $app['db']->close();
 
-    if (!empty($config['cron.timeout'])) {
-        set_time_limit($config['cron.timeout']);
+    if (!empty($config['estimate.timeout'])) {
+        set_time_limit($config['estimate.timeout']);
     }
 
     $monteCarlo = new MonteCarlo($samples);
-    $estimateDuration = $monteCarlo->run(250000);
+    $estimateDuration = $monteCarlo->run((!empty($config['estimate.iterations'])? $config['estimate.iterations'] : 100000));
 
     $update = array();
     if ($estimateDuration) {

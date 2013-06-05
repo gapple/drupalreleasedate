@@ -22,5 +22,17 @@ $config['twig'] = array(
 
 $config['google'] = array();
 
+/**
+ * A private key to protect cron tasks from being run by a third-party.
+ * A value must be set in order for tasks to run.
+ */
 $config['cron.key'] = '';
-$config['cron.timeout'] = 600;
+
+/**
+ * Time limit for running estimation, in seconds.
+ */
+$config['estimate.timeout'] = 600;
+/**
+ * How many iterations to run in the Monte Carlo simulation.
+ */
+$config['estimate.iterations'] = 100000;
