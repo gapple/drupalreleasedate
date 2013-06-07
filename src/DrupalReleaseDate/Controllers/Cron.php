@@ -62,6 +62,7 @@ class Cron
         }
         else if ($estimateDuration === 0) {
             $update += array(
+                $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
                 $app['db']->quoteIdentifier('note') => 'Run failed due to increasing issue count',
             );
         }
