@@ -8,6 +8,11 @@
     <title>{% block title %}Drupal Release Date{% endblock %}</title>
 
     {% include('googleanalytics.twig') %}
+    {% if scripts is defined %}
+    {% for script in scripts %}
+        <script type="text/javascript" src="{{ script }}"></script>
+    {% endfor %}
+    {% endif %}
   </head>
   <body>
     <div class="container">
@@ -15,6 +20,10 @@
       {% endblock %}
 
       <footer>
+        <ul class="nav">
+          <li><a href="/chart/samples">Samples Chart</a></li>
+          <li><a href="/chart/estimates">Estimates Chart</a></li>
+        </ul>
         <ul class="nav">
           <li><a href="/">Home</a></li>
           <li><a href="/about">About</a></li>

@@ -1,0 +1,74 @@
+{% extends "layout.twig" %}
+
+{% block title %}Drupal Release Date - Samples Graph{% endblock %}
+
+{% block content %}
+<div id="chart"></div>
+<div class="chart-caption">
+    <a href="/data/estimates.json">JSON Data</a>
+</div>
+
+<script type="text/javascript">
+
+    google.load("visualization", "1", {packages:["corechart"]});
+
+    $(function() {
+      var chart, chartData;
+      var $chart = $('#chart');
+
+      google.setOnLoadCallback(loadChart);
+      $(window).resize(drawChart);
+
+      function loadChart() {
+
+          $.get('/data/estimates.json', function(data, textStatus, jqXHR) {
+
+              chartData = new google.visualization.DataTable();
+
+              chartData.addColumn('datetime', 'Time');
+              chartData.addColumn('number', 'Estimate');
+
+              for (var i in data) {
+                var when = new Date(data[i].when.replace(' ', 'T'));
+                var estimate;
+                if (data[i].estimate == '0000-00-00 00:00:00') {
+                    estimate = when;
+                }
+                else {
+                    estimate = new Date(data[i].estimate.replace(' ', 'T'));
+                }
+
+                chartData.addRow([
+                      when,
+                      (estimate.getTime() - when.getTime()) / 1000
+                  ]);
+              }
+
+              drawChart();
+          });
+      }
+
+      function drawChart() {
+          if (chart) {
+              chart.clearChart();
+              $chart.css('height', '');
+          }
+          else {
+              chart = new google.visualization.ScatterChart($chart.get(0));
+          }
+
+          $chart.css('height', ($(document).height() * 0.8));
+
+          chart.draw(
+              chartData,
+              {
+                title: 'Estimate',
+                hAxis: {},
+                legend: 'none',
+            }
+          );
+      }
+
+    });
+</script>
+{% endblock %}

@@ -7,6 +7,11 @@ use Silex\Application;
 $app->get('/', 'DrupalReleaseDate\Controllers\Pages::index');
 $app->get('about', 'DrupalReleaseDate\Controllers\Pages::about');
 
+$chart = $app['controllers_factory'];
+$chart->get('/samples', 'DrupalReleaseDate\Controllers\Charts::samples');
+$chart->get('/estimates', 'DrupalReleaseDate\Controllers\Charts::estimates');
+$app->mount('/chart', $chart);
+
 
 $data = $app['controllers_factory'];
 $data->get('/samples.json', 'DrupalReleaseDate\Controllers\Data::samples');

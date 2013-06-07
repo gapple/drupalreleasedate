@@ -1,0 +1,68 @@
+{% extends "layout.twig" %}
+
+{% block title %}Drupal Release Date - Samples Graph{% endblock %}
+
+{% block content %}
+<div id="chart"></div>
+<div class="chart-caption">
+    <a href="/data/samples.json">JSON Data</a>
+</div>
+
+<script type="text/javascript">
+
+    google.load("visualization", "1", {packages:["corechart"]});
+
+    $(function() {
+      var chart, chartData;
+      var $chart = $('#chart');
+
+      google.setOnLoadCallback(loadChart);
+      $(window).resize(drawChart);
+
+      function loadChart() {
+
+          $.get('/data/samples.json', function(data, textStatus, jqXHR) {
+
+              chartData = new google.visualization.DataTable();
+
+              chartData.addColumn('datetime', 'Time');
+              chartData.addColumn('number', 'Critical Issues');
+              chartData.addColumn('number', 'Major Issues');
+
+              for (var i in data) {
+                chartData.addRow([
+                      new Date(data[i].when.replace(' ', 'T')),
+                      data[i].critical_bugs + data[i].critical_tasks,
+                      data[i].major_bugs + data[i].major_tasks
+                  ]);
+              }
+
+              drawChart();
+          });
+      }
+
+      function drawChart() {
+          if (chart) {
+              chart.clearChart();
+              $chart.css('height', '');
+          }
+          else {
+              chart = new google.visualization.LineChart($chart.get(0));
+          }
+
+          $chart.css('height', ($(document).height() * 0.8));
+
+          chart.draw(
+              chartData,
+              {
+                title: 'Issue Count',
+                colors: ['red', 'blue'],
+                hAxis: {},
+                vAxis: {minValue: 0},
+            }
+          );
+      }
+
+    });
+</script>
+{% endblock %}

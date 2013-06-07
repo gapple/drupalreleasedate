@@ -26,7 +26,6 @@ class Data
         while ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
             $data[] = array(
                 'when' => $row['when'],
-                'timestamp' => strtotime($row['when']),
                 'critical_bugs' => (int) $row['critical_bugs'],
                 'critical_tasks' => (int) $row['critical_tasks'],
                 'major_bugs' => (int) $row['major_bugs'],
@@ -53,9 +52,7 @@ class Data
         while ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
             $data[] = array(
                 'when' => $row['when'],
-                'timestamp' => strtotime($row['when']),
                 'estimate' => $row['estimate'],
-                'estimate_timestamp' => strtotime($row['estimate']),
             );
         }
 

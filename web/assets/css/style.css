@@ -29,3 +29,11 @@ footer .credits {
   color: #555;
   font-size: 85%;
 }
+
+#chart {
+  width: 100%;
+}
+.chart-caption {
+  font-size: 80%;
+  text-align: center;
+}
