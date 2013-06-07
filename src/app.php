@@ -8,6 +8,12 @@ $app->get('/', 'DrupalReleaseDate\Controllers\Pages::index');
 $app->get('about', 'DrupalReleaseDate\Controllers\Pages::about');
 
 
+$data = $app['controllers_factory'];
+$data->get('/samples.json', 'DrupalReleaseDate\Controllers\Data::samples');
+$data->get('/estimates.json', 'DrupalReleaseDate\Controllers\Data::estimates');
+$app->mount('/data', $data);
+
+
 $cron = $app['controllers_factory'];
 $cron->get('/', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
 
