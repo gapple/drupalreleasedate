@@ -26,4 +26,14 @@ class Charts
             ),
         ));
     }
+
+    public function distribution(Application $app, Request $request)
+    {
+        return $app['twig']->render('graphs/distribution.twig', array(
+            'scripts' => array(
+                'http://code.jquery.com/jquery-2.0.2.min.js',
+                'https://www.google.com/jsapi',
+            ),
+        ));
+    }
 }

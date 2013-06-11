@@ -10,12 +10,14 @@ $app->get('about', 'DrupalReleaseDate\Controllers\Pages::about');
 $chart = $app['controllers_factory'];
 $chart->get('/samples', 'DrupalReleaseDate\Controllers\Charts::samples');
 $chart->get('/estimates', 'DrupalReleaseDate\Controllers\Charts::estimates');
+$chart->get('/distribution', 'DrupalReleaseDate\Controllers\Charts::distribution');
 $app->mount('/chart', $chart);
 
 
 $data = $app['controllers_factory'];
 $data->get('/samples.json', 'DrupalReleaseDate\Controllers\Data::samples');
 $data->get('/estimates.json', 'DrupalReleaseDate\Controllers\Data::estimates');
+$data->get('/distribution.json', 'DrupalReleaseDate\Controllers\Data::distribution');
 $app->mount('/data', $data);
 
 

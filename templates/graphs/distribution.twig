@@ -1,0 +1,67 @@
+{% extends "layout.twig" %}
+
+{% block title %}Drupal Release Date - Estimate Distribution Graph{% endblock %}
+
+{% block content %}
+<div id="chart"></div>
+<div class="chart-caption">
+    <a href="/data/samples.json">JSON Data</a>
+</div>
+
+<script type="text/javascript">
+
+    google.load("visualization", "1", {packages:["corechart"]});
+
+    $(function() {
+      var chart, chartData;
+      var $chart = $('#chart');
+
+      google.setOnLoadCallback(loadChart);
+      $(window).resize(drawChart);
+
+      function loadChart() {
+
+          // TODO get date parameter from URL, and pass on to data request.
+          $.get('/data/distribution.json', function(data, textStatus, jqXHR) {
+
+              chartData = new google.visualization.DataTable();
+
+              chartData.addColumn('datetime', 'Estimate');
+              chartData.addColumn('number', 'Count');
+
+              for (var i in data) {
+                  chartData.addRow([
+                      new Date(data[i].when.replace(' ', 'T')),
+                      data[i].count,
+                  ]);
+              }
+
+              drawChart();
+          });
+      }
+
+      function drawChart() {
+          if (chart) {
+              chart.clearChart();
+              $chart.css('height', '');
+          }
+          else {
+              chart = new google.visualization.ColumnChart($chart.get(0));
+          }
+
+          $chart.css('height', ($(document).height() * 0.8));
+
+          chart.draw(
+              chartData,
+              {
+                  title: 'Estimate Distribution',
+                  hAxis: {},
+                  vAxis: {},
+                  legend: 'none',
+               }
+          );
+      }
+
+    });
+</script>
+{% endblock %}

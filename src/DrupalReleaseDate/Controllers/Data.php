@@ -58,4 +58,41 @@ class Data
 
         return $app->json($data);
     }
+
+    public function distribution(Application $app, Request $request) {
+
+        $date = $request->get('date');
+
+        $dateCondition = '';
+        if (!empty($date)) {
+            $dateCondition = "AND " . $app['db']->quoteIdentifier('when') . "=" . $app['db']->quote($date);
+        }
+
+        $sql = "
+            SELECT
+                " . $app['db']->quoteIdentifier('when') . ",
+                " . $app['db']->quoteIdentifier('estimate') . ",
+                " . $app['db']->quoteIdentifier('data') . "
+                FROM " . $app['db']->quoteIdentifier('estimates') . "
+                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
+                " . $dateCondition . "
+                ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                LIMIT 1
+        ";
+        $results = $app['db']->query($sql);
+
+        if ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
+            $data = unserialize($row['data']);
+            foreach ($data as $key => $count) {
+                $data[$key] = array(
+                    'when' => date('Y-m-d h:i:s', strtotime($row['when'] . " +" . $key . " seconds")),
+                    'count' => $count,
+                );
+            }
+
+            return $app->json($data);
+        }
+
+        // TODO return failure response.
+    }
 }
