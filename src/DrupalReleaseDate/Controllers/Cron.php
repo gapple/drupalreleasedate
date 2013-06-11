@@ -51,16 +51,34 @@ class Cron
         }
 
         $monteCarlo = new MonteCarlo($samples);
-        $estimateDuration = $monteCarlo->run((!empty($config['estimate.iterations'])? $config['estimate.iterations'] : 100000));
+        $iterations = (!empty($config['estimate.iterations'])? $config['estimate.iterations'] : 100000);
+        $estimateDistribution = $monteCarlo->runDistribution($iterations);
+
+        $countSum = 0;
+        foreach ($estimateDistribution as $estimate => $count) {
+            // Count the number of iterations so far, ignoring failed iterations.
+            if ($estimate == 0) {
+                if ($count >= $iterations / 2) {
+                  break;
+                }
+                continue;
+            }
+
+            $countSum += $count;
+            if ($countSum >= $iterations / 2) {
+              break;
+            }
+        }
 
         $update = array();
-        if ($estimateDuration) {
+        if ($estimate) {
             $update += array(
-                $app['db']->quoteIdentifier('estimate') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME'] + $estimateDuration),
+                $app['db']->quoteIdentifier('estimate') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME'] + $estimate),
                 $app['db']->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
+                $app['db']->quoteIdentifier('data') => serialize($estimateDistribution),
             );
         }
-        else if ($estimateDuration === 0) {
+        else if ($estimate === 0) {
             $update += array(
                 $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
                 $app['db']->quoteIdentifier('note') => 'Run failed due to increasing issue count',
