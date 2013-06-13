@@ -31,17 +31,17 @@
               for (var i in data) {
                 var when = new Date(data[i].when.replace(' ', 'T'));
                 var estimate;
-                if (data[i].estimate == '0000-00-00 00:00:00') {
-                    estimate = when;
+                if (data[i].estimate === null || data[i].estimate === '0000-00-00 00:00:00') {
+                    estimate = 0;
                 }
                 else {
-                    estimate = new Date(data[i].estimate.replace(' ', 'T'));
+                    estimate = ((new Date(data[i].estimate.replace(' ', 'T'))).getTime() - when.getTime()) / 1000
                 }
 
                 chartData.addRow([
-                      when,
-                      (estimate.getTime() - when.getTime()) / 1000
-                  ]);
+                    when,
+                    estimate
+                ]);
               }
 
               drawChart();
