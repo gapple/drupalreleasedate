@@ -18,12 +18,11 @@ class Pages
         SELECT " . $app['db']->quoteIdentifier('estimate') . "
             FROM " . $app['db']->quoteIdentifier('estimates') . "
             WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
-                AND " . $app['db']->quoteIdentifier('estimate')  ." IS NOT NULL
             ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
         ";
         $result = $app['db']->fetchColumn($sql, array(), 0);
 
-        if ($result == '0000-00-00 00:00:00') {
+        if ($result == null || $result == '0000-00-00 00:00:00') {
             $estimate['note'] = 'An estimate could not be calculated with the current data';
         }
         else if ($result) {
