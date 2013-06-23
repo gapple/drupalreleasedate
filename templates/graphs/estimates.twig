@@ -26,21 +26,31 @@
               chartData = new google.visualization.DataTable();
 
               chartData.addColumn('datetime', 'Time');
-              chartData.addColumn('number', 'Estimate');
+              chartData.addColumn('number', 'Estimates');
+              chartData.addColumn('number', 'Failed Estimates');
 
               for (var i in data) {
                 var when = new Date(data[i].when.replace(' ', 'T'));
-                var estimate;
+                var estimate = null;
+                var error = null;
                 if (data[i].estimate === null || data[i].estimate === '0000-00-00 00:00:00') {
-                    estimate = 0;
+                    error = {
+                        v: 0,
+                        f: 'N/A'
+                    };
                 }
                 else {
-                    estimate = ((new Date(data[i].estimate.replace(' ', 'T'))).getTime() - when.getTime()) / 1000
+                  var estimateDate = new Date(data[i].estimate.replace(' ', 'T'));
+                  estimate = {
+                      v:(estimateDate.getTime() - when.getTime()) / 1000,
+                      f: estimateDate.toDateString()
+                  }
                 }
 
                 chartData.addRow([
                     when,
-                    estimate
+                    estimate,
+                    error
                 ]);
               }
 
