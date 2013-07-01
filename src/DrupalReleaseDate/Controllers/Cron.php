@@ -10,10 +10,14 @@ use DrupalReleaseDate\MonteCarlo;
 class Cron
 {
 
-    public function emptyResponse(Application $app, Request $request) {
+    public function emptyResponse(Application $app, Request $request)
+    {
         return '';
     }
 
+    /**
+     * Calculate a new estimate for the release date based on current samples.
+     */
     public function updateEstimate(Application $app, Request $request, $key)
     {
         $config = $app['config'];
@@ -94,6 +98,64 @@ class Cron
                 )
             );
         }
+
+        return '';
+    }
+
+    /**
+     * Fetch the latest issue counts from Drupal.org and add them to the
+     * database as a new sample.
+     */
+    public function fetchCounts(Application $app, Request $request, $key)
+    {
+        $config = $app['config'];
+
+        // Check key in request
+        if (!isset($config['cron.key']) || $key != $config['cron.key']) {
+            return '';
+        }
+
+        $counter = new \DrupalReleaseDate\DrupalIssueCount(array(
+            'status' => array(
+                 1, // Active
+                13, // Needs work
+                 8, // Needs review
+                14, // Reviewed & tested by the community
+                15, // Patch (to be ported)
+                 4, // Postponed
+            //    16, // Postponed (maintainer needs more info)
+            ),
+            'version' => array('8.x'),
+        ));
+
+        $critical_bugs = $counter->getCount(array(
+            'priorities' => array(1),
+            'categories' => array('bug'),
+        ));
+
+        $critical_tasks = $counter->getCount(array(
+            'priorities' => array(1),
+            'categories' => array('task'),
+        ));
+
+        $major_bugs = $counter->getCount(array(
+            'priorities' => array(4),
+            'categories' => array('bug'),
+        ));
+
+        $major_tasks = $counter->getCount(array(
+            'priorities' => array(4),
+            'categories' => array('task'),
+        ));
+
+        $app['db']->insert($app['db']->quoteIdentifier('samples'), array(
+            $app['db']->quoteIdentifier('when') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
+            $app['db']->quoteIdentifier('version') => 8,
+            $app['db']->quoteIdentifier('critical_bugs') => $critical_bugs,
+            $app['db']->quoteIdentifier('critical_tasks') => $critical_tasks,
+            $app['db']->quoteIdentifier('major_bugs') => $major_bugs,
+            $app['db']->quoteIdentifier('major_tasks') => $major_tasks,
+        ));
 
         return '';
     }

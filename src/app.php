@@ -23,10 +23,12 @@ $app->mount('/data', $data);
 
 $cron = $app['controllers_factory'];
 $cron->get('/', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
-
 // Handle request to update estimate value, protected by key.
 $cron->get('/update-estimate', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
 $cron->get('/update-estimate/{key}', 'DrupalReleaseDate\Controllers\Cron::updateEstimate');
+// Handle request to get latest issue counts, protected by key.
+$cron->get('/fetch-counts', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
+$cron->get('/fetch-counts/{key}', 'DrupalReleaseDate\Controllers\Cron::fetchCounts');
 
 $app->mount('/cron', $cron);
 
