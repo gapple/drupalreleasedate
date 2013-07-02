@@ -85,7 +85,7 @@ class Data
             $data = unserialize($row['data']);
             foreach ($data as $key => $count) {
                 $data[$key] = array(
-                    'when' => date('Y-m-d h:i:s', strtotime($row['when'] . " +" . $key . " seconds")),
+                    'when' => date('Y-m-d H:i:s', strtotime($row['when'] . " +" . $key . " seconds")),
                     'count' => $count,
                 );
             }

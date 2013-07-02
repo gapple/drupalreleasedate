@@ -42,7 +42,7 @@ class Cron
 
         // Insert empty before run, update if succsesful.
         $app['db']->insert($app['db']->quoteIdentifier('estimates'), array(
-            $app['db']->quoteIdentifier('when') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
+            $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
             $app['db']->quoteIdentifier('version') => 8,
             $app['db']->quoteIdentifier('estimate') => null,
             $app['db']->quoteIdentifier('note') => 'Timeout during run',
@@ -77,7 +77,7 @@ class Cron
         $update = array();
         if ($estimate) {
             $update += array(
-                $app['db']->quoteIdentifier('estimate') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME'] + $estimate),
+                $app['db']->quoteIdentifier('estimate') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME'] + $estimate),
                 $app['db']->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
                 $app['db']->quoteIdentifier('data') => serialize($estimateDistribution),
             );
@@ -93,7 +93,7 @@ class Cron
             $app['db']->update($app['db']->quoteIdentifier('estimates'),
                 $update,
                 array(
-                    $app['db']->quoteIdentifier('when') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
+                    $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
                     $app['db']->quoteIdentifier('version') => 8,
                 )
             );
@@ -149,7 +149,7 @@ class Cron
         ));
 
         $app['db']->insert($app['db']->quoteIdentifier('samples'), array(
-            $app['db']->quoteIdentifier('when') => date('Y-m-d h:i:s', $_SERVER['REQUEST_TIME']),
+            $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
             $app['db']->quoteIdentifier('version') => 8,
             $app['db']->quoteIdentifier('critical_bugs') => $critical_bugs,
             $app['db']->quoteIdentifier('critical_tasks') => $critical_tasks,
