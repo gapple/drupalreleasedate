@@ -1,13 +1,15 @@
 <?php
-namespace DrupalReleaseDate;
+namespace DrupalReleaseDate\Sampling;
 
-class Sample {
+class Sample
+{
     protected $when;
     protected $count;
     protected $resolved;
     protected $duration;
 
-    function __construct($when, $count, $last = null) {
+    function __construct($when, $count, $last = null)
+    {
         $this->when = $when;
         $this->count = $count;
         if ($last) {
@@ -15,20 +17,29 @@ class Sample {
         }
     }
 
-    function getWhen() {
+    function getWhen()
+    {
         return $this->when;
     }
-    function getCount() {
+
+    function getCount()
+    {
         return $this->count;
     }
-    function setDiff($from) {
+
+    function setDiff($from)
+    {
         $this->duration = $this->when - $from->getWhen();
         $this->resolved =  $from->getCount() - $this->count;
     }
-    function getDuration() {
+
+    function getDuration()
+    {
         return $this->duration;
     }
-    function getResolved() {
+
+    function getResolved()
+    {
         return $this->resolved;
     }
 }

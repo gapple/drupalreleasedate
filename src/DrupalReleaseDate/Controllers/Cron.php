@@ -4,7 +4,8 @@ namespace DrupalReleaseDate\Controllers;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 
-use DrupalReleaseDate\SampleSet;
+use DrupalReleaseDate\Sampling\SampleSet;
+use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
 
 class Cron
@@ -37,7 +38,7 @@ class Cron
         ";
         $results = $app['db']->query($sql);
         while ($result = $results->fetchObject()) {
-            $samples->addSample(strtotime($result->when), $result->critical_bugs + $result->critical_tasks);
+            $samples->insert(strtotime($result->when), $result->critical_bugs + $result->critical_tasks);
         }
 
         // Insert empty before run, update if succsesful.
@@ -46,6 +47,7 @@ class Cron
             $app['db']->quoteIdentifier('version') => 8,
             $app['db']->quoteIdentifier('estimate') => null,
             $app['db']->quoteIdentifier('note') => 'Timeout during run',
+            $app['db']->quoteIdentifier('data') => '',
         ));
         // Close connection during processing to prevent "Database has gone away" exception.
         $app['db']->close();
@@ -54,7 +56,9 @@ class Cron
             set_time_limit($config['estimate.timeout']);
         }
 
-        $monteCarlo = new MonteCarlo($samples);
+        $sampleSelector = new SampleSetRandomSampleSelector($samples);
+
+        $monteCarlo = new MonteCarlo($sampleSelector);
         $iterations = (!empty($config['estimate.iterations'])? $config['estimate.iterations'] : 100000);
         $estimateDistribution = $monteCarlo->runDistribution($iterations);
 

@@ -84,10 +84,9 @@ class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase {
 
         // TODO make the required results adaptive based on the range of the generator
         //      and the number of iterations performed.
-        $weight = 1;
+        $weight = 1.0;
         foreach ($results as $key => $count) {
-            $this->assertGreaterThan(pow($weight, 2) * 0.9, $count / ($this->iterations));
-            $this->assertLessThan(pow($weight, 2) * 1.1, $count / ($this->iterations));
+            $this->assertEquals(pow($weight, 2), $count / ($this->iterations), '', 0.2);
             $weight++;
         }
     }

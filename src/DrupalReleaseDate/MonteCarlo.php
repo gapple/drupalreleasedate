@@ -1,7 +1,10 @@
 <?php
 namespace DrupalReleaseDate;
 
-class MonteCarlo {
+use \DrupalReleaseDate\Sampling\RandomSampleSelectorInterface;
+
+class MonteCarlo
+{
 
     /**
      * The default number of iterations to perform when running an estimate.
@@ -16,15 +19,11 @@ class MonteCarlo {
      */
     const DEFAULT_BUCKET_SIZE = 86400;
 
-    protected $sampleSet;
+    protected $sampleSelector;
 
-    public function __construct(SampleSet $sampleSet, Random\RandomInterface $randomGenerator = null) {
-        $this->sampleSet = $sampleSet;
-
-        if (!$randomGenerator) {
-            $randomGenerator = new Random\Random(1, $sampleSet->length() -1);
-        }
-        $this->randomGenerator = $randomGenerator;
+    public function __construct(RandomSampleSelectorInterface $sampleSelector)
+    {
+        $this->sampleSelector = $sampleSelector;
     }
 
     /**
@@ -32,17 +31,16 @@ class MonteCarlo {
      *
      * @return number
      */
-    public function iteration() {
+    public function iteration()
+    {
 
       // Get the current number of issues from the last sample in the set.
-      $issues = $currentIssues = $this->sampleSet->getSample($this->sampleSet->length() - 1)->getCount();
+      $issues = $currentIssues = $this->sampleSelector->getLastSample()->getCount();
 
       $duration = 0;
 
       do {
-          $i = $this->randomGenerator->generate();
-
-          $sample = $this->sampleSet->getSample($i);
+          $sample = $this->sampleSelector->getRandomSample();
           $duration += $sample->getDuration();
           $issues -= $sample->getResolved();
 
@@ -62,7 +60,8 @@ class MonteCarlo {
      * @param number $iterations
      * @return number
      */
-    public function runAverage($iterations = self::DEFAULT_ITERATIONS) {
+    public function runAverage($iterations = self::DEFAULT_ITERATIONS)
+    {
 
         $estimate = 0;
         for ($run = 0; $run < $iterations; $run++) {
@@ -79,7 +78,8 @@ class MonteCarlo {
      * @param number $bucketSize
      * @return number
      */
-    public function runMedian($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE) {
+    public function runMedian($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    {
 
         $distribution = $this->runDistribution($iterations, $bucketSize);
 
@@ -111,7 +111,8 @@ class MonteCarlo {
      *   The period in seconds to group estimates by.
      * @return number
      */
-    public function runDistribution($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE) {
+    public function runDistribution($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    {
         $estimates = array();
 
         for ($run = 0; $run < $iterations; $run++) {

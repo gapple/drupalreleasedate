@@ -1,7 +1,7 @@
 <?php
-namespace DrupalReleaseDate\Tests;
+namespace DrupalReleaseDate\Sampling\Tests;
 
-use DrupalReleaseDate\Sample;
+use DrupalReleaseDate\Sampling\Sample;
 
 class SampleTest extends \PHPUnit_Framework_TestCase {
 

@@ -3,8 +3,6 @@ namespace DrupalReleaseDate\Random;
 
 abstract class WeightedRandom extends Random {
 
-    protected $cumulativeWeight = 0;
-
     /**
      * An array of cumulative weights for each possible outcome of the
      * generator.
@@ -21,13 +19,58 @@ abstract class WeightedRandom extends Random {
      */
     protected $weightsArray = array();
 
-    public function __construct($min, $max) {
+    public function __construct($min = 0, $max = 1)
+    {
         parent::__construct($min, $max);
 
-        for ($i = $min; $i <= $max ; $i++) {
-            $this->cumulativeWeight += $this->calculateWeight($i);
-            $this->weightsArray[$i] = $this->cumulativeWeight;
+        $cumulativeWeight = 0;
+        for ($i = $min; $i <= $max; $i++) {
+            $cumulativeWeight += $this->calculateWeight($i);
+            $this->weightsArray[$i] = $cumulativeWeight;
         }
+    }
+
+    /**
+     * Set a new minimum value for the generator.
+     *
+     * Weighted random values may be calculated as an interval from the minimum
+     * value, so all weights will need to be recalculated.
+     *
+     * @see \DrupalReleaseDate\Random\Random::setMin()
+     */
+    public function setMin($min) {
+        parent::setMin($min);
+
+        $this->weightsArray = array();
+
+        $cumulativeWeight = 0;
+        for ($i = $min; $i <= $this->max; $i++) {
+            $cumulativeWeight += $this->calculateWeight($i);
+            $this->weightsArray[$i] = $cumulativeWeight;
+        }
+    }
+
+    /**
+     * Set a new maximum value for the generator.
+     *
+     * Weighted random will require calculating cumulative values if the desired
+     * max is greater than the previous max.
+     *
+     * @see \DrupalReleaseDate\Random\Random::setMax()
+     */
+    public function setMax($max)
+    {
+        end($this->weightsArray);
+        $calculatedTo = key($this->weightsArray);
+
+        if ($calculatedTo < $max) {
+            $cumulativeWeight = current($this->weightsArray);
+            for ($i = $calculatedTo + 1; $i <= $max; $i++) {
+                $cumulativeWeight += $this->calculateWeight($i);
+                $this->weightsArray[$i] = $cumulativeWeight;
+            }
+        }
+        parent::setMax($max);
     }
 
     /**
@@ -38,8 +81,11 @@ abstract class WeightedRandom extends Random {
      */
     abstract public function calculateWeight($value);
 
-    public function generate() {
-      $rand = mt_rand(1, $this->cumulativeWeight);
+    public function generate()
+    {
+      $min = $this->weightsArray[$this->min];
+      $max = $this->weightsArray[$this->max];
+      $rand = mt_rand($min, $max);
 
       // find the first bin that the number fits in to.
       foreach ($this->weightsArray as $key => $bin) {

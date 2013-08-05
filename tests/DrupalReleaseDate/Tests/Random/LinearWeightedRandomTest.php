@@ -14,7 +14,7 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
     /**
      * Test that the generator only returns results in the specified range.
      */
-    function testRange() {
+    public function testRange() {
         $min = 2;
         $max = 15;
         $generator = new LinearWeightedRandom($min, $max);
@@ -26,26 +26,15 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
         }
     }
 
-    function testSimpleWeights() {
+    /**
+     * Test that the calculated weights for the generator are correct.
+     */
+    public function testSimpleWeights() {
         $min = 1;
         $max = 10;
         $generator = new LinearWeightedRandom($min, $max);
 
         $weight = 1;
-        $range = $min - $max + 1;
-        for ($i = $min; $i <= $max; $i++) {
-            $this->assertEquals($weight, $generator->calculateWeight($i));
-            $weight++;
-        }
-    }
-
-    function testShiftedWeights() {
-        $min = 3;
-        $max = 12;
-        $generator = new LinearWeightedRandom($min, $max);
-
-        $weight = 1;
-        $range = $min - $max + 1;
         for ($i = $min; $i <= $max; $i++) {
             $this->assertEquals($weight, $generator->calculateWeight($i));
             $weight++;
@@ -53,18 +42,34 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * Test that the generator produces a linearly increasing distribution of results.
-     * (e.g. the second item should be twice as likely as the first, the third item
-     *  three times as likely, etc)
+     * Test that the calculated weights for the generator are correct.
+     */
+    public function testShiftedWeights() {
+        $min = 3;
+        $max = 12;
+        $generator = new LinearWeightedRandom($min, $max);
+
+        $weight = 1;
+        for ($i = $min; $i <= $max; $i++) {
+            $this->assertEquals($weight, $generator->calculateWeight($i));
+            $weight++;
+        }
+    }
+
+    /**
+     * Check that the distribution of results from a generator is accurate
+     * within its range.
      *
      * Since the sum of probabilities is greater than in a flat distribution,
      * addtional iterations need to be performed to get sufficient precision for
      * the least likely items.
+     *
+     * @param WeightedRandom $generator
+     * @param int $min
+     * @param int $max
+     * @param
      */
-    function testDistribution() {
-        $min = 3;
-        $max = 8;
-        $generator = new LinearWeightedRandom($min, $max);
+    protected function checkDistribution(\DrupalReleaseDate\Random\WeightedRandom $generator, $min, $max) {
 
         $range = $max - $min + 1;
         $probabilitySum = ($range * ($range + 1) / 2);
@@ -80,11 +85,50 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
 
         // TODO make the required results adaptive based on the range of the generator
         //      and the number of iterations performed.
-        $weight = 1;
+        $weight = 1.0;
         foreach ($results as $key => $count) {
-            $this->assertGreaterThan($weight * 0.9, $count / ($this->iterations));
-            $this->assertLessThan($weight * 1.1, $count / ($this->iterations));
+            $this->assertEquals($weight, $count / ($this->iterations), '', 0.2);
             $weight++;
         }
+    }
+
+    /**
+     * Test that the generator produces a linearly increasing distribution of results.
+     * (e.g. the second item should be twice as likely as the first, the third item
+     *  three times as likely, etc)
+     */
+    public function testDistribution() {
+        $generator = new LinearWeightedRandom(3, 8);
+
+        $this->checkDistribution($generator, 3, 8);
+    }
+
+    /**
+     * Test that a generator produces a correct distribution if the min value is
+     * changed.
+     */
+    public function testDistributionChangeMin() {
+        $generator = new LinearWeightedRandom(4, 8);
+
+        $generator->setMin(3);
+        $this->checkDistribution($generator, 3, 8);
+
+        $generator->setMin(5);
+        $this->checkDistribution($generator, 5, 8);
+    }
+
+    /**
+     * Test that a generator produces a correct distribution if the max value is
+     * changed.
+     */
+    public function testDistributionChangeMax() {
+
+        $generator = new LinearWeightedRandom(4, 7);
+
+        $generator->setMax(9);
+        $this->checkDistribution($generator, 4, 9);
+
+        $generator->setMax(8);
+        $this->checkDistribution($generator, 4, 8);
     }
 }

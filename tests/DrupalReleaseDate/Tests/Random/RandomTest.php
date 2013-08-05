@@ -55,8 +55,7 @@ class RandomTest extends \PHPUnit_Framework_TestCase {
 
 
         foreach ($results as $key => $count) {
-            $this->assertGreaterThan(0.9, $count / $expected);
-            $this->assertLessThan(1.1, $count / $expected);
+            $this->assertEquals(1.0, $count / $expected, '', 0.1);
         }
     }
 }

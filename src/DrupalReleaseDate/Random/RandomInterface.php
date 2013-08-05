@@ -9,7 +9,19 @@ interface RandomInterface {
      * @param int $min
      * @param int $max
      */
-    public function __construct($min, $max);
+    public function __construct($min = 0, $max = 1);
+
+    /**
+     * Set minimum value to be returned by generator.
+     * @param int $min
+     */
+    public function setMin($min);
+
+    /**
+     * Set maximum value to be returned by generator.
+     * @param int $max
+     */
+    public function setMax($max);
 
     /**
      * Return a new random number according to the generator's configuration.
