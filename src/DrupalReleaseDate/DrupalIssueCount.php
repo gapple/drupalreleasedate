@@ -64,6 +64,7 @@ class DrupalIssueCount
         $response = $request->send();
 
         try {
+            libxml_use_internal_errors(true);
             $document = $response->xml();
         }
         catch (\RuntimeException $e) {
