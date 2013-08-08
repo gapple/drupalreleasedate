@@ -125,27 +125,44 @@ class Cron
                  4, // Postponed
             //    16, // Postponed (maintainer needs more info)
             ),
-            'version' => array('8.x'),
         ));
 
+        $this->fetchD8Counts($app, $request, $counter);
+        $this->fetchD9Counts($app, $request, $counter);
+
+        return '';
+    }
+
+    /**
+     * Fetch Drupal 8 issue counts.
+     *
+     * @param Application $app
+     * @param Request $request
+     * @param \DrupalReleaseDate\DrupalIssueCount $counter
+     */
+    protected function fetchD8Counts(Application $app, Request $request, \DrupalReleaseDate\DrupalIssueCount $counter) {
         $critical_bugs = $counter->getCount(array(
             'priorities' => array(1),
             'categories' => array('bug'),
+            'version' => array('8.x'),
         ));
 
         $critical_tasks = $counter->getCount(array(
             'priorities' => array(1),
             'categories' => array('task'),
+            'version' => array('8.x'),
         ));
 
         $major_bugs = $counter->getCount(array(
             'priorities' => array(4),
             'categories' => array('bug'),
+            'version' => array('8.x'),
         ));
 
         $major_tasks = $counter->getCount(array(
             'priorities' => array(4),
             'categories' => array('task'),
+            'version' => array('8.x'),
         ));
 
         $app['db']->insert($app['db']->quoteIdentifier('samples'), array(
@@ -155,8 +172,52 @@ class Cron
             $app['db']->quoteIdentifier('critical_tasks') => $critical_tasks,
             $app['db']->quoteIdentifier('major_bugs') => $major_bugs,
             $app['db']->quoteIdentifier('major_tasks') => $major_tasks,
+            $app['db']->quoteIdentifier('notes') => '',
+        ));
+    }
+
+    /**
+     * Fetch Drupal 9 issue counts.
+     *
+     * 9.x doesn't have a catch-all version yet, so the term id for 9.x-dev is used.
+     *
+     * @param Application $app
+     * @param Request $request
+     * @param \DrupalReleaseDate\DrupalIssueCount $counter
+     */
+    protected function fetchD9Counts(Application $app, Request $request, \DrupalReleaseDate\DrupalIssueCount $counter) {
+        $critical_bugs = $counter->getCount(array(
+            'priorities' => array(1),
+            'categories' => array('bug'),
+            'version' => array('1859548'),
         ));
 
-        return '';
+        $critical_tasks = $counter->getCount(array(
+            'priorities' => array(1),
+            'categories' => array('task'),
+            'version' => array('1859548'),
+        ));
+
+        $major_bugs = $counter->getCount(array(
+            'priorities' => array(4),
+            'categories' => array('bug'),
+            'version' => array('1859548'),
+        ));
+
+        $major_tasks = $counter->getCount(array(
+            'priorities' => array(4),
+            'categories' => array('task'),
+            'version' => array('1859548'),
+        ));
+
+        $app['db']->insert($app['db']->quoteIdentifier('samples'), array(
+            $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
+            $app['db']->quoteIdentifier('version') => 9,
+            $app['db']->quoteIdentifier('critical_bugs') => $critical_bugs,
+            $app['db']->quoteIdentifier('critical_tasks') => $critical_tasks,
+            $app['db']->quoteIdentifier('major_bugs') => $major_bugs,
+            $app['db']->quoteIdentifier('major_tasks') => $major_tasks,
+            $app['db']->quoteIdentifier('notes') => '',
+        ));
     }
 }
