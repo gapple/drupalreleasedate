@@ -29,13 +29,15 @@ class DrupalIssueCount
 
         $document = $this->getXmlDocument($parameters);
 
-        // Check if pager exists on first page; get page count
+        // Check if pager exists on first page; get page count from link to last page.
         $fullPages = 0;
-        $pagerLinks = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' view-project-issue-search-project ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-item ')]");
+        $pagerLast = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' view-project-issue-search-project ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-last ')]//_xmlns:a");
 
-        if ($pagerLinks) {
-            // The current pager link doesn't have the page-item class applied to it.
-            $fullPages = count($pagerLinks);
+        if ($pagerLast) {
+            $pagerLastUrl = (string) $pagerLast[0]['href'];
+            preg_match('/page=(\\d+)/', $pagerLastUrl, $urlMatches);
+
+            $fullPages = (int) $urlMatches[1];
             $parameters += array(
                 'page' => $fullPages,
             );
