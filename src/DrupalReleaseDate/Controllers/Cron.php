@@ -165,6 +165,18 @@ class Cron
             'version' => array('8.x'),
         ));
 
+        $normal_bugs = $counter->getCount(array(
+            'priorities' => array(2),
+            'categories' => array('bug'),
+            'version' => array('8.x'),
+        ));
+
+        $normal_tasks = $counter->getCount(array(
+            'priorities' => array(2),
+            'categories' => array('task'),
+            'version' => array('8.x'),
+        ));
+
         $app['db']->insert($app['db']->quoteIdentifier('samples'), array(
             $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
             $app['db']->quoteIdentifier('version') => 8,
@@ -172,6 +184,8 @@ class Cron
             $app['db']->quoteIdentifier('critical_tasks') => $critical_tasks,
             $app['db']->quoteIdentifier('major_bugs') => $major_bugs,
             $app['db']->quoteIdentifier('major_tasks') => $major_tasks,
+            $app['db']->quoteIdentifier('normal_bugs') => $normal_bugs,
+            $app['db']->quoteIdentifier('normal_tasks') => $normal_tasks,
             $app['db']->quoteIdentifier('notes') => '',
         ));
     }
@@ -210,6 +224,18 @@ class Cron
             'version' => array('1859548'),
         ));
 
+        $normal_bugs = $counter->getCount(array(
+            'priorities' => array(2),
+            'categories' => array('bug'),
+            'version' => array('1859548'),
+        ));
+
+        $normal_tasks = $counter->getCount(array(
+            'priorities' => array(2),
+            'categories' => array('task'),
+            'version' => array('1859548'),
+        ));
+
         $app['db']->insert($app['db']->quoteIdentifier('samples'), array(
             $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
             $app['db']->quoteIdentifier('version') => 9,
@@ -217,6 +243,8 @@ class Cron
             $app['db']->quoteIdentifier('critical_tasks') => $critical_tasks,
             $app['db']->quoteIdentifier('major_bugs') => $major_bugs,
             $app['db']->quoteIdentifier('major_tasks') => $major_tasks,
+            $app['db']->quoteIdentifier('normal_bugs') => $normal_bugs,
+            $app['db']->quoteIdentifier('normal_tasks') => $normal_tasks,
             $app['db']->quoteIdentifier('notes') => '',
         ));
     }
