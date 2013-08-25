@@ -21,6 +21,29 @@ class MonteCarlo
 
     protected $sampleSelector;
 
+    /**
+     * The initial proportion of iterations that will be run without checking
+     * the failure ratio afterwards.
+     *
+     * e.g. A minimum of 10% of requested iterations will always be processed
+     *      before a large number of failures can cause the run to abort.
+     *
+     * @var float
+     *   A value between 0 and 1
+     */
+    public $increasingFailureThresholdRatio = 0.1;
+
+    /**
+     * The maximum proportion of iterations that can fail before the entire run
+     * returns as a failure.
+     *
+     * e.g. If 10% of iterations have failed, the run will be aborted.
+     *
+     * @var float
+     *   A value between 0 and 1
+     */
+    public $increasingFailureRatio = 0.1;
+
     public function __construct(RandomSampleSelectorInterface $sampleSelector)
     {
         $this->sampleSelector = $sampleSelector;
@@ -46,7 +69,7 @@ class MonteCarlo
 
           // Failsafe for if simulation goes in the wrong direction too far.
           if ($issues > $currentIssues * 10) {
-              return 0;
+              throw new MonteCarloIncreasingRunException("Iteration failed due to increasing issue count");
           }
       }
       while ($issues > 0);
@@ -62,13 +85,25 @@ class MonteCarlo
      */
     public function runAverage($iterations = self::DEFAULT_ITERATIONS)
     {
+        $increasingFailures = 0;
 
         $estimate = 0;
         for ($run = 0; $run < $iterations; $run++) {
-            $estimate += $this->iteration() / $iterations;
+            try {
+                $estimate += $this->iteration();
+            }
+            catch (MonteCarloIncreasingRunException $e) {
+                $increasingFailures++;
+                if (
+                     $run > ($iterations * $this->increasingFailureThresholdRatio)
+                  && ($increasingFailures / $run) > $this->increasingFailureRatio
+                ) {
+                    throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
+                }
+            }
         }
 
-        return $estimate;
+        return $estimate / ($iterations - $increasingFailures);
     }
 
     /**
@@ -83,23 +118,18 @@ class MonteCarlo
 
         $distribution = $this->runDistribution($iterations, $bucketSize);
 
+        // Calculate the number of iterations required to acheive a median value.
+        $medianIterations = array_sum($distribution) / 2;
+
         $countSum = 0;
         foreach ($distribution as $estimate => $count) {
-            // Count the number of iterations so far, ignoring failed iterations.
-            if ($estimate == 0) {
-                if ($count >= $iterations / 2) {
-                    break;
-                }
-                continue;
-            }
-
             $countSum += $count;
-            if ($countSum >= $iterations / 2) {
-                return $estimate;
+            if ($countSum >= $medianIterations) {
+                break;
             }
         }
 
-        return 0;
+        return $estimate;
     }
 
     /**
@@ -115,8 +145,23 @@ class MonteCarlo
     {
         $estimates = array();
 
+        $increasingFailures = 0;
+
         for ($run = 0; $run < $iterations; $run++) {
-            $estimate = $this->iteration();
+            try {
+                $estimate = $this->iteration();
+            }
+            catch (MonteCarloIncreasingRunException $e) {
+                $increasingFailures++;
+                if (
+                     $run > ($iterations * $this->increasingFailureThresholdRatio)
+                  && ($increasingFailures / $run) > $this->increasingFailureRatio
+                ) {
+                    throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
+                }
+
+                continue;
+            }
 
             $bucket = $estimate - $estimate % $bucketSize;
 

@@ -111,8 +111,14 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * Test that when sampled values increase, the run errors out as expected.
+     *
+     * @expectedException \DrupalReleaseDate\MonteCarloIncreasingRunException
+     *
+     * Since all iterations will fail, the first run after the threshold is met
+     * will cause the run to fail.
+     * @expectedExceptionMessage Run aborted after iteration 11
      */
-    function testIncreasingRun() {
+    function testIncreasingAverageRun() {
         $sampleset = new SampleSet();
 
         $sampleset->insert(10, 10);
@@ -124,10 +130,31 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
-        $average = $montecarlo->runAverage(1);
-        $this->assertEquals(0, $average);
+        $average = $montecarlo->runAverage(100);
+    }
 
-        $median = $montecarlo->runMedian(1, 10);
+    /**
+     * Test that when sampled values increase, the run errors out as expected.
+     *
+     * @expectedException \DrupalReleaseDate\MonteCarloIncreasingRunException
+     *
+     * Since all iterations will fail, the first run after the threshold is met
+     * will cause the run to fail.
+     * @expectedExceptionMessage Run aborted after iteration 11
+     */
+    function testIncreasingMedianRun() {
+        $sampleset = new SampleSet();
+
+        $sampleset->insert(10, 10);
+        $sampleset->insert(20, 11);
+        $sampleset->insert(30, 12);
+        $sampleset->insert(40, 13);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
+
+        $montecarlo = new MonteCarlo($sampleSelector);
+
+        $median = $montecarlo->runMedian(100, 10);
         $this->assertEquals(0, $median);
     }
 }

@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
+use DrupalReleaseDate\MonteCarloIncreasingRunException;
 
 class Cron
 {
@@ -60,48 +61,42 @@ class Cron
 
         $monteCarlo = new MonteCarlo($sampleSelector);
         $iterations = (!empty($config['estimate.iterations'])? $config['estimate.iterations'] : 100000);
-        $estimateDistribution = $monteCarlo->runDistribution($iterations);
-
-        $countSum = 0;
-        foreach ($estimateDistribution as $estimate => $count) {
-            // Count the number of iterations so far, ignoring failed iterations.
-            if ($estimate == 0) {
-                if ($count >= $iterations / 2) {
-                  break;
-                }
-                continue;
-            }
-
-            $countSum += $count;
-            if ($countSum >= $iterations / 2) {
-              break;
-            }
-        }
 
         $update = array();
-        if ($estimate) {
+
+        try {
+            $estimateDistribution = $monteCarlo->runDistribution($iterations);
+
+            $medianIterations = array_sum($distribution) / 2;
+            $countSum = 0;
+            foreach ($estimateDistribution as $estimate => $count) {
+                $countSum += $count;
+                if ($countSum >= $medianIterations) {
+                  break;
+                }
+            }
+
             $update += array(
                 $app['db']->quoteIdentifier('estimate') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME'] + $estimate),
                 $app['db']->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
                 $app['db']->quoteIdentifier('data') => serialize($estimateDistribution),
             );
         }
-        else if ($estimate === 0) {
+        catch (MonteCarloIncreasingRunException $e) {
             $update += array(
                 $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
                 $app['db']->quoteIdentifier('note') => 'Run failed due to increasing issue count',
             );
         }
-        if (!empty($update)) {
-            $app['db']->connect();
-            $app['db']->update($app['db']->quoteIdentifier('estimates'),
-                $update,
-                array(
-                    $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
-                    $app['db']->quoteIdentifier('version') => 8,
-                )
-            );
-        }
+
+        $app['db']->connect();
+        $app['db']->update($app['db']->quoteIdentifier('estimates'),
+            $update,
+            array(
+                $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
+                $app['db']->quoteIdentifier('version') => 8,
+            )
+        );
 
         return '';
     }
