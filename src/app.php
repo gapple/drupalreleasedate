@@ -32,6 +32,7 @@ $cron->get('/fetch-counts/{key}', 'DrupalReleaseDate\Controllers\Cron::fetchCoun
 
 $app->mount('/cron', $cron);
 
-$app->get('/info', 'DrupalReleaseDate\Controllers\History::info');
+$app->get('/history/info', 'DrupalReleaseDate\Controllers\History::info');
+$app->get('/history/count', 'DrupalReleaseDate\Controllers\History::count');
 
 $app->run();
