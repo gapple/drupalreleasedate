@@ -5,14 +5,6 @@ interface RandomInterface
 {
 
     /**
-     * Initialize a generator with the provided range.
-     *
-     * @param int $min
-     * @param int $max
-     */
-    public function __construct($min = 0, $max = 1);
-
-    /**
      * Set minimum value to be returned by generator.
      * @param int $min
      */

@@ -20,13 +20,28 @@ abstract class WeightedRandom extends Random
      */
     protected $weightsArray = array();
 
-    public function __construct($min = 0, $max = 1)
+    /**
+     * Specify if the generator will only use integer values for weights.
+     *
+     * If set to false, the generator will use a float value internally to
+     * determine the value to be returned so that results are not biased by
+     * integer rounding.
+     *
+     * @var boolean
+     */
+    protected $integerWeights = true;
+
+    public function __construct($min, $max)
     {
         parent::__construct($min, $max);
 
         $cumulativeWeight = 0;
         for ($i = $min; $i <= $max; $i++) {
-            $cumulativeWeight += $this->calculateWeight($i);
+            $weight = $this->calculateWeight($i);
+            if ($weight < 0) {
+                throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
+            }
+            $cumulativeWeight += $weight;
             $this->weightsArray[$i] = $cumulativeWeight;
         }
     }
@@ -47,7 +62,11 @@ abstract class WeightedRandom extends Random
 
         $cumulativeWeight = 0;
         for ($i = $min; $i <= $this->max; $i++) {
-            $cumulativeWeight += $this->calculateWeight($i);
+            $weight = $this->calculateWeight($i);
+            if ($weight < 0) {
+                throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
+            }
+            $cumulativeWeight += $weight;
             $this->weightsArray[$i] = $cumulativeWeight;
         }
     }
@@ -68,7 +87,11 @@ abstract class WeightedRandom extends Random
         if ($calculatedTo < $max) {
             $cumulativeWeight = current($this->weightsArray);
             for ($i = $calculatedTo + 1; $i <= $max; $i++) {
-                $cumulativeWeight += $this->calculateWeight($i);
+                $weight = $this->calculateWeight($i);
+                if ($weight < 0) {
+                    throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
+                }
+                $cumulativeWeight += $weight;
                 $this->weightsArray[$i] = $cumulativeWeight;
             }
         }
@@ -90,9 +113,13 @@ abstract class WeightedRandom extends Random
      */
     public function generate()
     {
-        $minWeight = $this->weightsArray[$this->min];
         $maxWeight = $this->weightsArray[$this->max];
-        $rand = mt_rand($minWeight, $maxWeight);
+
+        if ($this->integerWeights) {
+            $rand = mt_rand(1, $maxWeight);
+        } else {
+            $rand = (mt_rand() / mt_getrandmax()) * $maxWeight;
+        }
 
         // Find the first weight that the random number fits in to.
         $value = $this->min;
