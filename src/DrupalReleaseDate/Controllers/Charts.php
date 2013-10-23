@@ -11,7 +11,7 @@ class Charts
     {
         return $app['twig']->render('graphs/samples.twig', array(
             'scripts' => array(
-                'http://code.jquery.com/jquery-2.0.2.min.js',
+                '//code.jquery.com/jquery-2.0.2.min.js',
                 'https://www.google.com/jsapi',
             ),
         ));
@@ -21,7 +21,7 @@ class Charts
     {
         return $app['twig']->render('graphs/estimates.twig', array(
             'scripts' => array(
-                'http://code.jquery.com/jquery-2.0.2.min.js',
+                '//code.jquery.com/jquery-2.0.2.min.js',
                 'https://www.google.com/jsapi',
             ),
         ));
@@ -31,7 +31,7 @@ class Charts
     {
         return $app['twig']->render('graphs/distribution.twig', array(
             'scripts' => array(
-                'http://code.jquery.com/jquery-2.0.2.min.js',
+                '//code.jquery.com/jquery-2.0.2.min.js',
                 'https://www.google.com/jsapi',
             ),
         ));
