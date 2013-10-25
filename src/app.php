@@ -2,6 +2,8 @@
 require_once('bootstrap.php');
 
 use Silex\Application;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 
 $app->get('/', 'DrupalReleaseDate\Controllers\Pages::index');
@@ -18,6 +20,10 @@ $data = $app['controllers_factory'];
 $data->get('/samples.json', 'DrupalReleaseDate\Controllers\Data::samples');
 $data->get('/estimates.json', 'DrupalReleaseDate\Controllers\Data::estimates');
 $data->get('/distribution.json', 'DrupalReleaseDate\Controllers\Data::distribution');
+
+$data->after(function(Request $request, Response $response) {
+    $response->headers->set('Access-Control-Allow-Origin', '*');
+});
 $app->mount('/data', $data);
 
 
