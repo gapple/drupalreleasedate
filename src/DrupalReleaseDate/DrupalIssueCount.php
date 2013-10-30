@@ -3,48 +3,245 @@ namespace DrupalReleaseDate;
 
 class DrupalIssueCount
 {
-    protected $defaultParameters = array();
     protected $client;
 
-    function __construct($defaultParameters = array()) {
-        $this->defaultParameters = $defaultParameters;
+    protected $drupalOrgVersion = null;
 
-        $this->client = new \Guzzle\Http\Client('https://drupal.org/project/issues/search/drupal');
+    /**
+     * Set of criteria to fetch issues for on D6 version of Drupal.org
+     *
+     * @var array
+     */
+    protected static $dOrgD6FetchCategories = array(
+        'critical_bugs' => array(
+            'priorities' => array(1),
+            'categories' => array('bug'),
+        ),
+        'critical_tasks' => array(
+            'priorities' => array(1),
+            'categories' => array('task'),
+        ),
+        'major_bugs' => array(
+            'priorities' => array(4),
+            'categories' => array('bug'),
+        ),
+        'major_tasks' => array(
+            'priorities' => array(4),
+            'categories' => array('task'),
+        ),
+        'normal_bugs' => array(
+            'priorities' => array(2),
+            'categories' => array('bug'),
+        ),
+        'normal_tasks' => array(
+            'priorities' => array(2),
+            'categories' => array('task'),
+        ),
+    );
+
+    /**
+     * Set of criteria to fetch issues for on D7 version of Drupal.org
+     *
+     * @var array
+     */
+    protected static $dOrgD7FetchCategories = array(
+        'critical_bugs' => array(
+            'priorities' => array(400),
+            'categories' => array(1),
+        ),
+        'critical_tasks' => array(
+            'priorities' => array(400),
+            'categories' => array(2),
+        ),
+        'major_bugs' => array(
+            'priorities' => array(300),
+            'categories' => array(1),
+        ),
+        'major_tasks' => array(
+            'priorities' => array(300),
+            'categories' => array(2),
+        ),
+        'normal_bugs' => array(
+            'priorities' => array(200),
+            'categories' => array(1),
+        ),
+        'normal_tasks' => array(
+            'priorities' => array(200),
+            'categories' => array(2),
+        ),
+    );
+
+    /**
+     * Set of status IDs to include in issue counts.
+     *
+     * The values are the same, but the key is different between D6 (status) and
+     * D7 (sid)
+     *
+     * @var array
+     */
+    protected static $fetchStatusIds = array(
+        1, // Active
+        13, // Needs work
+        8, // Needs review
+        14, // Reviewed & tested by the community
+        15, // Patch (to be ported)
+        4, // Postponed
+    //    16, // Postponed (maintainer needs more info)
+    );
+
+    public function __construct() {
+        $this->client = new \Guzzle\Http\Client('https://drupal.org/');
 
         $this->client->setUserAgent('DrupalReleaseDate.com', true);
     }
 
     /**
-     * Get the issue count for the specified parameters.
-     *
-     * The provided parameters are merged with the default parameters, if any
-     * were specified in the contructor.
-     *
-     * @param array $parameters
-     * @return number
+     * Determine the version of Drupal that Drupal.org is running.
      */
-    function getCount($parameters) {
+    public function determineDrupalOrgVersion() {
 
-        $parameters += $this->defaultParameters;
+        if (empty($this->drupalOrgVersion)) {
+            // Default to 6.x
+            $this->drupalOrgVersion = '6';
 
-        $document = $this->getXmlDocument($parameters);
+            // We need a simple page that parses cleanly in both versions.
+            $request = $this->client->get('/about');
+
+            $document = $this->getXmlDocument($request->send());
+
+            $generator = $document->xpath("//_xmlns:meta[@name='Generator']");
+
+            if (!empty($generator[0]['content']) && stripos($generator[0]['content'], 'Drupal 7') !== false) {
+                $this->drupalOrgVersion = '7';
+            }
+        }
+
+        return $this->drupalOrgVersion;
+    }
+
+    /**
+     * Get the count of issues against Drupal 8.
+     *
+     * @return array
+     */
+    public function getD8Counts() {
+
+        $drupalOrgVersion = $this->determineDrupalOrgVersion();
+
+        if ($drupalOrgVersion == '6') {
+            return $this->getCounts(array(
+                    'version' => array('8.x'),
+                    'status' => static::$fetchStatusIds,
+                ),
+                static::$dOrgD6FetchCategories,
+              'view-project-issue-search-project'
+            );
+        }
+        else if ($drupalOrgVersion == '7') {
+            return $this->getCounts(array(
+                    'version' => array('7234'), // Term Id for 8.x issues.
+                    'sid' => static::$fetchStatusIds,
+                ),
+                static::$dOrgD7FetchCategories,
+              'view-project-issue-search-project-searchapi'
+            );
+        }
+    }
+
+    /**
+     * Get the count of issues against Drupal 9.
+     *
+     * @return array
+     */
+    public function getD9Counts() {
+
+      $drupalOrgVersion = $this->determineDrupalOrgVersion();
+
+      if ($drupalOrgVersion == '6') {
+          return $this->getCounts(array(
+                  'version' => array('1859548'), // 9.x doesn't have a catch-all version, so the term id for 9.x-dev is used.
+                  'status' => static::$fetchStatusIds,
+              ),
+              static::$dOrgD6FetchCategories,
+              'view-project-issue-search-project'
+          );
+      }
+      else if ($drupalOrgVersion == '7') {
+        return $this->getCounts(array(
+                  'version' => array('39794'), // Term Id for 9.x issues.
+                  'sid' => static::$fetchStatusIds,
+              ),
+              static::$dOrgD7FetchCategories,
+              'view-project-issue-search-project-searchapi'
+          );
+      }
+    }
+
+    /**
+     * Get the issues counts from Drupal.org for the specified parameters.
+     *
+     * @param array $commonParameters
+     *   An array of query parameters to use in all requests.
+     * @param array $fetchSet
+     *   An array to specify separate requests to make and their unique
+     *   parameters, in the format
+     *     'setKey' => array(
+     *       'parameterKey' => 'parameterValue',
+     *     )
+     * @param $viewClass
+     *   The class
+     */
+    public function getCounts($commonParameters, $fetchSet, $viewClass) {
+
+        $request = $this->client->get('/project/issues/search/drupal');
+
+        $query = $request->getQuery();
+        $query->merge($commonParameters);
+
+        $results = array();
+        foreach ($fetchSet as $fetchKey => $fetchParameters) {
+            // Override each of the unique values for this fetch set.
+            foreach ($fetchParameters as $parameterKey => $parameterValue) {
+                $query->set($parameterKey, $parameterValue);
+            }
+            $results[$fetchKey] = $this->getCount($request, $viewClass);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get the issue count from the provided request.
+     *
+     *
+     * @param array $request
+     *   Guzzle request for the first page of results.
+     * @param string $viewClass
+     *   CSS class for the views table contianing issues.
+     * @return number
+     *   The total number of issues for the search paramaters of the request.
+     */
+    public function getCount(\Guzzle\Http\Message\RequestInterface $request, $viewClass) {
+
+        // Make sure page isn't set from a previous call on the same request object.
+        $request->getQuery()->remove('page');
+
+        $document = $this->getXmlDocument($request->send());
 
         // Check if pager exists on first page; get page count from link to last page.
         $fullPages = 0;
-        $pagerLast = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' view-project-issue-search-project ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-last ')]//_xmlns:a");
+        $pagerLast = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-last ')]//_xmlns:a");
 
         if ($pagerLast) {
             $pagerLastUrl = (string) $pagerLast[0]['href'];
             preg_match('/page=(\\d+)/', $pagerLastUrl, $urlMatches);
 
             $fullPages = (int) $urlMatches[1];
-            $parameters += array(
-                'page' => $fullPages,
-            );
-            $document = $this->getXmlDocument($parameters);
+            $request->getQuery()->set('page', $fullPages);
+            $document = $this->getXmlDocument($request->send());
         }
 
-        $issueRows = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' view-project-issue-search-project ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr");
+        $issueRows = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr");
 
         $issues = count($issueRows) + 50 * $fullPages;
 
@@ -58,18 +255,15 @@ class DrupalIssueCount
      * @param array $parameters
      * @return \SimpleXMLElement
      */
-    protected function getXmlDocument($parameters) {
-
-        $request = $this->client->get('', array(), array(
-            'query' => $parameters,
-        ));
-        $response = $request->send();
+    public function getXmlDocument(\Guzzle\Http\Message\Response $response) {
 
         try {
             libxml_use_internal_errors(true);
             $document = $response->xml();
         }
         catch (\RuntimeException $e) {
+            libxml_clear_errors();
+
             // Drupal.org may return invalid XML due to unescaped ampersands
             $page = (string) $response->getBody();
 
