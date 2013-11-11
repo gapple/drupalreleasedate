@@ -74,9 +74,6 @@ class DrupalIssueCount
     /**
      * Set of status IDs to include in issue counts.
      *
-     * The values are the same, but the key is different between D6 (status) and
-     * D7 (sid)
-     *
      * @var array
      */
     protected static $fetchStatusIds = array(
@@ -139,8 +136,8 @@ class DrupalIssueCount
         }
         else if ($drupalOrgVersion == '7') {
             return $this->getCounts(array(
-                    'version' => array('7234'), // Term Id for 8.x issues.
-                    'sid' => static::$fetchStatusIds,
+                    'version' => array('8.x'),
+                    'status' => static::$fetchStatusIds,
                 ),
                 static::$dOrgD7FetchCategories,
               'view-project-issue-search-project-searchapi'
@@ -168,8 +165,8 @@ class DrupalIssueCount
       }
       else if ($drupalOrgVersion == '7') {
         return $this->getCounts(array(
-                  'version' => array('39794'), // Term Id for 9.x issues.
-                  'sid' => static::$fetchStatusIds,
+                  'version' => array('9.x'),
+                  'status' => static::$fetchStatusIds,
               ),
               static::$dOrgD7FetchCategories,
               'view-project-issue-search-project-searchapi'
