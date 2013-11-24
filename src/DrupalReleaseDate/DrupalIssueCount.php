@@ -258,13 +258,19 @@ class DrupalIssueCount
             libxml_use_internal_errors(true);
             $document = $response->xml();
         }
-        catch (\RuntimeException $e) {
+        catch (\Guzzle\Common\Exception\RuntimeException $e) {
             libxml_clear_errors();
 
-            // Drupal.org may return invalid XML due to unescaped ampersands
+            // Drupal.org may return invalid XML due to unescaped ampersands and
+            // non-breaking spaces (which aren't valid in XHTML serialization of
+            // HTML5).
             $page = (string) $response->getBody();
 
-            $page = str_replace(' & ', ' &amp; ', $page);
+            $replace = array(
+                ' & '    => ' &amp; ',
+                '&nbsp;' => '&#xA0;',
+            );
+            $page = str_replace(array_keys($replace), array_values($replace), $page);
 
             $document = new \SimpleXMLElement($page);
         }
