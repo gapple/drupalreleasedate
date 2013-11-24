@@ -26,20 +26,36 @@
               chartData = new google.visualization.DataTable();
 
               chartData.addColumn('datetime', 'Time');
-              chartData.addColumn('number', 'Critical Issues');
-              chartData.addColumn('number', 'Major Issues');
+              chartData.addColumn('number', 'Critical');
+              chartData.addColumn('number', 'Major');
+              chartData.addColumn('number', 'Normal');
 
               for (var i in data) {
+                var critical = null,
+                    major = null,
+                    normal = null;
+
+                if (data[i].critical_bugs != null && data[i].critical_tasks != null) {
+                  critical = data[i].critical_bugs + data[i].critical_tasks;
+                }
+                if (data[i].major_bugs != null && data[i].major_tasks != null) {
+                  major = data[i].major_bugs + data[i].major_tasks;
+                }
+                if (data[i].normal_bugs != null && data[i].normal_tasks != null) {
+                  normal = data[i].normal_bugs + data[i].normal_tasks;
+                }
+
                 chartData.addRow([
                       new Date(data[i].when.replace(' ', 'T')),
-                      data[i].critical_bugs + data[i].critical_tasks,
-                      data[i].major_bugs + data[i].major_tasks
+                      critical,
+                      major,
+                      normal,
                   ]);
               }
 
               drawChart();
           });
-      }
+      };
 
       function drawChart() {
           if (chart) {
@@ -56,13 +72,40 @@
               chartData,
               {
                 title: 'Issue Count',
-                colors: ['red', 'blue'],
+                colors: ['red', 'blue', 'green'],
                 hAxis: {},
-                vAxis: {minValue: 0},
+                vAxes: [
+                    {
+                        minValue: 0,
+                        title: 'Critical & Major'
+                    },
+                    {
+                        minValue: 0,
+                        title: 'Normal'
+                    },
+                ],
+                series:{
+                    2:{
+                        targetAxisIndex:1
+                    },
+                },
+                trendlines: {
+                    0: {
+                        visibleInLegend: false,
+                        opacity: 0.2,
+                    },
+                    1: {
+                        visibleInLegend: false,
+                        opacity: 0.2,
+                    },
+                    2: {
+                        visibleInLegend: false,
+                        opacity: 0.2,
+                    },
+                },
             }
           );
-      }
-
+      };
     });
 </script>
 {% endblock %}

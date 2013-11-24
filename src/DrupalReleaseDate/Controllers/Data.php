@@ -15,7 +15,9 @@ class Data
                 " . $app['db']->quoteIdentifier('critical_bugs') . ",
                 " . $app['db']->quoteIdentifier('critical_tasks') . ",
                 " . $app['db']->quoteIdentifier('major_bugs') . ",
-                " . $app['db']->quoteIdentifier('major_tasks') . "
+                " . $app['db']->quoteIdentifier('major_tasks') . ",
+                " . $app['db']->quoteIdentifier('normal_bugs') . ",
+                " . $app['db']->quoteIdentifier('normal_tasks') . "
                 FROM " . $app['db']->quoteIdentifier('samples') . "
                 WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
                 ORDER BY " . $app['db']->quoteIdentifier('when') . " ASC
@@ -23,14 +25,22 @@ class Data
         $results = $app['db']->query($sql);
 
         $data = array();
-        while ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
-            $data[] = array(
-                'when' => $row['when'],
-                'critical_bugs' => (int) $row['critical_bugs'],
-                'critical_tasks' => (int) $row['critical_tasks'],
-                'major_bugs' => (int) $row['major_bugs'],
-                'major_tasks' => (int) $row['major_tasks'],
+        $dataKeys = array(
+            'critical_bugs',
+            'critical_tasks',
+            'major_bugs',
+            'major_tasks',
+            'normal_bugs',
+            'normal_tasks',
+        );
+        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC)) {
+            $dataRow = array(
+                'when' => $resultRow['when']
             );
+            foreach ($dataKeys as $key) {
+              $dataRow[$key] = isset($resultRow[$key])? ((int) $resultRow[$key]) : null;
+            }
+            $data[] = $dataRow;
         }
 
         return $app->json($data);
