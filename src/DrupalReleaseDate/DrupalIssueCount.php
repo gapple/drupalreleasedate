@@ -227,17 +227,20 @@ class DrupalIssueCount
 
         $document = $this->getXmlDocument($request->send());
 
-        // Check if pager exists on first page; get page count from link to last page.
+        // Check if pager exists on first page; get the next page until we're at
+        // the end to find the total number of pages.
         $fullPages = 0;
-        $pagerLast = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-last ')]//_xmlns:a");
+        $pagerNext = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a");
 
-        if ($pagerLast) {
-            $pagerLastUrl = (string) $pagerLast[0]['href'];
-            preg_match('/page=(\\d+)/', $pagerLastUrl, $urlMatches);
+        while ($pagerNext) {
+            $pagerNextUrl = (string) $pagerNext[0]['href'];
+            preg_match('/page=(\\d+)/', $pagerNextUrl, $urlMatches);
 
-            $fullPages = (int) $urlMatches[1];
+            $fullPages = (int) $urlMatches[1]; // Pager starts at 0,
             $request->getQuery()->set('page', $fullPages);
             $document = $this->getXmlDocument($request->send());
+
+            $pagerNext = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a");
         }
 
         $issueRows = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr");
