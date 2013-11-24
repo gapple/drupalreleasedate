@@ -203,7 +203,12 @@ class DrupalIssueCount
             foreach ($fetchParameters as $parameterKey => $parameterValue) {
                 $query->set($parameterKey, $parameterValue);
             }
-            $results[$fetchKey] = $this->getCount($request, $viewClass);
+            try {
+              $results[$fetchKey] = $this->getCount($request, $viewClass);
+            }
+            catch (DrupalOrgParseException $e) {
+              $results[$fetchKey] = null;
+            }
         }
 
         return $results;
@@ -277,7 +282,13 @@ class DrupalIssueCount
             );
             $page = str_replace(array_keys($replace), array_values($replace), $page);
 
-            $document = new \SimpleXMLElement($page);
+            try {
+                $document = new \SimpleXMLElement($page);
+            }
+            catch (\Exception $e) {
+                // Throw a better specified Exception.
+                throw new DrupalOrgParseException();
+            }
         }
 
         // Need to register name for default namespace to be able to query anything with xpath
