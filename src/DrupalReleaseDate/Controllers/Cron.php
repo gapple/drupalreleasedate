@@ -109,7 +109,8 @@ class Cron
             $app['db']->quoteIdentifier('notes') => '',
         );
 
-        $counter = new \DrupalReleaseDate\DrupalIssueCount();
+        $userAgent = !empty($config['guzzle']['userAgent'])? $config['guzzle']['userAgent'] : null;
+        $counter = new \DrupalReleaseDate\DrupalIssueCount($userAgent);
 
 
         $d8results = $counter->getD8Counts();

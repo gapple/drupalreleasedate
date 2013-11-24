@@ -14,6 +14,10 @@ $config['db'] = array(
 
 );
 
+$config['guzzle'] = array(
+    'userAgent' => 'DrupalReleaseDate.com',
+);
+
 // For available options
 // @see http://silex.sensiolabs.org/doc/providers/twig.html
 $config['twig'] = array(

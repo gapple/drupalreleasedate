@@ -86,10 +86,12 @@ class DrupalIssueCount
     //    16, // Postponed (maintainer needs more info)
     );
 
-    public function __construct() {
+    public function __construct($userAgent = null) {
         $this->client = new \Guzzle\Http\Client('https://drupal.org/');
 
-        $this->client->setUserAgent('DrupalReleaseDate.com', true);
+        if (!empty($userAgent)) {
+            $this->client->setUserAgent($userAgent, true);
+        }
     }
 
     /**
