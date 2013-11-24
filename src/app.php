@@ -35,6 +35,13 @@ $cron->get('/update-estimate/{key}', 'DrupalReleaseDate\Controllers\Cron::update
 // Handle request to get latest issue counts, protected by key.
 $cron->get('/fetch-counts', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
 $cron->get('/fetch-counts/{key}', 'DrupalReleaseDate\Controllers\Cron::fetchCounts');
+// Check key in request before running cron.
+$cron->before(function (Request $request) use ($app) {
+    $key = $request->attributes->get('key');
+    if (!isset($app['config']['cron.key']) || empty($key) || $key != $app['config']['cron.key']) {
+        return new Response(null, 403);
+    }
+});
 
 $app->mount('/cron', $cron);
 

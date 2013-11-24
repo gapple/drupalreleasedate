@@ -24,11 +24,6 @@ class Cron
     {
         $config = $app['config'];
 
-        // Check key in request
-        if (!isset($config['cron.key']) || $key != $config['cron.key']) {
-            return '';
-        }
-
         // Run estimate simulation
         $samples = new SampleSet();
         $sql = "
@@ -108,11 +103,6 @@ class Cron
     public function fetchCounts(Application $app, Request $request, $key)
     {
         $config = $app['config'];
-
-        // Check key in request
-        if (!isset($config['cron.key']) || $key != $config['cron.key']) {
-            return '';
-        }
 
         $queryDataDefaults = array(
             $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
