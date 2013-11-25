@@ -250,7 +250,16 @@ class DrupalIssueCount
 
         $issueRows = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr");
 
-        $issues = count($issueRows) + 50 * $fullPages;
+        // Drupal.org is returning rows where all cells are empty, which bumps
+        // up the count incorrectly.
+        $issueRowCount = 0;
+        foreach ($issueRows as $issueRow) {
+            if (!empty($issueRow->td[0]->a)) {
+                $issueRowCount++;
+            }
+        }
+
+        $issues = $issueRowCount + 50 * $fullPages;
 
         return $issues;
     }
