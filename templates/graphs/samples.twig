@@ -74,20 +74,9 @@
                 title: 'Issue Count',
                 colors: ['red', 'blue', 'green'],
                 hAxis: {},
-                vAxes: [
-                    {
-                        minValue: 0,
-                        title: 'Critical & Major'
-                    },
-                    {
-                        minValue: 0,
-                        title: 'Normal'
-                    },
-                ],
-                series:{
-                    2:{
-                        targetAxisIndex:1
-                    },
+                vAxis: {
+                    minValue: 0,
+                    logScale: true,
                 },
                 trendlines: {
                     0: {
