@@ -50,3 +50,12 @@ __/data/estimates.json__
 
 To get a response as JSONP, specify a `callback` parameter in the request.
 For example: `/data/samples.json?callback=samples_jsonp_callback`
+
+## Installation and Setup ##
+
+ 1. Install dependencies with [Composer](http://getcomposer.org/) by running
+    `composer install` in the root directory of the project.
+ 2. Initialize a database with the schema file in `/src/schema.sql`
+ 3. Copy `/config/default.config.php` to `/config/config.php`, and adjust as
+    needed.
+ 4. Setup Apache to serve `/web` as the document root
