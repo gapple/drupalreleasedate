@@ -6,21 +6,20 @@
 <div class="row"><div class="span8 offset2">
     <h1>About</h1>
     <p>
-        Currently samples of the remaining number of critical bugs and tasks
-        against Drupal 8 are manually polled from Drupal.org.
+        The remaining number of critical bugs and tasks against Drupal 8 are
+        automatically polled from Drupal.org periodically; currently every 6
+        hours.
     </p>
     <p>
-        A Monte Carlo simulation is then run on the polled data to estimate the
-        time required to complete the currently remaining number of issues.
-        Currently a flat distribution is used to select samples, but once more
-        samples are available recent results will be weighted more heavily.
+        A Monte Carlo simulation is then run each day to estimate the time
+        required to complete the currently remaining number of issues.
+        At this time a flat distribution is used to select samples, but there is
+        <a href="https://github.com/gapple/drupalreleasedate/issues/2">an open issue</a>
+        to weight recent values more heavily.
     </p>
     <p>
-        An additional 6 weeks is then added to the estimate to account for the
-        Release Candidate period.
-    </p>
-    <p>
-        <a href="https://github.com/gapple/drupalreleasedate">Code is available on GitHub</a>, and feedback and pull requests are appreciated.
+        For the date displayed on the front page, an additional 6 weeks is then
+        added to the estimate to account for the Release Candidate period.
     </p>
 </div></div>
 {% endblock %}
