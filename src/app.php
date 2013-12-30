@@ -7,13 +7,28 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 
-$app->get('/', 'DrupalReleaseDate\Controllers\Pages::index');
-$app->get('about', 'DrupalReleaseDate\Controllers\Pages::about');
+$app->get('/', 'DrupalReleaseDate\Controllers\Pages::index')
+->after(function(Request $request, Response $response) {
+  // Allow caching for one week.
+  $response->setMaxAge(604800);
+  $response->setSharedMaxAge(604800);
+});;
+$app->get('about', 'DrupalReleaseDate\Controllers\Pages::about')
+->after(function(Request $request, Response $response) {
+  // Allow caching for one week.
+  $response->setMaxAge(604800);
+  $response->setSharedMaxAge(604800);
+});;
 
 $chart = $app['controllers_factory'];
 $chart->get('/samples', 'DrupalReleaseDate\Controllers\Charts::samples');
 $chart->get('/estimates', 'DrupalReleaseDate\Controllers\Charts::estimates');
 $chart->get('/distribution', 'DrupalReleaseDate\Controllers\Charts::distribution');
+$chart->after(function(Request $request, Response $response) {
+  // Allow caching for one week.
+  $response->setMaxAge(604800);
+  $response->setSharedMaxAge(604800);
+});
 $app->mount('/chart', $chart);
 
 
@@ -30,6 +45,9 @@ $data->after(function(Request $request, Response $response) {
 });
 $data->after(function(Request $request, Response $response) {
     $response->headers->set('Access-Control-Allow-Origin', '*');
+    // Allow caching for one hour.
+    $response->setMaxAge(3600);
+    $response->setSharedMaxAge(3600);
 });
 $app->mount('/data', $data);
 
