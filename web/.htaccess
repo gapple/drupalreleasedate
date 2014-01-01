@@ -4,12 +4,3 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
-
-<IfModule mod_expires.c>
-  ExpiresActive On
-
-  # Two weeks after access.
-  ExpiresByType text/css A1209600
-  ExpiresByType text/javascript A1209600
-
-</IfModule>
