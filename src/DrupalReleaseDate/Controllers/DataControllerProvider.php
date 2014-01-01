@@ -22,9 +22,9 @@ class DataControllerProvider implements ControllerProviderInterface
             {
                 $response->setCallBack($request->get('callback'));
             }
-        });
-        $controllers->after(function(Request $request, Response $response) {
+
             $response->headers->set('Access-Control-Allow-Origin', '*');
+
             // Allow caching for one hour.
             $response->setMaxAge(3600);
             $response->setSharedMaxAge(3600);
