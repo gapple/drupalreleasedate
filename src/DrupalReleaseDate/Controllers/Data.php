@@ -3,12 +3,38 @@ namespace DrupalReleaseDate\Controllers;
 
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class Data
 {
 
     public function samples(Application $app, Request $request)
     {
+        // Check against Last-Modified header.
+        $lastSql = "
+            SELECT " . $app['db']->quoteIdentifier('when') . "
+                FROM " . $app['db']->quoteIdentifier('samples') . "
+                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
+                ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                LIMIT 1
+        ";
+        $lastResults = $app['db']->query($lastSql);
+        $lastDate = null;
+        if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC))
+        {
+            $lastDate = new \DateTime($lastResultRow['when']);
+
+            $response = new Response();
+            $response->setLastModified($lastDate);
+            $response->setPublic();
+
+            if ($response->isNotModified($request))
+            {
+                // Return 304 Not Modified response.
+                return $response;
+            }
+        }
+
         $sql = "
             SELECT
                 " . $app['db']->quoteIdentifier('when') . ",
@@ -33,21 +59,55 @@ class Data
             'normal_bugs',
             'normal_tasks',
         );
-        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC)) {
+        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC))
+        {
             $dataRow = array(
                 'when' => $resultRow['when']
             );
-            foreach ($dataKeys as $key) {
-              $dataRow[$key] = isset($resultRow[$key])? ((int) $resultRow[$key]) : null;
+            foreach ($dataKeys as $key)
+            {
+                $dataRow[$key] = isset($resultRow[$key])? ((int) $resultRow[$key]) : null;
             }
             $data[] = $dataRow;
         }
 
-        return $app->json($data);
+        $response = $app->json($data);
+
+        if ($lastDate)
+        {
+            $response->setLastModified($lastDate);
+        }
+
+        return $response;
     }
 
     public function estimates(Application $app, Request $request)
     {
+        // Check against Last-Modified header.
+        $lastSql = "
+            SELECT " . $app['db']->quoteIdentifier('when') . "
+                FROM " . $app['db']->quoteIdentifier('estimates') . "
+                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
+                ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                LIMIT 1
+        ";
+        $lastResults = $app['db']->query($lastSql);
+        $lastDate = null;
+        if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC))
+        {
+            $lastDate = new \DateTime($lastResultRow['when']);
+
+            $response = new Response();
+            $response->setLastModified($lastDate);
+            $response->setPublic();
+
+            if ($response->isNotModified($request))
+            {
+                // Return 304 Not Modified response.
+                return $response;
+            }
+        }
+
         $sql = "
             SELECT
                 " . $app['db']->quoteIdentifier('when') . ",
@@ -59,14 +119,22 @@ class Data
         $results = $app['db']->query($sql);
 
         $data = array();
-        while ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
+        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC))
+        {
             $data[] = array(
-                'when' => $row['when'],
-                'estimate' => $row['estimate'],
+                'when' => $resultRow['when'],
+                'estimate' => $resultRow['estimate'],
             );
         }
 
-        return $app->json($data);
+        $response = $app->json($data);
+
+        if ($lastDate)
+        {
+            $response->setLastModified($lastDate);
+        }
+
+        return $response;
     }
 
     public function distribution(Application $app, Request $request) {
