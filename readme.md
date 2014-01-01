@@ -51,6 +51,10 @@ __/data/estimates.json__
 To get a response as JSONP, specify a `callback` parameter in the request.
 For example: `/data/samples.json?callback=samples_jsonp_callback`
 
+A [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) header is
+returned for all data requests, so JSONP is only required for support of older
+browsers.
+
 ## Installation and Setup ##
 
  1. Install dependencies with [Composer](http://getcomposer.org/) by running
