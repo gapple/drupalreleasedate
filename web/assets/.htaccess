@@ -1,3 +1,4 @@
-
-# Allow caching for 2 weeks.
-Header set Cache-Control "public, max-age=1209600, s-maxage=1209600"
+<IfModule mod_headers.c>
+    # Allow caching for 2 weeks.
+    Header set Cache-Control "public, max-age=1209600, s-maxage=1209600"
+</IfModule>
