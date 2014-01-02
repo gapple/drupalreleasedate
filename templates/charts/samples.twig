@@ -5,7 +5,8 @@
 {% block content %}
 <div id="chart"></div>
 <div class="chart-caption">
-    <a href="/data/samples.json">JSON Data</a>
+    <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
+    <a href="/data/samples.json">JSON</a>
 </div>
 
 <script type="text/javascript">
@@ -18,6 +19,19 @@
 
       google.setOnLoadCallback(loadChart);
       $(window).resize(drawChart);
+
+      $('#chart-refresh').click(function(event) {
+          event.preventDefault();
+
+          var $link = $(this);
+
+          if ($link.hasClass('disabled')) {
+            return;
+          }
+
+          $link.addClass('disabled');
+          $('#chart').fadeTo('fast', 0.2, loadChart);
+      });
 
       function loadChart() {
 
@@ -54,6 +68,9 @@
               }
 
               drawChart();
+
+              $('#chart-refresh').removeClass('disabled');
+              $('#chart').fadeTo('fast', 1);
           });
       };
 
