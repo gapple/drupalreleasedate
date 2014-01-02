@@ -6,25 +6,42 @@
  * Copy to config.php and make any changes there.
  */
 
+/**
+ * Enable debugging features.
+ */
 $app['debug'] = false;
 
-// For connection options
-// @see http://silex.sensiolabs.org/doc/providers/doctrine.html
+/**
+ * Configure options for the Doctrine database connection.
+ * @see http://silex.sensiolabs.org/doc/providers/doctrine.html
+ */
 $config['db'] = array(
-
+    'dbname' => '',
+    'user' => '',
+    'password' => '',
 );
 
-$config['guzzle'] = array(
-    'userAgent' => 'DrupalReleaseDate.com',
-);
-
-// For available options
-// @see http://silex.sensiolabs.org/doc/providers/twig.html
+/**
+ * Configure options for the Twig template engine.
+ * @see http://silex.sensiolabs.org/doc/providers/twig.html
+ */
 $config['twig'] = array(
     'cache' => APPROOT . 'cache/twig',
 );
 
-$config['google'] = array();
+/**
+ * Configure options to be used when making requests with Guzzle.
+ */
+$config['guzzle'] = array(
+    'userAgent' => '',
+);
+
+/**
+ * Configure options for Google services.
+ */
+$config['google'] = array(
+    'analytics' => null, // Analytics API key.
+);
 
 /**
  * A private key to protect cron tasks from being run by a third-party.
