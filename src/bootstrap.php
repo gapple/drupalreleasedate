@@ -13,8 +13,17 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => $config['db'],
 ));
 
+if (isset($config['http_cache']) && $config['http_cache'] !== false)
+{
+    $app->register(new Silex\Provider\HttpCacheServiceProvider(), array(
+        'http_cache.cache_dir' => APPROOT . 'cache/http',
+        'http_cache.esi'       => null,
+        'http_cache.options'   => (isset($config['http_cache']) && is_array($config['http_cache']))? $config['http_cache'] : array(),
+    ));
+}
+
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path' => APPROOT . '/templates',
+    'twig.path'    => APPROOT . '/templates',
     'twig.options' => isset($config['twig'])? $config['twig'] : array(),
 ));
 

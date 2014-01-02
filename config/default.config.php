@@ -22,6 +22,18 @@ $config['db'] = array(
 );
 
 /**
+ * Configure options for the Symfony2 Reverse Proxy.
+ * @see http://silex.sensiolabs.org/doc/providers/http_cache.html
+ *
+ * Set to a boolean value to simply enable or disable the cache, or provide an
+ * array of options.
+ * If this option is ommitted or null, the cache will not be enabled.
+ */
+$config['http_cache'] = array(
+    'debug' => $app['debug'],
+);
+
+/**
  * Configure options for the Twig template engine.
  * @see http://silex.sensiolabs.org/doc/providers/twig.html
  */
