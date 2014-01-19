@@ -3,13 +3,34 @@
 {% block content %}
   <div class="hero-unit">
     <h1>Drupal 8 Release</h1>
-    Estimated to occur on
-    <div class="estimate">
+    <section class="estimate">
+      Estimated to occur on
       <h2 class="value">{{ estimate.value ? estimate.value : 'N/A' }}</h2>
       <div class="note">{{ estimate.note }}</div>
-    </div>
-    <div>
-      <a href="https://drupal.org/core/release-cycle">Drupal core release cycle</a>
-    </div>
+    </section>
+
+    <section class='changes'>
+      <h4>Critical Issue Changes</h4>
+      <div>
+        <span class='period'>Day:</span>
+        <span class="delta{{ changes.day > 0 ? ' up' : '' }}{{ changes.day < 0 ? ' down' : '' }}">{{ changes.day > 0 ? '+' : '' }}{{ changes.day }}</span>
+      </div>
+      <div>
+        <span class='period'>Week:</span>
+        <span class="delta{{ changes.week > 0 ? ' up' : '' }}{{ changes.week < 0 ? ' down' : '' }}">{{ changes.week > 0 ? '+' : '' }}{{ changes.week }}</span>
+      </div>
+      <div>
+        <span class='period'>Month:</span>
+        <span class="delta{{ changes.month > 0 ? ' up' : '' }}{{ changes.month < 0 ? ' down' : '' }}">{{ changes.month > 0 ? '+' : '' }}{{ changes.month }}</span>
+      </div>
+      <div>
+        <span class='period'>3 Month:</span>
+        <span class="delta{{ changes.quarter > 0 ? ' up' : '' }}{{ changes.quarter < 0 ? ' down' : '' }}">{{ changes.quarter > 0 ? '+' : '' }}{{ changes.quarter }}</span>
+      </div>
+      <div>
+        <span class='period'>6 Month:</span>
+        <span class="delta{{ changes.half > 0 ? ' up' : '' }}{{ changes.half < 0 ? ' down' : '' }}">{{ changes.half > 0 ? '+' : '' }}{{ changes.half }}</span>
+      </div>
+    </section>
   </div>
 {% endblock %}

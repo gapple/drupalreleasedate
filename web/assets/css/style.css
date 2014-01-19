@@ -4,10 +4,20 @@ a.disabled {
 
 .container {
 }
+
+section {
+  margin: 15px 0;
+  overflow: hidden;
+}
+
 .hero-unit {
   padding: 40px 20px;
   text-align: center;
 }
+.hero-unit section:last-child {
+  margin-bottom: 0;
+}
+
 .estimate .value {
   font-size: 200%;
 }
@@ -15,6 +25,35 @@ a.disabled {
   font-size: 75%;
   color: #777;
 }
+
+.changes {
+  font-size: 80%;
+  line-height: 1.25;
+}
+.changes h4 {
+  margin-bottom: 3px;
+}
+.changes .period {
+  display: block;
+  float: left;
+  clear: left;
+  width: 50%;
+  margin-left: -1.5ex;
+  text-align: right;
+}
+.changes .delta {
+  display: block;
+  float: left;
+  width: 5ex;
+  text-align: right;
+}
+.changes .up {
+  color: #c00;
+}
+.changes .down {
+  color: #0c0;
+}
+
 footer {
   border-top: 1px solid #ddd;
   margin-top: 1em;
@@ -32,6 +71,7 @@ footer .nav li {
 footer .credits {
   color: #555;
   font-size: 85%;
+  margin-bottom: 5px;
 }
 
 #chart {
