@@ -13,6 +13,7 @@ class DataControllerProvider implements ControllerProviderInterface
         $controllers = $app['controllers_factory'];
 
         $controllers->get('/samples.json', 'DrupalReleaseDate\Controllers\Data::samples');
+        $controllers->get('/changes.json', 'DrupalReleaseDate\Controllers\Data::changes');
         $controllers->get('/estimates.json', 'DrupalReleaseDate\Controllers\Data::estimates');
         $controllers->get('/distribution.json', 'DrupalReleaseDate\Controllers\Data::distribution');
 

@@ -81,6 +81,144 @@ class Data
         return $response;
     }
 
+    /**
+     * Get changes in the number of critical issues over recent periods in time.
+     */
+    public function changes(Application $app, Request $request)
+    {
+
+        $critical = array(
+            'day' => null,
+            'week' => null,
+            'month' => null,
+            'quarter' => null,
+            'half' => null,
+        );
+
+        $nowSql = "
+          SELECT " . $app['db']->quoteIdentifier('when') . ",
+              " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
+              FROM " . $app['db']->quoteIdentifier('samples') . "
+              WHERE " . $app['db']->quoteIdentifier('version') . " = 8
+              ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+              LIMIT 1
+          ";
+        $nowResult = $app['db']->query($nowSql);
+        $nowDate = null;
+
+        if ($nowResultRow = $nowResult->fetch(\PDO::FETCH_ASSOC))
+        {
+            $nowDate = new \DateTime($nowResultRow['when']);
+
+            $response = new Response();
+            $response->setLastModified($nowDate);
+            $response->setPublic();
+
+            if ($response->isNotModified($request))
+            {
+              // Return 304 Not Modified response.
+                return $response;
+            }
+
+            $nowIssues = $nowResultRow['critical'];
+
+            $daySql = "
+                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
+                    FROM " . $app['db']->quoteIdentifier('samples') . "
+                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 1 DAY)
+                        AND " . $app['db']->quoteIdentifier('version') . " = 8
+                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                    LIMIT 1
+
+                ";
+            $dayIssues = $app['db']->fetchColumn($daySql, array(), 0);
+
+            if ($dayIssues)
+            {
+                $critical['day'] = $nowIssues - $dayIssues;
+            }
+
+
+            $weekSql = "
+                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
+                    FROM " . $app['db']->quoteIdentifier('samples') . "
+                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 1 WEEK)
+                        AND " . $app['db']->quoteIdentifier('version') . " = 8
+                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                    LIMIT 1
+
+                ";
+            $weekIssues = $app['db']->fetchColumn($weekSql, array(), 0);
+
+            if ($weekIssues)
+            {
+                $critical['week'] = $nowIssues - $weekIssues;
+            }
+
+
+            $monthSql = "
+                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
+                    FROM " . $app['db']->quoteIdentifier('samples') . "
+                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 1 MONTH)
+                        AND " . $app['db']->quoteIdentifier('version') . " = 8
+                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                    LIMIT 1
+                ";
+            $monthIssues = $app['db']->fetchColumn($monthSql, array(), 0);
+
+            if ($monthIssues)
+            {
+                $critical['month'] = $nowIssues - $monthIssues;
+            }
+
+
+            $quarterSql = "
+                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
+                    FROM " . $app['db']->quoteIdentifier('samples') . "
+                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 3 MONTH)
+                        AND " . $app['db']->quoteIdentifier('version') . " = 8
+                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                    LIMIT 1
+                ";
+            $quarterIssues = $app['db']->fetchColumn($quarterSql, array(), 0);
+
+            if ($quarterIssues)
+            {
+                $critical['quarter'] = $nowIssues - $quarterIssues;
+            }
+
+
+            $halfSql = "
+                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
+                    FROM " . $app['db']->quoteIdentifier('samples') . "
+                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 6 MONTH)
+                        AND " . $app['db']->quoteIdentifier('version') . " = 8
+                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
+                    LIMIT 1
+                ";
+            $halfIssues = $app['db']->fetchColumn($halfSql, array(), 0);
+
+            if ($halfIssues)
+            {
+                $critical['half'] = $nowIssues - $halfIssues;
+            }
+        }
+
+        $response = $app->json(array(
+            'modified' => $nowResultRow['when'],
+            'data' => array(
+                'critical' => $critical,
+            ),
+        ));
+
+        if ($nowDate)
+        {
+            $response->setLastModified($nowDate);
+        }
+
+        return $response;
+    }
+
     public function estimates(Application $app, Request $request)
     {
         // Check against Last-Modified header.

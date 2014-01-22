@@ -11,26 +11,55 @@
 
     <section class='changes'>
       <h4>Critical Issue Changes</h4>
-      <div>
-        <span class='period'>Day:</span>
-        <span class="delta{{ changes.day > 0 ? ' up' : '' }}{{ changes.day < 0 ? ' down' : '' }}">{{ changes.day > 0 ? '+' : '' }}{{ changes.day }}</span>
+      <div class='period' data-name='day'>
+        <span class='name'>Day:</span>
+        <span class="delta">?</span>
       </div>
-      <div>
-        <span class='period'>Week:</span>
-        <span class="delta{{ changes.week > 0 ? ' up' : '' }}{{ changes.week < 0 ? ' down' : '' }}">{{ changes.week > 0 ? '+' : '' }}{{ changes.week }}</span>
+      <div class='period' data-name='week'>
+        <span class='name'>Week:</span>
+        <span class="delta">?</span>
       </div>
-      <div>
-        <span class='period'>Month:</span>
-        <span class="delta{{ changes.month > 0 ? ' up' : '' }}{{ changes.month < 0 ? ' down' : '' }}">{{ changes.month > 0 ? '+' : '' }}{{ changes.month }}</span>
+      <div class='period' data-name='month'>
+        <span class='name'>Month:</span>
+        <span class="delta">?</span>
       </div>
-      <div>
-        <span class='period'>3 Month:</span>
-        <span class="delta{{ changes.quarter > 0 ? ' up' : '' }}{{ changes.quarter < 0 ? ' down' : '' }}">{{ changes.quarter > 0 ? '+' : '' }}{{ changes.quarter }}</span>
+      <div class='period' data-name='quarter'>
+        <span class='name'>3 Month:</span>
+        <span class="delta">?</span>
       </div>
-      <div>
-        <span class='period'>6 Month:</span>
-        <span class="delta{{ changes.half > 0 ? ' up' : '' }}{{ changes.half < 0 ? ' down' : '' }}">{{ changes.half > 0 ? '+' : '' }}{{ changes.half }}</span>
+      <div class='period' data-name='half'>
+        <span class='name'>6 Month:</span>
+        <span class="delta">?</span>
       </div>
     </section>
   </div>
+{% endblock %}
+
+{% block footerInlineScripts %}
+<script>
+    $(function() {
+        $.getJSON('/data/changes.json', function(response) {
+            $('.changes .period').each(function() {
+                var $period = $(this);
+                var $delta = $period.find('.delta');
+                var name = $period.data('name');
+                var delta = '?';
+
+                $delta.removeClass('up down');
+                if (typeof response.data.critical[name] !== 'undefined') {
+                    delta = response.data.critical[name];
+
+                    if (delta > 0) {
+                        delta = '+' + delta;
+                        $delta.addClass('up');
+                    }
+                    else if (delta < 0) {
+                        $delta.addClass('down');
+                    }
+                }
+                $delta.html(delta);
+            });
+        });
+    });
+</script>
 {% endblock %}

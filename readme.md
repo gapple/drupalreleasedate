@@ -34,6 +34,22 @@ __/data/samples.json__
 ]
 ```
 
+__/data/changes.json__
+
+```
+{
+    "modified":"2014-01-25 00:17:01",
+    "data":{
+        "critical":{
+            "day":2,
+            "week":2,
+            "month":18,
+            "quarter":17,
+            "half":-1
+        }
+    }
+}
+```
 
 __/data/estimates.json__
 
