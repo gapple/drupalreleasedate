@@ -71,7 +71,10 @@ class Data
             $data[] = $dataRow;
         }
 
-        $response = $app->json($data);
+        $response = $app->json(array(
+            'modified' => $lastResultRow['when'],
+            'data' => $data,
+        ));
 
         if ($lastDate)
         {
@@ -265,7 +268,10 @@ class Data
             );
         }
 
-        $response = $app->json($data);
+        $response = $app->json(array(
+            'modified' => $lastResultRow['when'],
+            'data' => $data,
+        ));
 
         if ($lastDate)
         {
@@ -306,7 +312,10 @@ class Data
                 );
             }
 
-            return $app->json($data);
+            $response = $app->json(array(
+                'modified' => $lastResultRow['when'],
+                'data' => $data,
+            ));
         }
 
         // TODO return failure response.

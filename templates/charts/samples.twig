@@ -35,7 +35,7 @@
 
       function loadChart() {
 
-          $.get('/data/samples.json', function(data, textStatus, jqXHR) {
+          $.get('/data/samples.json', function(response, textStatus, jqXHR) {
 
               chartData = new google.visualization.DataTable();
 
@@ -43,6 +43,8 @@
               chartData.addColumn('number', 'Critical');
               chartData.addColumn('number', 'Major');
               chartData.addColumn('number', 'Normal');
+
+              var data = response.data;
 
               for (var i in data) {
                 var critical = null,

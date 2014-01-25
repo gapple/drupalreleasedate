@@ -35,13 +35,15 @@
 
       function loadChart() {
 
-          $.get('/data/estimates.json', function(data, textStatus, jqXHR) {
+          $.get('/data/estimates.json', function(response, textStatus, jqXHR) {
 
               chartData = new google.visualization.DataTable();
 
               chartData.addColumn('datetime', 'Time');
               chartData.addColumn('number', 'Estimates');
               chartData.addColumn('number', 'Failed Estimates');
+
+              var data = response.data;
 
               for (var i in data) {
                 var when = new Date(data[i].when.replace(' ', 'T'));

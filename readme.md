@@ -21,17 +21,20 @@ maintained as best as possible.*
 __/data/samples.json__
 
 ```
-[
-    {
-        "when": "2013-05-29 12:35:00",
-        "critical_bugs": 26,
-        "critical_tasks": 46,
-        "major_bugs": 125,
-        "major_tasks": 157,
-        "normal_bugs": null,
-        "normal_tasks": null
-    }
-]
+{
+    "modified": "2014-01-25 00:17:01",
+    "data": [
+        {
+            "when": "2013-05-29 12:35:00",
+            "critical_bugs": 26,
+            "critical_tasks": 46,
+            "major_bugs": 125,
+            "major_tasks": 157,
+            "normal_bugs": null,
+            "normal_tasks": null
+        }
+    ]
+}
 ```
 
 __/data/changes.json__
@@ -54,12 +57,15 @@ __/data/changes.json__
 __/data/estimates.json__
 
 ```
-[
-    {
-        "when": "2013-05-31 08:46:00",
-        "estimate": "2013-08-24 04:35:22"
-    }
-]
+{
+    "modified": "2014-01-25 02:48:34",
+    "data": [
+        {
+            "when": "2013-05-31 08:46:00",
+            "estimate": "2013-08-24 04:35:22"
+        }
+    ]
+}
 ```
 
 ### JSONP ###
