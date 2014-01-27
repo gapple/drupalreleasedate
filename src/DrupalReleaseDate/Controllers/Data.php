@@ -11,14 +11,13 @@ class Data
     public function samples(Application $app, Request $request)
     {
         // Check against Last-Modified header.
-        $lastSql = "
-            SELECT " . $app['db']->quoteIdentifier('when') . "
-                FROM " . $app['db']->quoteIdentifier('samples') . "
-                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
-                ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                LIMIT 1
-        ";
-        $lastResults = $app['db']->query($lastSql);
+        $lastQuery = $app['db']->createQueryBuilder()
+            ->select('s.when')
+            ->from('samples', 's')
+            ->where('version = 8')
+            ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+            ->setMaxResults(1);
+        $lastResults = $lastQuery->execute();
         $lastDate = null;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC))
         {
@@ -35,20 +34,18 @@ class Data
             }
         }
 
-        $sql = "
-            SELECT
-                " . $app['db']->quoteIdentifier('when') . ",
-                " . $app['db']->quoteIdentifier('critical_bugs') . ",
-                " . $app['db']->quoteIdentifier('critical_tasks') . ",
-                " . $app['db']->quoteIdentifier('major_bugs') . ",
-                " . $app['db']->quoteIdentifier('major_tasks') . ",
-                " . $app['db']->quoteIdentifier('normal_bugs') . ",
-                " . $app['db']->quoteIdentifier('normal_tasks') . "
-                FROM " . $app['db']->quoteIdentifier('samples') . "
-                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
-                ORDER BY " . $app['db']->quoteIdentifier('when') . " ASC
-        ";
-        $results = $app['db']->query($sql);
+        $query = $app['db']->createQueryBuilder()
+            ->select(
+                's.when',
+                's.critical_bugs', 's.critical_tasks',
+                's.major_bugs', 's.major_tasks',
+                's.normal_bugs', 's.normal_tasks'
+            )
+            ->from('samples', 's')
+            ->where('version = 8')
+            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
+
+        $results = $query->execute();
 
         $data = array();
         $dataKeys = array(
@@ -98,15 +95,14 @@ class Data
             'half' => null,
         );
 
-        $nowSql = "
-          SELECT " . $app['db']->quoteIdentifier('when') . ",
-              " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
-              FROM " . $app['db']->quoteIdentifier('samples') . "
-              WHERE " . $app['db']->quoteIdentifier('version') . " = 8
-              ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-              LIMIT 1
-          ";
-        $nowResult = $app['db']->query($nowSql);
+        $nowQuery = $app['db']->createQueryBuilder()
+            ->select('s.when', 's.critical_bugs', 's.critical_tasks')
+            ->from('samples', 's')
+            ->where('version = 8')
+            ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+            ->setMaxResults(1);
+
+        $nowResult = $nowQuery->execute();
         $nowDate = null;
 
         if ($nowResultRow = $nowResult->fetch(\PDO::FETCH_ASSOC))
@@ -123,87 +119,81 @@ class Data
                 return $response;
             }
 
-            $nowIssues = $nowResultRow['critical'];
+            $nowIssues = $nowResultRow['critical_bugs'] + $nowResultRow['critical_tasks'];
 
-            $daySql = "
-                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
-                    FROM " . $app['db']->quoteIdentifier('samples') . "
-                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 1 DAY)
-                        AND " . $app['db']->quoteIdentifier('version') . " = 8
-                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                    LIMIT 1
+            $dayQuery = $app['db']->createQueryBuilder()
+                ->select('s.critical_bugs', 's.critical_tasks')
+                ->from('samples', 's')
+                ->where('version = 8')
+                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 1 DAY)')
+                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+                ->setMaxResults(1)
+                ->setParameter('now', $nowResultRow['when']);
+            $dayResult = $dayQuery->execute();
 
-                ";
-            $dayIssues = $app['db']->fetchColumn($daySql, array(), 0);
-
-            if ($dayIssues)
+            if ($dayResultRow = $dayResult->fetch(\PDO::FETCH_ASSOC))
             {
-                $critical['day'] = $nowIssues - $dayIssues;
+                $critical['day'] = $nowIssues - ($dayResultRow['critical_bugs'] + $dayResultRow['critical_tasks']);
             }
 
+            $weekQuery = $app['db']->createQueryBuilder()
+                ->select('s.critical_bugs', 's.critical_tasks')
+                ->from('samples', 's')
+                ->where('version = 8')
+                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 1 WEEK)')
+                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+                ->setMaxResults(1)
+                ->setParameter('now', $nowResultRow['when']);
+            $weekResult = $weekQuery->execute();
 
-            $weekSql = "
-                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
-                    FROM " . $app['db']->quoteIdentifier('samples') . "
-                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 1 WEEK)
-                        AND " . $app['db']->quoteIdentifier('version') . " = 8
-                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                    LIMIT 1
-
-                ";
-            $weekIssues = $app['db']->fetchColumn($weekSql, array(), 0);
-
-            if ($weekIssues)
+            if ($weekResultRow = $weekResult->fetch(\PDO::FETCH_ASSOC))
             {
-                $critical['week'] = $nowIssues - $weekIssues;
+                $critical['week'] = $nowIssues - ($weekResultRow['critical_bugs'] + $weekResultRow['critical_tasks']);
             }
 
+            $monthQuery = $app['db']->createQueryBuilder()
+                ->select('s.critical_bugs', 's.critical_tasks')
+                ->from('samples', 's')
+                ->where('version = 8')
+                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 1 MONTH)')
+                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+                ->setMaxResults(1)
+                ->setParameter('now', $nowResultRow['when']);
+            $monthResult = $monthQuery->execute();
 
-            $monthSql = "
-                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
-                    FROM " . $app['db']->quoteIdentifier('samples') . "
-                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 1 MONTH)
-                        AND " . $app['db']->quoteIdentifier('version') . " = 8
-                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                    LIMIT 1
-                ";
-            $monthIssues = $app['db']->fetchColumn($monthSql, array(), 0);
-
-            if ($monthIssues)
+            if ($monthResultRow = $monthResult->fetch(\PDO::FETCH_ASSOC))
             {
-                $critical['month'] = $nowIssues - $monthIssues;
+                $critical['month'] = $nowIssues - ($monthResultRow['critical_bugs'] + $monthResultRow['critical_tasks']);
             }
 
+            $quarterQuery = $app['db']->createQueryBuilder()
+                ->select('s.critical_bugs', 's.critical_tasks')
+                ->from('samples', 's')
+                ->where('version = 8')
+                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 3 MONTH)')
+                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+                ->setMaxResults(1)
+                ->setParameter('now', $nowResultRow['when']);
+            $quarterResult = $quarterQuery->execute();
 
-            $quarterSql = "
-                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
-                    FROM " . $app['db']->quoteIdentifier('samples') . "
-                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 3 MONTH)
-                        AND " . $app['db']->quoteIdentifier('version') . " = 8
-                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                    LIMIT 1
-                ";
-            $quarterIssues = $app['db']->fetchColumn($quarterSql, array(), 0);
-
-            if ($quarterIssues)
+            if ($quarterResultRow = $quarterResult->fetch(\PDO::FETCH_ASSOC))
             {
-                $critical['quarter'] = $nowIssues - $quarterIssues;
+                $critical['quarter'] = $nowIssues - ($quarterResultRow['critical_bugs'] + $quarterResultRow['critical_tasks']);
             }
 
+            $halfQuery = $app['db']->createQueryBuilder()
+                ->select('s.critical_bugs', 's.critical_tasks')
+                ->from('samples', 's')
+                ->where('version = 8')
+                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 6 MONTH)')
+                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+                ->setMaxResults(1)
+                ->setParameter('now', $nowResultRow['when']);
+            $halfResult = $halfQuery->execute();
 
-            $halfSql = "
-                SELECT " . $app['db']->quoteIdentifier('critical_bugs') . " + " . $app['db']->quoteIdentifier('critical_tasks') . " AS critical
-                    FROM " . $app['db']->quoteIdentifier('samples') . "
-                    WHERE " . $app['db']->quoteIdentifier('when') . " < DATE_SUB('" . $nowResultRow['when'] . "', INTERVAL 6 MONTH)
-                        AND " . $app['db']->quoteIdentifier('version') . " = 8
-                    ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                    LIMIT 1
-                ";
-            $halfIssues = $app['db']->fetchColumn($halfSql, array(), 0);
-
-            if ($halfIssues)
+            if ($halfResultRow = $halfResult->fetch(\PDO::FETCH_ASSOC))
             {
-                $critical['half'] = $nowIssues - $halfIssues;
+                $critical['half'] = $nowIssues - ($halfResultRow['critical_bugs'] + $halfResultRow['critical_tasks']);
             }
         }
 
@@ -224,19 +214,21 @@ class Data
 
     public function estimates(Application $app, Request $request)
     {
+        $responseData = array();
+
         // Check against Last-Modified header.
-        $lastSql = "
-            SELECT " . $app['db']->quoteIdentifier('when') . "
-                FROM " . $app['db']->quoteIdentifier('estimates') . "
-                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
-                ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                LIMIT 1
-        ";
-        $lastResults = $app['db']->query($lastSql);
+        $lastQuery = $app['db']->createQueryBuilder()
+            ->select('e.when', 'e.estimate')
+            ->from('estimates', 'e')
+            ->where('version = 8')
+            ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+            ->setMaxResults(1);
+        $lastResults = $lastQuery->execute();
         $lastDate = null;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC))
         {
             $lastDate = new \DateTime($lastResultRow['when']);
+            $responseData['modified'] = $lastResultRow['when'];
 
             $response = new Response();
             $response->setLastModified($lastDate);
@@ -249,29 +241,24 @@ class Data
             }
         }
 
-        $sql = "
-            SELECT
-                " . $app['db']->quoteIdentifier('when') . ",
-                " . $app['db']->quoteIdentifier('estimate') . "
-                FROM " . $app['db']->quoteIdentifier('estimates') . "
-                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
-                ORDER BY " . $app['db']->quoteIdentifier('when') . " ASC
-        ";
-        $results = $app['db']->query($sql);
+        $queryBuilder = $app['db']->createQueryBuilder()
+            ->select('e.when', 'e.estimate')
+            ->from('estimates', 'e')
+            ->where('version = 8')
+            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
 
-        $data = array();
+        $results = $queryBuilder->execute();
+
+        $responseData['data'] = array();
         while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC))
         {
-            $data[] = array(
+            $responseData['data'][] = array(
                 'when' => $resultRow['when'],
                 'estimate' => $resultRow['estimate'],
             );
         }
 
-        $response = $app->json(array(
-            'modified' => $lastResultRow['when'],
-            'data' => $data,
-        ));
+        $response = $app->json($responseData);
 
         if ($lastDate)
         {
@@ -283,39 +270,59 @@ class Data
 
     public function distribution(Application $app, Request $request) {
 
-        $date = $request->get('date');
+        $query = $app['db']->createQueryBuilder()
+            ->select('e.when', 'e.estimate', 'e.data')
+            ->from('estimates', 'e')
+            ->where('version = 8')
+            ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+            ->setMaxResults(1);
 
-        $dateCondition = '';
-        if (!empty($date)) {
-            $dateCondition = "AND " . $app['db']->quoteIdentifier('when') . "=" . $app['db']->quote($date);
+        if ($request->query->has('date')) {
+          $query
+            ->andWhere($app['db']->quoteIdentifier('when') . ' = :when')
+            ->setParameter('when', $request->query->get('date'), \PDO::PARAM_STR);
         }
 
-        $sql = "
-            SELECT
-                " . $app['db']->quoteIdentifier('when') . ",
-                " . $app['db']->quoteIdentifier('estimate') . ",
-                " . $app['db']->quoteIdentifier('data') . "
-                FROM " . $app['db']->quoteIdentifier('estimates') . "
-                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
-                " . $dateCondition . "
-                ORDER BY " . $app['db']->quoteIdentifier('when') . " DESC
-                LIMIT 1
-        ";
-        $results = $app['db']->query($sql);
+        $results = $query->execute();
 
         if ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
-            $data = unserialize($row['data']);
-            foreach ($data as $key => $count) {
-                $data[$key] = array(
-                    'when' => date('Y-m-d H:i:s', strtotime($row['when'] . " +" . $key . " seconds")),
-                    'count' => $count,
-                );
+
+            $estimateDate = new \DateTime($row['when']);
+
+            $response = new Response();
+            $response->setLastModified($estimateDate);
+            $response->setPublic();
+
+            if ($response->isNotModified($request))
+            {
+                // Return 304 Not Modified response.
+                return $response;
+            }
+
+            if (!empty($row['data'])) {
+                $data = unserialize($row['data']);
+                foreach ($data as $key => $count) {
+                    $data[$key] = array(
+                        'when' => date('Y-m-d H:i:s', strtotime($row['when'] . " +" . $key . " seconds")),
+                        'count' => $count,
+                    );
+                }
+            }
+            else {
+                $data = null;
             }
 
             $response = $app->json(array(
-                'modified' => $lastResultRow['when'],
+                'modified' => $row['when'],
                 'data' => $data,
             ));
+
+            if ($estimateDate)
+            {
+              $response->setLastModified($estimateDate);
+            }
+
+            return $response;
         }
 
         // TODO return failure response.
