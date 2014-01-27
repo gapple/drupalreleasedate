@@ -247,6 +247,15 @@ class Data
             ->where('version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
 
+        if ($request->query->has('limit'))
+        {
+            $limit = $request->query->getInt('limit');
+            $responseData['limit'] = $limit;
+            $queryBuilder
+                ->setMaxResults($limit)
+                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC');
+        }
+
         $results = $queryBuilder->execute();
 
         $responseData['data'] = array();
@@ -256,6 +265,10 @@ class Data
                 'when' => $resultRow['when'],
                 'estimate' => $resultRow['estimate'],
             );
+        }
+
+        if (isset($limit)) {
+          $responseData['data'] = array_reverse($responseData['data']);
         }
 
         $response = $app->json($responseData);

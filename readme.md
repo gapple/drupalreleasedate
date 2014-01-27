@@ -11,6 +11,9 @@ Access the site at http://drupalreleasedate.com/
 
 Public JSON feeds are provided for access to all of the site's data.
 
+Array values are typically returned ordered from oldest to newest values, but
+this may not be guaranteed.
+
 *__Note__: This project is still in active development, and so the data response
 format is subject to change at any time, though backwards compatibility will be
 maintained as best as possible.*
@@ -55,6 +58,10 @@ __/data/changes.json__
 ```
 
 __/data/estimates.json__
+
+Optional Parameters:
+- __limit__ *(integer)*  
+  Restrict the results to the requested number of newest values.
 
 ```
 {
