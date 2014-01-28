@@ -9,7 +9,7 @@ class Pages
 
     public function index(Application $app, Request $request)
     {
-        return $app['twig']->render('index.twig', array(
+        return $app['twig']->render('pages/index.twig', array(
             'scripts' => array(
                 '//code.jquery.com/jquery-2.0.2.min.js',
             ),
@@ -18,6 +18,6 @@ class Pages
 
     public function about(Application $app, Request $request)
     {
-        return $app['twig']->render('about.twig', array());
+        return $app['twig']->render('pages/about.twig', array());
     }
 }
