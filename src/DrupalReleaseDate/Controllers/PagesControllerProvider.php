@@ -15,9 +15,9 @@ class PagesControllerProvider implements ControllerProviderInterface
         $controllers
             ->get('/', 'DrupalReleaseDate\Controllers\Pages::index')
             ->after(function(Request $request, Response $response) {
-                // Allow caching for one hour.
-                $response->setMaxAge(3600);
-                $response->setSharedMaxAge(3600);
+                // Allow caching for one week.
+                $response->setMaxAge(604800);
+                $response->setSharedMaxAge(604800);
             });
         $controllers
             ->get('about', 'DrupalReleaseDate\Controllers\Pages::about')

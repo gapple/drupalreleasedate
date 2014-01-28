@@ -5,8 +5,8 @@
     <h1>Drupal 8 Release</h1>
     <section class="estimate">
       Estimated to occur on
-      <h2 class="value">{{ estimate.value ? estimate.value : 'N/A' }}</h2>
-      <div class="note">{{ estimate.note }}</div>
+      <h2 class="value">?</h2>
+      <div class="note"></div>
     </section>
 
     <section class='changes'>
@@ -38,7 +38,94 @@
 {% block footerInlineScripts %}
 <script>
     $(function() {
-        $.getJSON('/data/changes.json', function(response) {
+        function updateEstimate(estimate) {
+            var estimate = estimate || {
+                value: 'N/A',
+                note: 'The latest estimate could not be retrieved'
+            };
+            $('.estimate .value').html(estimate.value);
+            $('.estimate .note').html(estimate.note);
+        }
+
+        $.getJSON('/data/estimates.json?limit=1')
+            .done(function(response) {
+                var estimate;
+                if (response.data && response.data[0]) {
+                    if (response.data[0].estimate === null || response.data[0].estimate == '0000-00-00 00:00:00') {
+                      estimate = {
+                          value: 'N/A',
+                          note: 'An estimate could not be calculated with the current data'
+                      };
+                    }
+                    else {
+                        var estimateDate = new Date(response.data[0].estimate.replace(' ', 'T') + '-07:00');
+                        var estimateString = '';
+
+                        if (window.Intl && typeof window.Intl === "object") {
+                            estimateString = estimateDate.toLocaleDateString(
+                                 'en-US',
+                                {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                }
+                            );
+                        }
+                        else {
+                            switch (estimateDate.getMonth()) {
+                                case 0:
+                                    estimateString = 'January';
+                                    break;
+                                case 1:
+                                     estimateString = 'February';
+                                    break;
+                                case 2:
+                                    estimateString = 'March';
+                                    break;
+                                case 3:
+                                    estimateString = 'April';
+                                    break;
+                                case 4:
+                                    estimateString = 'May';
+                                    break;
+                                case 5:
+                                    estimateString = 'June';
+                                    break;
+                                case 6:
+                                    estimateString = 'July';
+                                    break;
+                                case 7:
+                                    estimateString = 'August';
+                                    break;
+                                case 8:
+                                    estimateString = 'September';
+                                    break;
+                                case 9:
+                                    estimateString = 'October';
+                                    break;
+                                case 10:
+                                    estimateString = 'November';
+                                    break;
+                                case 11:
+                                    estimateString = 'December';
+                                    break;
+                            }
+                            estimateString += ' ' + estimateDate.getDate() + ', ' + estimateDate.getFullYear();
+                        }
+
+                        estimate = {
+                            value: estimateString,
+                            note: ''
+                        };
+                    }
+                }
+                updateEstimate(estimate);
+            })
+            .fail(function() {
+                updateEstimate();
+            });
+
+        $.getJSON('/data/changes.json').done(function(response) {
             $('.changes .period').each(function() {
                 var $period = $(this);
                 var $delta = $period.find('.delta');
