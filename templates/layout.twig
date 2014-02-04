@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/assets/css/style.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/assets/css/style.css" rel="stylesheet" />
 
     <title>{% block title %}Drupal Release Date{% endblock %}</title>
+
+    <meta name="description" content="{% block  metaDescription %}Progress and estimated release date for the next version of Drupal{% endblock %}" />
 
     {% include('googleanalytics.twig') %}
     {% if scripts is defined %}
@@ -30,10 +32,11 @@
         </ul>
 
         <div class="credits">
-          Built by <a href="https://drupal.org/user/490940">gapple</a>
-          | On twitter <a href="https://twitter.com/gappleca">@gappleca</a>
-          | <a href="https://www.gittip.com/gapple/">Support on Gittip</a>
-          | <a href="bitcoin:1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH">1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH</a>
+          Built by <a href="https://drupal.org/user/490940">gapple</a> |
+          On twitter <a href="https://twitter.com/gappleca">@gappleca</a>
+          <br />
+          <a href="https://www.gittip.com/gapple/">Support on Gittip</a> |
+          <a href="bitcoin:1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH">1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH</a>
         </div>
       </footer>
     </div>
