@@ -41,7 +41,8 @@ section {
   margin-left: -1.5ex;
   text-align: right;
 }
-.changes .delta {
+.changes .delta,
+.changes .value {
   display: block;
   float: left;
   width: 5ex;

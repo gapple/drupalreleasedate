@@ -9,26 +9,30 @@
       <div class="note"></div>
     </section>
 
-    <section class='changes'>
+    <section class="changes">
       <h4>Critical Issue Changes</h4>
-      <div class='period' data-name='day'>
-        <span class='name'>Day:</span>
+      <div class="current">
+        <span class="name">Current:</span>
+        <span class="value">?</span>
+      </div>
+      <div class="period" data-name='day'>
+        <span class="name">Day:</span>
         <span class="delta">?</span>
       </div>
-      <div class='period' data-name='week'>
-        <span class='name'>Week:</span>
+      <div class="period" data-name='week'>
+        <span class="name">Week:</span>
         <span class="delta">?</span>
       </div>
-      <div class='period' data-name='month'>
-        <span class='name'>Month:</span>
+      <div class="period" data-name='month'>
+        <span class="name">Month:</span>
         <span class="delta">?</span>
       </div>
-      <div class='period' data-name='quarter'>
-        <span class='name'>3 Month:</span>
+      <div class="period" data-name='quarter'>
+        <span class="name">3 Month:</span>
         <span class="delta">?</span>
       </div>
-      <div class='period' data-name='half'>
-        <span class='name'>6 Month:</span>
+      <div class="period" data-name='half'>
+        <span class="name">6 Month:</span>
         <span class="delta">?</span>
       </div>
     </section>
@@ -126,6 +130,9 @@
             });
 
         $.getJSON('/data/changes.json').done(function(response) {
+
+            $('.changes .current .value').html(response.data.critical.current);
+
             $('.changes .period').each(function() {
                 var $period = $(this);
                 var $delta = $period.find('.delta');
@@ -133,7 +140,7 @@
                 var delta = '?';
 
                 $delta.removeClass('up down');
-                if (typeof response.data.critical[name] !== 'undefined') {
+                if (name && typeof response.data.critical[name] !== 'undefined') {
                     delta = response.data.critical[name];
 
                     if (delta > 0) {

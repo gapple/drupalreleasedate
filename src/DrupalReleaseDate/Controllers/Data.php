@@ -88,6 +88,7 @@ class Data
     {
 
         $critical = array(
+            'current' => null,
             'day' => null,
             'week' => null,
             'month' => null,
@@ -120,6 +121,7 @@ class Data
             }
 
             $nowIssues = $nowResultRow['critical_bugs'] + $nowResultRow['critical_tasks'];
+            $critical['current'] = $nowIssues;
 
             $dayQuery = $app['db']->createQueryBuilder()
                 ->select('s.critical_bugs', 's.critical_tasks')
