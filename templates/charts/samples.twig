@@ -1,17 +1,18 @@
-{% extends "layout.twig" %}
+{% extends "charts/layout.twig" %}
 
-{% block title %}Drupal Release Date - Samples Chart{% endblock %}
+{% block title %}{{ parent() }} - Samples Chart{% endblock %}
 
 {% block content %}
 <div id="chart"></div>
 <div class="chart-caption">
     <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
-    <a href="/data/samples.json">JSON</a>
+    <a id='chart-data' href="/data/samples.json">JSON</a>
 </div>
+{% endblock %}
 
+{% block footerInlineScripts %}
+{{ parent() }}
 <script type="text/javascript">
-
-    google.load("visualization", "1", {packages:["corechart"]});
 
     $(function() {
       var chart, chartData;

@@ -40,6 +40,8 @@
 {% endblock %}
 
 {% block footerInlineScripts %}
+{{ parent() }}
+
 <script>
     $(function() {
         function updateEstimate(estimate) {

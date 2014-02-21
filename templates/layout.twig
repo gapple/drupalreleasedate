@@ -9,6 +9,7 @@
 
     <meta name="description" content="{% block  metaDescription %}Progress and estimated release date for the next version of Drupal{% endblock %}" />
 
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.0.2.min.js"></script>
     {% include('googleanalytics.twig') %}
     {% if scripts is defined %}
     {% for script in scripts %}
@@ -32,16 +33,32 @@
         </ul>
 
         <div class="credits">
-          Built by <a href="https://drupal.org/user/490940">gapple</a> |
-          On twitter <a href="https://twitter.com/gappleca">@gappleca</a>
+          Built by <a href="https://drupal.org/user/490940" data-type="drupal">gapple</a> |
+          On twitter <a href="https://twitter.com/gappleca" data-type="twitter">@gappleca</a>
           <br />
-          <a href="https://www.gittip.com/gapple/">Support on Gittip</a> |
-          <a href="bitcoin:1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH">1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH</a>
+          <a href="https://www.gittip.com/gapple/" data-type="gittip">Support on Gittip</a> |
+          <a href="bitcoin:1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH" data-type="bitcoin">1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH</a>
         </div>
       </footer>
     </div>
     <a class="visible-desktop" href="https://github.com/gapple/drupalreleasedate"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
     {% block footerInlineScripts %}
+        {% if config.google and config.google.analytics %}
+        <script type="text/javascript">
+            $(function(){
+                $('footer .credits').on('click', 'a', function(e){
+                    var href = $(this).attr('href');
+                    e.preventDefault();
+
+                    ga('send', 'event', 'credits', 'click', $(this).data('type'), {
+                        hitCallback: function() {
+                            document.location = href;
+                        }
+                    });
+                });
+            });
+        </script>
+        {% endif %}
     {% endblock %}
   </body>
 </html>

@@ -1,0 +1,31 @@
+{% extends "layout.twig" %}
+
+{% block footerInlineScripts %}
+{{ parent() }}
+
+{% if config.google and config.google.analytics %}
+<script type="text/javascript">
+    $(function(){
+        $('#chart-refresh').click(function() {
+            ga('send', 'event', 'chart', 'refresh');
+        });
+        $('#chart-data').click(function(e){
+            var href = $(this).attr('href');
+            e.preventDefault();
+
+            ga('send', 'event', 'chart', 'data', {
+                hitCallback: function() {
+                    document.location = href;
+                }
+            });
+        });
+    });
+
+</script>
+{%  endif %}
+
+<script type="text/javascript">
+    google.load("visualization", "1", {packages:["corechart"]});
+</script>
+
+{% endblock %}

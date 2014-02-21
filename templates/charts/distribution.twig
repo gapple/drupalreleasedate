@@ -1,16 +1,17 @@
-{% extends "layout.twig" %}
+{% extends "charts/layout.twig" %}
 
-{% block title %}Drupal Release Date - Estimate Distribution Chart{% endblock %}
+{% block title %}{{ parent() }} - Estimate Distribution Chart{% endblock %}
 
 {% block content %}
 <div id="chart"></div>
 <div class="chart-caption">
-    <a href="/data/samples.json">JSON Data</a>
+    <a id='chart-data' href="/data/samples.json">JSON</a>
 </div>
+{% endblock %}
 
+{% block footerInlineScripts %}
+{{ parent() }}
 <script type="text/javascript">
-
-    google.load("visualization", "1", {packages:["corechart"]});
 
     $(function() {
       var chart, chartData;
