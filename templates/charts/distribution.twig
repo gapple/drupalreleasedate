@@ -18,26 +18,46 @@
       var $chart = $('#chart');
 
       google.setOnLoadCallback(loadChart);
-      $(window).resize(drawChart);
+      $(window).resize(function() {
+          timing.start('chart.redraw');
+          drawChart();
+          timing.stop('chart.redraw');
+
+          if (GoogleAnalyticsObject) {
+              window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'distribution');
+          }
+      });
 
       function loadChart() {
 
           // TODO get date parameter from URL, and pass on to data request.
-          $.get('/data/distribution.json', function(data, textStatus, jqXHR) {
+          $.get('/data/distribution.json', function(response, textStatus, jqXHR) {
+              timing.stop('chart.loadData');
+              timing.start('chart.processData');
 
               chartData = new google.visualization.DataTable();
 
               chartData.addColumn('datetime', 'Estimate');
               chartData.addColumn('number', 'Count');
 
+              var data = response.data;
               for (var i in data) {
                   chartData.addRow([
                       new Date(data[i].when.replace(' ', 'T')),
                       data[i].count,
                   ]);
               }
+              timing.stop('chart.processData');
 
+              timing.start('chart.firstDraw');
               drawChart();
+              timing.stop('chart.firstDraw');
+
+              if (GoogleAnalyticsObject) {
+                  window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'distribution');
+                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'distribution');
+                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'distribution');
+              }
           });
       }
 

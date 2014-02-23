@@ -13,13 +13,20 @@
 {% block footerInlineScripts %}
 {{ parent() }}
 <script type="text/javascript">
-
     $(function() {
       var chart, chartData;
       var $chart = $('#chart');
 
       google.setOnLoadCallback(loadChart);
-      $(window).resize(drawChart);
+      $(window).resize(function() {
+          timing.start('chart.redraw');
+          drawChart();
+          timing.stop('chart.redraw');
+
+          if (GoogleAnalyticsObject) {
+              window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'samples');
+          }
+      });
 
       $('#chart-refresh').click(function(event) {
           event.preventDefault();
@@ -35,8 +42,11 @@
       });
 
       function loadChart() {
+          timing.start('chart.loadData');
 
           $.get('/data/samples.json', function(response, textStatus, jqXHR) {
+              timing.stop('chart.loadData');
+              timing.start('chart.processData');
 
               chartData = new google.visualization.DataTable();
 
@@ -69,8 +79,17 @@
                       normal,
                   ]);
               }
+              timing.stop('chart.processData');
 
+              timing.start('chart.firstDraw');
               drawChart();
+              timing.stop('chart.firstDraw');
+
+              if (GoogleAnalyticsObject) {
+                  window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'samples');
+                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'samples');
+                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'samples');
+              }
 
               $('#chart-refresh').removeClass('disabled');
               $('#chart').fadeTo('fast', 1);
@@ -78,6 +97,7 @@
       };
 
       function drawChart() {
+
           if (chart) {
               chart.clearChart();
               $chart.css('height', '');

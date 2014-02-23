@@ -19,7 +19,15 @@
       var $chart = $('#chart');
 
       google.setOnLoadCallback(loadChart);
-      $(window).resize(drawChart);
+      $(window).resize(function() {
+          timing.start('chart.redraw');
+          drawChart();
+          timing.stop('chart.redraw');
+
+          if (GoogleAnalyticsObject) {
+              window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'estimates');
+          }
+      });
 
       $('#chart-refresh').click(function(event) {
           event.preventDefault();
@@ -35,8 +43,11 @@
       });
 
       function loadChart() {
+          timing.start('chart.loadData');
 
           $.get('/data/estimates.json', function(response, textStatus, jqXHR) {
+              timing.stop('chart.loadData');
+              timing.start('chart.processData');
 
               chartData = new google.visualization.DataTable();
 
@@ -70,8 +81,17 @@
                     error
                 ]);
               }
+              timing.stop('chart.processData');
 
+              timing.start('chart.firstDraw');
               drawChart();
+              timing.stop('chart.firstDraw');
+
+              if (GoogleAnalyticsObject) {
+                  window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'estimates');
+                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'estimates');
+                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'estimates');
+              }
 
               $('#chart-refresh').removeClass('disabled');
               $('#chart').fadeTo('fast', 1);
