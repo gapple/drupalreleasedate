@@ -26,7 +26,7 @@
           drawChart();
           timing.stop('chart.redraw');
 
-          if (GoogleAnalyticsObject) {
+          if (typeof GoogleAnalyticsObject !== 'undefined') {
               window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'estimates');
           }
       };
@@ -93,7 +93,7 @@
               drawChart();
               timing.stop('chart.firstDraw');
 
-              if (GoogleAnalyticsObject) {
+              if (typeof GoogleAnalyticsObject !== 'undefined') {
                   window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'estimates');
                   window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'estimates');
                   window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'estimates');

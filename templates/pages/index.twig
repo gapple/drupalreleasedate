@@ -130,7 +130,7 @@
                 }
                 updateEstimate(estimate);
 
-                if (GoogleAnalyticsObject) {
+                if (typeof GoogleAnalyticsObject !== 'undefined') {
                     window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadEstimate'), 'estimates');
                 }
             })
@@ -165,7 +165,7 @@
                 $delta.html(delta);
             });
 
-            if (GoogleAnalyticsObject) {
+            if (typeof GoogleAnalyticsObject !== 'undefined') {
                 window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadChanges'), 'changes');
             }
         });
