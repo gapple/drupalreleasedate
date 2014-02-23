@@ -53,8 +53,11 @@
             $('.estimate .note').html(estimate.note);
         }
 
+        timing.start('index.loadEstimate');
         $.getJSON('/data/estimates.json?limit=1')
             .done(function(response) {
+                timing.stop('index.loadEstimate');
+
                 var estimate;
                 if (response.data && response.data[0]) {
                     if (response.data[0].estimate === null || response.data[0].estimate == '0000-00-00 00:00:00') {
@@ -126,12 +129,18 @@
                     }
                 }
                 updateEstimate(estimate);
+
+                if (GoogleAnalyticsObject) {
+                    window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadEstimate'), 'estimates');
+                }
             })
             .fail(function() {
                 updateEstimate();
             });
 
+        timing.start('index.loadChanges');
         $.getJSON('/data/changes.json').done(function(response) {
+            timing.stop('index.loadChanges');
 
             $('.changes .current .value').html(response.data.critical.current);
 
@@ -155,6 +164,10 @@
                 }
                 $delta.html(delta);
             });
+
+            if (GoogleAnalyticsObject) {
+                window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadChanges'), 'changes');
+            }
         });
     });
 </script>
