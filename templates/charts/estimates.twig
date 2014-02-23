@@ -19,7 +19,9 @@
       var $chart = $('#chart');
 
       google.setOnLoadCallback(loadChart);
-      $(window).resize(function() {
+
+      var resizeTimeout = null;
+      var resizeFunction = function() {
           timing.start('chart.redraw');
           drawChart();
           timing.stop('chart.redraw');
@@ -27,6 +29,10 @@
           if (GoogleAnalyticsObject) {
               window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'estimates');
           }
+      };
+      $(window).resize(function() {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(resizeFunction, 100);
       });
 
       $('#chart-refresh').click(function(event) {
