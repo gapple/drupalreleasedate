@@ -3,144 +3,144 @@
 {% block title %}{{ parent() }} - Samples Chart{% endblock %}
 
 {% block content %}
-<div id="chart"></div>
-<div class="chart-caption">
-    <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
-    <a id='chart-data' href="/data/samples.json">JSON</a>
-</div>
+    <div id="chart"></div>
+    <div class="chart-caption">
+        <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
+        <a id='chart-data' href="/data/samples.json">JSON</a>
+    </div>
 {% endblock %}
 
 {% block footerInlineScripts %}
-{{ parent() }}
-<script type="text/javascript">
-    $(function() {
-      var chart, chartData;
-      var $chart = $('#chart');
+    {{ parent() }}
+    <script type="text/javascript">
+        $(function () {
+            var chart, chartData;
+            var $chart = $('#chart');
 
-      google.setOnLoadCallback(loadChart);
+            google.setOnLoadCallback(loadChart);
 
-      var resizeTimeout = null;
-      var resizeFunction = function() {
-          timing.start('chart.redraw');
-          drawChart();
-          timing.stop('chart.redraw');
+            var resizeTimeout = null;
+            var resizeFunction = function () {
+                timing.start('chart.redraw');
+                drawChart();
+                timing.stop('chart.redraw');
 
-          if (typeof GoogleAnalyticsObject !== 'undefined') {
-              window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'samples');
-          }
-      };
-      $(window).resize(function() {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(resizeFunction, 100);
-      });
-
-      $('#chart-refresh').click(function(event) {
-          event.preventDefault();
-
-          var $link = $(this);
-
-          if ($link.hasClass('disabled')) {
-            return;
-          }
-
-          $link.addClass('disabled');
-          $('#chart').fadeTo('fast', 0.2, loadChart);
-      });
-
-      function loadChart() {
-          timing.start('chart.loadData');
-
-          $.get('/data/samples.json', function(response, textStatus, jqXHR) {
-              timing.stop('chart.loadData');
-              timing.start('chart.processData');
-
-              chartData = new google.visualization.DataTable();
-
-              chartData.addColumn('datetime', 'Time');
-              chartData.addColumn('number', 'Critical');
-              chartData.addColumn('number', 'Major');
-              chartData.addColumn('number', 'Normal');
-
-              var data = response.data;
-
-              for (var i in data) {
-                var critical = null,
-                    major = null,
-                    normal = null;
-
-                if (data[i].critical_bugs != null && data[i].critical_tasks != null) {
-                  critical = data[i].critical_bugs + data[i].critical_tasks;
+                if (typeof GoogleAnalyticsObject !== 'undefined') {
+                    window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'samples');
                 }
-                if (data[i].major_bugs != null && data[i].major_tasks != null) {
-                  major = data[i].major_bugs + data[i].major_tasks;
-                }
-                if (data[i].normal_bugs != null && data[i].normal_tasks != null) {
-                  normal = data[i].normal_bugs + data[i].normal_tasks;
+            };
+            $(window).resize(function () {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeFunction, 100);
+            });
+
+            $('#chart-refresh').click(function (event) {
+                event.preventDefault();
+
+                var $link = $(this);
+
+                if ($link.hasClass('disabled')) {
+                    return;
                 }
 
-                chartData.addRow([
-                      new Date(data[i].when.replace(' ', 'T')),
-                      critical,
-                      major,
-                      normal,
-                  ]);
-              }
-              timing.stop('chart.processData');
+                $link.addClass('disabled');
+                $('#chart').fadeTo('fast', 0.2, loadChart);
+            });
 
-              timing.start('chart.firstDraw');
-              drawChart();
-              timing.stop('chart.firstDraw');
+            function loadChart() {
+                timing.start('chart.loadData');
 
-              if (typeof GoogleAnalyticsObject !== 'undefined') {
-                  window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'samples');
-                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'samples');
-                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'samples');
-              }
+                $.get('/data/samples.json', function (response, textStatus, jqXHR) {
+                    timing.stop('chart.loadData');
+                    timing.start('chart.processData');
 
-              $('#chart-refresh').removeClass('disabled');
-              $('#chart').fadeTo('fast', 1);
-          });
-      };
+                    chartData = new google.visualization.DataTable();
 
-      function drawChart() {
+                    chartData.addColumn('datetime', 'Time');
+                    chartData.addColumn('number', 'Critical');
+                    chartData.addColumn('number', 'Major');
+                    chartData.addColumn('number', 'Normal');
 
-          if (chart) {
-              chart.clearChart();
-              $chart.css('height', '');
-          }
-          else {
-              chart = new google.visualization.LineChart($chart.get(0));
-          }
+                    var data = response.data;
 
-          $chart.css('height', ($(document).height() * 0.8));
+                    for (var i in data) {
+                        var critical = null,
+                            major = null,
+                            normal = null;
 
-          chart.draw(
-              chartData,
-              {
-                title: 'Issue Count',
-                colors: ['red', 'blue', 'green'],
-                hAxis: {},
-                vAxis: {
-                    minValue: 0,
-                    logScale: true,
-                },
-                trendlines: {
-                    0: {
-                        visibleInLegend: false,
-                        opacity: 0.2,
-                    },
-                    1: {
-                        visibleInLegend: false,
-                        opacity: 0.2,
-                    },
-                    2: {
-                        visibleInLegend: false,
-                        opacity: 0.2,
-                    },
-                },
-            }
-          );
-      };
-    });
-</script>
+                        if (data[i].critical_bugs != null && data[i].critical_tasks != null) {
+                            critical = data[i].critical_bugs + data[i].critical_tasks;
+                        }
+                        if (data[i].major_bugs != null && data[i].major_tasks != null) {
+                            major = data[i].major_bugs + data[i].major_tasks;
+                        }
+                        if (data[i].normal_bugs != null && data[i].normal_tasks != null) {
+                            normal = data[i].normal_bugs + data[i].normal_tasks;
+                        }
+
+                        chartData.addRow([
+                            new Date(data[i].when.replace(' ', 'T')),
+                            critical,
+                            major,
+                            normal
+                        ]);
+                    }
+                    timing.stop('chart.processData');
+
+                    timing.start('chart.firstDraw');
+                    drawChart();
+                    timing.stop('chart.firstDraw');
+
+                    if (typeof GoogleAnalyticsObject !== 'undefined') {
+                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'samples');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'samples');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'samples');
+                    }
+
+                    $('#chart-refresh').removeClass('disabled');
+                    $('#chart').fadeTo('fast', 1);
+                });
+            };
+
+            function drawChart() {
+
+                if (chart) {
+                    chart.clearChart();
+                    $chart.css('height', '');
+                }
+                else {
+                    chart = new google.visualization.LineChart($chart.get(0));
+                }
+
+                $chart.css('height', ($(document).height() * 0.8));
+
+                chart.draw(
+                    chartData,
+                    {
+                        title: 'Issue Count',
+                        colors: ['red', 'blue', 'green'],
+                        hAxis: {},
+                        vAxis: {
+                            minValue: 0,
+                            logScale: true
+                        },
+                        trendlines: {
+                            0: {
+                                visibleInLegend: false,
+                                opacity: 0.2
+                            },
+                            1: {
+                                visibleInLegend: false,
+                                opacity: 0.2
+                            },
+                            2: {
+                                visibleInLegend: false,
+                                opacity: 0.2
+                            }
+                        }
+                    }
+                );
+            };
+        });
+    </script>
 {% endblock %}

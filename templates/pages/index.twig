@@ -1,174 +1,176 @@
 {% extends "layout.twig" %}
 
 {% block content %}
-  <div class="hero-unit">
-    <h1>Drupal 8 Release</h1>
-    <section class="estimate">
-      Estimated to occur on
-      <h2 class="value">?</h2>
-      <div class="note"></div>
-    </section>
+    <div class="hero-unit">
+        <h1>Drupal 8 Release</h1>
+        <section class="estimate">
+            Estimated to occur on
+            <h2 class="value">?</h2>
 
-    <section class="changes">
-      <h4>Critical Issue Changes</h4>
-      <div class="current">
-        <span class="name">Current:</span>
-        <span class="value">?</span>
-      </div>
-      <div class="period" data-name='day'>
-        <span class="name">Day:</span>
-        <span class="delta">?</span>
-      </div>
-      <div class="period" data-name='week'>
-        <span class="name">Week:</span>
-        <span class="delta">?</span>
-      </div>
-      <div class="period" data-name='month'>
-        <span class="name">Month:</span>
-        <span class="delta">?</span>
-      </div>
-      <div class="period" data-name='quarter'>
-        <span class="name">3 Month:</span>
-        <span class="delta">?</span>
-      </div>
-      <div class="period" data-name='half'>
-        <span class="name">6 Month:</span>
-        <span class="delta">?</span>
-      </div>
-    </section>
-  </div>
+            <div class="note"></div>
+        </section>
+
+        <section class="changes">
+            <h4>Critical Issue Changes</h4>
+
+            <div class="current">
+                <span class="name">Current:</span>
+                <span class="value">?</span>
+            </div>
+            <div class="period" data-name='day'>
+                <span class="name">Day:</span>
+                <span class="delta">?</span>
+            </div>
+            <div class="period" data-name='week'>
+                <span class="name">Week:</span>
+                <span class="delta">?</span>
+            </div>
+            <div class="period" data-name='month'>
+                <span class="name">Month:</span>
+                <span class="delta">?</span>
+            </div>
+            <div class="period" data-name='quarter'>
+                <span class="name">3 Month:</span>
+                <span class="delta">?</span>
+            </div>
+            <div class="period" data-name='half'>
+                <span class="name">6 Month:</span>
+                <span class="delta">?</span>
+            </div>
+        </section>
+    </div>
 {% endblock %}
 
 {% block footerInlineScripts %}
-{{ parent() }}
+    {{ parent() }}
 
-<script>
-    $(function() {
-        function updateEstimate(estimate) {
-            var estimate = estimate || {
-                value: 'N/A',
-                note: 'The latest estimate could not be retrieved'
-            };
-            $('.estimate .value').html(estimate.value);
-            $('.estimate .note').html(estimate.note);
-        }
+    <script type="text/javascript">
+        $(function () {
+            function updateEstimate(estimate) {
+                var estimate = estimate || {
+                    value: 'N/A',
+                    note: 'The latest estimate could not be retrieved'
+                };
+                $('.estimate .value').html(estimate.value);
+                $('.estimate .note').html(estimate.note);
+            }
 
-        timing.start('index.loadEstimate');
-        $.getJSON('/data/estimates.json?limit=1')
-            .done(function(response) {
-                timing.stop('index.loadEstimate');
+            timing.start('index.loadEstimate');
+            $.getJSON('/data/estimates.json?limit=1')
+                .done(function (response) {
+                    timing.stop('index.loadEstimate');
 
-                var estimate;
-                if (response.data && response.data[0]) {
-                    if (response.data[0].estimate === null || response.data[0].estimate == '0000-00-00 00:00:00') {
-                      estimate = {
-                          value: 'N/A',
-                          note: 'An estimate could not be calculated with the current data'
-                      };
-                    }
-                    else {
-                        var estimateDate = new Date(response.data[0].estimate.replace(' ', 'T') + '-07:00');
-                        var estimateString = '';
-
-                        if (window.Intl && typeof window.Intl === "object") {
-                            estimateString = estimateDate.toLocaleDateString(
-                                 'en-US',
-                                {
-                                    month: 'long',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                }
-                            );
+                    var estimate;
+                    if (response.data && response.data[0]) {
+                        if (response.data[0].estimate === null || response.data[0].estimate == '0000-00-00 00:00:00') {
+                            estimate = {
+                                value: 'N/A',
+                                note: 'An estimate could not be calculated with the current data'
+                            };
                         }
                         else {
-                            switch (estimateDate.getMonth()) {
-                                case 0:
-                                    estimateString = 'January';
-                                    break;
-                                case 1:
-                                     estimateString = 'February';
-                                    break;
-                                case 2:
-                                    estimateString = 'March';
-                                    break;
-                                case 3:
-                                    estimateString = 'April';
-                                    break;
-                                case 4:
-                                    estimateString = 'May';
-                                    break;
-                                case 5:
-                                    estimateString = 'June';
-                                    break;
-                                case 6:
-                                    estimateString = 'July';
-                                    break;
-                                case 7:
-                                    estimateString = 'August';
-                                    break;
-                                case 8:
-                                    estimateString = 'September';
-                                    break;
-                                case 9:
-                                    estimateString = 'October';
-                                    break;
-                                case 10:
-                                    estimateString = 'November';
-                                    break;
-                                case 11:
-                                    estimateString = 'December';
-                                    break;
-                            }
-                            estimateString += ' ' + estimateDate.getDate() + ', ' + estimateDate.getFullYear();
-                        }
+                            var estimateDate = new Date(response.data[0].estimate.replace(' ', 'T') + '-07:00');
+                            var estimateString = '';
 
-                        estimate = {
-                            value: estimateString,
-                            note: ''
-                        };
+                            if (window.Intl && typeof window.Intl === "object") {
+                                estimateString = estimateDate.toLocaleDateString(
+                                    'en-US',
+                                    {
+                                        month: 'long',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    }
+                                );
+                            }
+                            else {
+                                switch (estimateDate.getMonth()) {
+                                    case 0:
+                                        estimateString = 'January';
+                                        break;
+                                    case 1:
+                                        estimateString = 'February';
+                                        break;
+                                    case 2:
+                                        estimateString = 'March';
+                                        break;
+                                    case 3:
+                                        estimateString = 'April';
+                                        break;
+                                    case 4:
+                                        estimateString = 'May';
+                                        break;
+                                    case 5:
+                                        estimateString = 'June';
+                                        break;
+                                    case 6:
+                                        estimateString = 'July';
+                                        break;
+                                    case 7:
+                                        estimateString = 'August';
+                                        break;
+                                    case 8:
+                                        estimateString = 'September';
+                                        break;
+                                    case 9:
+                                        estimateString = 'October';
+                                        break;
+                                    case 10:
+                                        estimateString = 'November';
+                                        break;
+                                    case 11:
+                                        estimateString = 'December';
+                                        break;
+                                }
+                                estimateString += ' ' + estimateDate.getDate() + ', ' + estimateDate.getFullYear();
+                            }
+
+                            estimate = {
+                                value: estimateString,
+                                note: ''
+                            };
+                        }
                     }
-                }
-                updateEstimate(estimate);
+                    updateEstimate(estimate);
+
+                    if (typeof GoogleAnalyticsObject !== 'undefined') {
+                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadEstimate'), 'estimates');
+                    }
+                })
+                .fail(function () {
+                    updateEstimate();
+                });
+
+            timing.start('index.loadChanges');
+            $.getJSON('/data/changes.json').done(function (response) {
+                timing.stop('index.loadChanges');
+
+                $('.changes .current .value').html(response.data.critical.current);
+
+                $('.changes .period').each(function () {
+                    var $period = $(this);
+                    var $delta = $period.find('.delta');
+                    var name = $period.data('name');
+                    var delta = '?';
+
+                    $delta.removeClass('up down');
+                    if (name && typeof response.data.critical[name] !== 'undefined') {
+                        delta = response.data.critical[name];
+
+                        if (delta > 0) {
+                            delta = '+' + delta;
+                            $delta.addClass('up');
+                        }
+                        else if (delta < 0) {
+                            $delta.addClass('down');
+                        }
+                    }
+                    $delta.html(delta);
+                });
 
                 if (typeof GoogleAnalyticsObject !== 'undefined') {
-                    window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadEstimate'), 'estimates');
+                    window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadChanges'), 'changes');
                 }
-            })
-            .fail(function() {
-                updateEstimate();
             });
-
-        timing.start('index.loadChanges');
-        $.getJSON('/data/changes.json').done(function(response) {
-            timing.stop('index.loadChanges');
-
-            $('.changes .current .value').html(response.data.critical.current);
-
-            $('.changes .period').each(function() {
-                var $period = $(this);
-                var $delta = $period.find('.delta');
-                var name = $period.data('name');
-                var delta = '?';
-
-                $delta.removeClass('up down');
-                if (name && typeof response.data.critical[name] !== 'undefined') {
-                    delta = response.data.critical[name];
-
-                    if (delta > 0) {
-                        delta = '+' + delta;
-                        $delta.addClass('up');
-                    }
-                    else if (delta < 0) {
-                        $delta.addClass('down');
-                    }
-                }
-                $delta.html(delta);
-            });
-
-            if (typeof GoogleAnalyticsObject !== 'undefined') {
-                window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadChanges'), 'changes');
-            }
         });
-    });
-</script>
+    </script>
 {% endblock %}

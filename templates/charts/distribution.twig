@@ -3,92 +3,91 @@
 {% block title %}{{ parent() }} - Estimate Distribution Chart{% endblock %}
 
 {% block content %}
-<div id="chart"></div>
-<div class="chart-caption">
-    <a id='chart-data' href="/data/samples.json">JSON</a>
-</div>
+    <div id="chart"></div>
+    <div class="chart-caption">
+        <a id='chart-data' href="/data/samples.json">JSON</a>
+    </div>
 {% endblock %}
 
 {% block footerInlineScripts %}
-{{ parent() }}
-<script type="text/javascript">
+    {{ parent() }}
+    <script type="text/javascript">
 
-    $(function() {
-      var chart, chartData;
-      var $chart = $('#chart');
+        $(function () {
+            var chart, chartData;
+            var $chart = $('#chart');
 
-      google.setOnLoadCallback(loadChart);
+            google.setOnLoadCallback(loadChart);
 
-      var resizeTimeout = null;
-      var resizeFunction = function() {
-          timing.start('chart.redraw');
-          drawChart();
-          timing.stop('chart.redraw');
+            var resizeTimeout = null;
+            var resizeFunction = function () {
+                timing.start('chart.redraw');
+                drawChart();
+                timing.stop('chart.redraw');
 
-          if (typeof GoogleAnalyticsObject !== 'undefined') {
-              window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'distribution');
-          }
-      };
-      $(window).resize(function() {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(resizeFunction, 100);
-      });
+                if (typeof GoogleAnalyticsObject !== 'undefined') {
+                    window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'distribution');
+                }
+            };
+            $(window).resize(function () {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeFunction, 100);
+            });
 
-      function loadChart() {
+            function loadChart() {
 
-          // TODO get date parameter from URL, and pass on to data request.
-          $.get('/data/distribution.json', function(response, textStatus, jqXHR) {
-              timing.stop('chart.loadData');
-              timing.start('chart.processData');
+                // TODO get date parameter from URL, and pass on to data request.
+                $.get('/data/distribution.json', function (response, textStatus, jqXHR) {
+                    timing.stop('chart.loadData');
+                    timing.start('chart.processData');
 
-              chartData = new google.visualization.DataTable();
+                    chartData = new google.visualization.DataTable();
 
-              chartData.addColumn('datetime', 'Estimate');
-              chartData.addColumn('number', 'Count');
+                    chartData.addColumn('datetime', 'Estimate');
+                    chartData.addColumn('number', 'Count');
 
-              var data = response.data;
-              for (var i in data) {
-                  chartData.addRow([
-                      new Date(data[i].when.replace(' ', 'T')),
-                      data[i].count,
-                  ]);
-              }
-              timing.stop('chart.processData');
+                    var data = response.data;
+                    for (var i in data) {
+                        chartData.addRow([
+                            new Date(data[i].when.replace(' ', 'T')),
+                            data[i].count
+                        ]);
+                    }
+                    timing.stop('chart.processData');
 
-              timing.start('chart.firstDraw');
-              drawChart();
-              timing.stop('chart.firstDraw');
+                    timing.start('chart.firstDraw');
+                    drawChart();
+                    timing.stop('chart.firstDraw');
 
-              if (typeof GoogleAnalyticsObject !== 'undefined') {
-                  window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'distribution');
-                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'distribution');
-                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'distribution');
-              }
-          });
-      }
+                    if (typeof GoogleAnalyticsObject !== 'undefined') {
+                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'distribution');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'distribution');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'distribution');
+                    }
+                });
+            }
 
-      function drawChart() {
-          if (chart) {
-              chart.clearChart();
-              $chart.css('height', '');
-          }
-          else {
-              chart = new google.visualization.ColumnChart($chart.get(0));
-          }
+            function drawChart() {
+                if (chart) {
+                    chart.clearChart();
+                    $chart.css('height', '');
+                }
+                else {
+                    chart = new google.visualization.ColumnChart($chart.get(0));
+                }
 
-          $chart.css('height', ($(document).height() * 0.8));
+                $chart.css('height', ($(document).height() * 0.8));
 
-          chart.draw(
-              chartData,
-              {
-                  title: 'Estimate Distribution',
-                  hAxis: {},
-                  vAxis: {},
-                  legend: 'none',
-               }
-          );
-      }
-
-    });
-</script>
+                chart.draw(
+                    chartData,
+                    {
+                        title: 'Estimate Distribution',
+                        hAxis: {},
+                        vAxis: {},
+                        legend: 'none'
+                    }
+                );
+            }
+        });
+    </script>
 {% endblock %}

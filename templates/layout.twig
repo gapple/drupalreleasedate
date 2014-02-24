@@ -1,54 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="/assets/css/style.css" rel="stylesheet" />
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/assets/css/style.css" rel="stylesheet"/>
 
     <title>{% block title %}Drupal Release Date{% endblock %}</title>
 
-    <meta name="description" content="{% block  metaDescription %}Progress and estimated release date for the next version of Drupal{% endblock %}" />
+    <meta name="description" content="{% block  metaDescription %}Progress and estimated release date for the next version of Drupal{% endblock %}"/>
 
     <script type="text/javascript" src="//code.jquery.com/jquery-2.0.2.min.js"></script>
     {% include('googleanalytics.twig') %}
     {% if scripts is defined %}
-    {% for script in scripts %}
-        <script type="text/javascript" src="{{ script }}"></script>
-    {% endfor %}
+        {% for script in scripts %}
+            <script type="text/javascript" src="{{ script }}"></script>
+        {% endfor %}
     {% endif %}
-  </head>
-  <body>
-    <div class="container">
-      {% block content %}
-      {% endblock %}
+</head>
+<body>
+<div class="container">
+    {% block content %}
+    {% endblock %}
 
-      <footer>
+    <footer>
         <ul class="nav">
-          <li><a href="/chart/samples">Samples Chart</a></li>
-          <li><a href="/chart/estimates">Estimates Chart</a></li>
+            <li><a href="/chart/samples">Samples Chart</a></li>
+            <li><a href="/chart/estimates">Estimates Chart</a></li>
         </ul>
         <ul class="nav">
-          <li><a href="/">Home</a></li>
-          <li><a href="/about">About</a></li>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
         </ul>
 
         <div class="credits">
-          Built by <a href="https://drupal.org/user/490940" data-type="drupal">gapple</a> |
-          On twitter <a href="https://twitter.com/gappleca" data-type="twitter">@gappleca</a>
-          <br />
-          <a href="https://www.gittip.com/gapple/" data-type="gittip">Support on Gittip</a> |
-          <a href="bitcoin:1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH" data-type="bitcoin">1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH</a>
+            Built by <a href="https://drupal.org/user/490940" data-type="drupal">gapple</a> |
+            On twitter <a href="https://twitter.com/gappleca" data-type="twitter">@gappleca</a>
+            <br/>
+            <a href="https://www.gittip.com/gapple/" data-type="gittip">Support on Gittip</a> |
+            <a href="bitcoin:1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH" data-type="bitcoin">1HcAZTVs5nqqY2LUBxiEFRdVUyZHmLEXqH</a>
         </div>
-      </footer>
-    </div>
-    <a class="visible-desktop" href="https://github.com/gapple/drupalreleasedate"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
-    {% block footerInlineScripts %}
+    </footer>
+</div>
+<a class="visible-desktop" href="https://github.com/gapple/drupalreleasedate"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 
-        <script type="text/javascript">
-        var timing = (function() {
+{% block footerInlineScripts %}
+
+    <script type="text/javascript">
+        var timing = (function () {
             var timings = {};
 
-            var timingObject =  {
+            var timingObject = {
                 /**
                  * Start a timer with the provided key.
                  *
@@ -56,7 +57,7 @@
                  *
                  * @param key
                  */
-                start: function(key) {
+                start: function (key) {
                     timings[key] = {
                         start: new Date(),
                         elapsed: 0
@@ -67,7 +68,7 @@
                  *
                  * @param key
                  */
-                stop: function(key) {
+                stop: function (key) {
                     if (typeof timings[key] === 'undefined' || typeof timings[key].start === 'undefined') {
                         return;
                     }
@@ -82,7 +83,7 @@
                  *
                  * @param key
                  */
-                continue: function(key) {
+                continue: function (key) {
                     if (typeof timings[key] === 'undefined' || typeof timings[key].start !== 'undefined') {
                         return;
                     }
@@ -95,7 +96,7 @@
                  *
                  * @returns {number|undefined}
                  */
-                get: function(key) {
+                get: function (key) {
                     var end;
                     if (typeof timings[key] === 'undefined') {
                         return;
@@ -113,9 +114,9 @@
                  *
                  * @returns {}
                  */
-                getAll: function() {
+                getAll: function () {
                     var timingDiffs = {};
-                    for(var key in timings) {
+                    for (var key in timings) {
                         timingDiffs[key] = timingObject.get(key);
                     }
                     return timingDiffs;
@@ -124,25 +125,24 @@
 
             return timingObject;
         })();
-        </script>
+    </script>
 
-        {% if config.google and config.google.analytics %}
+    {% if config.google and config.google.analytics %}
         <script type="text/javascript">
-            $(function(){
-                $('footer .credits').on('click', 'a', function(e){
+            $(function () {
+                $('footer .credits').on('click', 'a', function (e) {
                     var href = $(this).attr('href');
                     e.preventDefault();
 
                     ga('send', 'event', 'credits', 'click', $(this).data('type'), {
-                        hitCallback: function() {
+                        hitCallback: function () {
                             document.location = href;
                         }
                     });
                 });
             });
         </script>
-        {% endif %}
-    {% endblock %}
-  </body>
+    {% endif %}
+{% endblock %}
+</body>
 </html>
-

@@ -3,128 +3,127 @@
 {% block title %}{{ parent() }} - Estimates Chart{% endblock %}
 
 {% block content %}
-<div id="chart"></div>
-<div class="chart-caption">
-    <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
-    <a id='chart-data' href="/data/estimates.json">JSON</a>
-</div>
+    <div id="chart"></div>
+    <div class="chart-caption">
+        <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
+        <a id='chart-data' href="/data/estimates.json">JSON</a>
+    </div>
 {% endblock %}
 
 {% block footerInlineScripts %}
-{{ parent() }}
-<script type="text/javascript">
+    {{ parent() }}
+    <script type="text/javascript">
 
-    $(function() {
-      var chart, chartData;
-      var $chart = $('#chart');
+        $(function () {
+            var chart, chartData;
+            var $chart = $('#chart');
 
-      google.setOnLoadCallback(loadChart);
+            google.setOnLoadCallback(loadChart);
 
-      var resizeTimeout = null;
-      var resizeFunction = function() {
-          timing.start('chart.redraw');
-          drawChart();
-          timing.stop('chart.redraw');
+            var resizeTimeout = null;
+            var resizeFunction = function () {
+                timing.start('chart.redraw');
+                drawChart();
+                timing.stop('chart.redraw');
 
-          if (typeof GoogleAnalyticsObject !== 'undefined') {
-              window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'estimates');
-          }
-      };
-      $(window).resize(function() {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(resizeFunction, 100);
-      });
+                if (typeof GoogleAnalyticsObject !== 'undefined') {
+                    window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'estimates');
+                }
+            };
+            $(window).resize(function () {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeFunction, 100);
+            });
 
-      $('#chart-refresh').click(function(event) {
-          event.preventDefault();
+            $('#chart-refresh').click(function (event) {
+                event.preventDefault();
 
-          var $link = $(this);
+                var $link = $(this);
 
-          if ($link.hasClass('disabled')) {
-            return;
-          }
+                if ($link.hasClass('disabled')) {
+                    return;
+                }
 
-          $link.addClass('disabled');
-          $('#chart').fadeTo('fast', 0.2, loadChart);
-      });
+                $link.addClass('disabled');
+                $('#chart').fadeTo('fast', 0.2, loadChart);
+            });
 
-      function loadChart() {
-          timing.start('chart.loadData');
+            function loadChart() {
+                timing.start('chart.loadData');
 
-          $.get('/data/estimates.json', function(response, textStatus, jqXHR) {
-              timing.stop('chart.loadData');
-              timing.start('chart.processData');
+                $.get('/data/estimates.json', function (response, textStatus, jqXHR) {
+                    timing.stop('chart.loadData');
+                    timing.start('chart.processData');
 
-              chartData = new google.visualization.DataTable();
+                    chartData = new google.visualization.DataTable();
 
-              chartData.addColumn('datetime', 'Time');
-              chartData.addColumn('number', 'Estimates');
-              chartData.addColumn('number', 'Failed Estimates');
+                    chartData.addColumn('datetime', 'Time');
+                    chartData.addColumn('number', 'Estimates');
+                    chartData.addColumn('number', 'Failed Estimates');
 
-              var data = response.data;
+                    var data = response.data;
 
-              for (var i in data) {
-                var when = new Date(data[i].when.replace(' ', 'T'));
-                var estimate = null;
-                var error = null;
-                if (data[i].estimate === null || data[i].estimate === '0000-00-00 00:00:00') {
-                    error = {
-                        v: 0,
-                        f: 'N/A'
-                    };
+                    for (var i in data) {
+                        var when = new Date(data[i].when.replace(' ', 'T'));
+                        var estimate = null;
+                        var error = null;
+                        if (data[i].estimate === null || data[i].estimate === '0000-00-00 00:00:00') {
+                            error = {
+                                v: 0,
+                                f: 'N/A'
+                            };
+                        }
+                        else {
+                            var estimateDate = new Date(data[i].estimate.replace(' ', 'T'));
+                            estimate = {
+                                v: (estimateDate.getTime() - when.getTime()) / 1000,
+                                f: estimateDate.toDateString()
+                            }
+                        }
+
+                        chartData.addRow([
+                            when,
+                            estimate,
+                            error
+                        ]);
+                    }
+                    timing.stop('chart.processData');
+
+                    timing.start('chart.firstDraw');
+                    drawChart();
+                    timing.stop('chart.firstDraw');
+
+                    if (typeof GoogleAnalyticsObject !== 'undefined') {
+                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'estimates');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'estimates');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'estimates');
+                    }
+
+                    $('#chart-refresh').removeClass('disabled');
+                    $('#chart').fadeTo('fast', 1);
+                });
+            }
+
+            function drawChart() {
+                if (chart) {
+                    chart.clearChart();
+                    $chart.css('height', '');
                 }
                 else {
-                  var estimateDate = new Date(data[i].estimate.replace(' ', 'T'));
-                  estimate = {
-                      v:(estimateDate.getTime() - when.getTime()) / 1000,
-                      f: estimateDate.toDateString()
-                  }
+                    chart = new google.visualization.ScatterChart($chart.get(0));
                 }
 
-                chartData.addRow([
-                    when,
-                    estimate,
-                    error
-                ]);
-              }
-              timing.stop('chart.processData');
+                $chart.css('height', ($(document).height() * 0.8));
 
-              timing.start('chart.firstDraw');
-              drawChart();
-              timing.stop('chart.firstDraw');
-
-              if (typeof GoogleAnalyticsObject !== 'undefined') {
-                  window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'estimates');
-                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'estimates');
-                  window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'estimates');
-              }
-
-              $('#chart-refresh').removeClass('disabled');
-              $('#chart').fadeTo('fast', 1);
-          });
-      }
-
-      function drawChart() {
-          if (chart) {
-              chart.clearChart();
-              $chart.css('height', '');
-          }
-          else {
-              chart = new google.visualization.ScatterChart($chart.get(0));
-          }
-
-          $chart.css('height', ($(document).height() * 0.8));
-
-          chart.draw(
-              chartData,
-              {
-                title: 'Estimate',
-                hAxis: {},
-                legend: 'none',
+                chart.draw(
+                    chartData,
+                    {
+                        title: 'Estimate',
+                        hAxis: {},
+                        legend: 'none'
+                    }
+                );
             }
-          );
-      }
-
-    });
-</script>
+        });
+    </script>
 {% endblock %}
