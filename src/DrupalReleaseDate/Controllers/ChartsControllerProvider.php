@@ -16,11 +16,13 @@ class ChartsControllerProvider implements ControllerProviderInterface
         $controllers->get('/estimates', 'DrupalReleaseDate\Controllers\Charts::estimates');
         $controllers->get('/distribution', 'DrupalReleaseDate\Controllers\Charts::distribution');
 
-        $controllers->after(function(Request $request, Response $response) {
-            // Allow caching for one week.
-            $response->setMaxAge(604800);
-            $response->setSharedMaxAge(604800);
-        });
+        $controllers->after(
+            function (Request $request, Response $response) {
+                // Allow caching for one week.
+                $response->setMaxAge(604800);
+                $response->setSharedMaxAge(604800);
+            }
+        );
 
         return $controllers;
     }

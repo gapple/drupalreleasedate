@@ -1,7 +1,8 @@
 <?php
 namespace DrupalReleaseDate\Random;
 
-abstract class WeightedRandom extends Random {
+abstract class WeightedRandom extends Random
+{
 
     /**
      * An array of cumulative weights for each possible outcome of the
@@ -38,7 +39,8 @@ abstract class WeightedRandom extends Random {
      *
      * @see \DrupalReleaseDate\Random\Random::setMin()
      */
-    public function setMin($min) {
+    public function setMin($min)
+    {
         parent::setMin($min);
 
         $this->weightsArray = array();
@@ -83,15 +85,15 @@ abstract class WeightedRandom extends Random {
 
     public function generate()
     {
-      $min = $this->weightsArray[$this->min];
-      $max = $this->weightsArray[$this->max];
-      $rand = mt_rand($min, $max);
+        $min = $this->weightsArray[$this->min];
+        $max = $this->weightsArray[$this->max];
+        $rand = mt_rand($min, $max);
 
-      // find the first bin that the number fits in to.
-      foreach ($this->weightsArray as $key => $bin) {
-          if ($rand <= $bin) {
-              return $key;
-          }
-      }
+        // find the first bin that the number fits in to.
+        foreach ($this->weightsArray as $key => $bin) {
+            if ($rand <= $bin) {
+                return $key;
+            }
+        }
     }
 }

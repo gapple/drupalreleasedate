@@ -21,13 +21,14 @@ class CronControllerProvider implements ControllerProviderInterface
         $controllers->get('/fetch-counts/{key}', 'DrupalReleaseDate\Controllers\Cron::fetchCounts');
 
         // Check key in request before running cron.
-        $controllers->before(function (Request $request) use ($app) {
-            $key = $request->attributes->get('key');
-            if (!isset($app['config']['cron.key']) || empty($key) || $key != $app['config']['cron.key'])
-            {
-                return new Response(null, 403);
+        $controllers->before(
+            function (Request $request) use ($app) {
+                $key = $request->attributes->get('key');
+                if (!isset($app['config']['cron.key']) || empty($key) || $key != $app['config']['cron.key']) {
+                    return new Response(null, 403);
+                }
             }
-        });
+        );
 
         return $controllers;
     }

@@ -1,7 +1,8 @@
 <?php
 namespace DrupalReleaseDate\Random;
 
-interface RandomInterface {
+interface RandomInterface
+{
 
     /**
      * Initialize a generator with the provided range.

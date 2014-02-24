@@ -29,7 +29,7 @@ class Cron
         $sql = "
             SELECT " . $app['db']->quoteIdentifier('when') . ", " . $app['db']->quoteIdentifier('critical_bugs') . "," . $app['db']->quoteIdentifier('critical_tasks') . "
                 FROM " . $app['db']->quoteIdentifier('samples') . "
-                WHERE " . $app['db']->quoteIdentifier('version')  ." = 8
+                WHERE " . $app['db']->quoteIdentifier('version') . " = 8
                 ORDER BY " . $app['db']->quoteIdentifier('when') . " ASC
         ";
         $results = $app['db']->query($sql);
@@ -38,13 +38,16 @@ class Cron
         }
 
         // Insert empty before run, update if succsesful.
-        $app['db']->insert($app['db']->quoteIdentifier('estimates'), array(
-            $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
-            $app['db']->quoteIdentifier('version') => 8,
-            $app['db']->quoteIdentifier('estimate') => null,
-            $app['db']->quoteIdentifier('note') => 'Timeout during run',
-            $app['db']->quoteIdentifier('data') => '',
-        ));
+        $app['db']->insert(
+            $app['db']->quoteIdentifier('estimates'),
+            array(
+                $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
+                $app['db']->quoteIdentifier('version') => 8,
+                $app['db']->quoteIdentifier('estimate') => null,
+                $app['db']->quoteIdentifier('note') => 'Timeout during run',
+                $app['db']->quoteIdentifier('data') => '',
+            )
+        );
         // Close connection during processing to prevent "Database has gone away" exception.
         $app['db']->close();
 
@@ -55,7 +58,7 @@ class Cron
         $sampleSelector = new SampleSetRandomSampleSelector($samples);
 
         $monteCarlo = new MonteCarlo($sampleSelector);
-        $iterations = (!empty($config['estimate.iterations'])? $config['estimate.iterations'] : 100000);
+        $iterations = (!empty($config['estimate.iterations']) ? $config['estimate.iterations'] : 100000);
 
         $update = array();
 
@@ -67,7 +70,7 @@ class Cron
             foreach ($estimateDistribution as $estimate => $count) {
                 $countSum += $count;
                 if ($countSum >= $medianIterations) {
-                  break;
+                    break;
                 }
             }
 
@@ -76,8 +79,7 @@ class Cron
                 $app['db']->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
                 $app['db']->quoteIdentifier('data') => serialize($estimateDistribution),
             );
-        }
-        catch (MonteCarloIncreasingRunException $e) {
+        } catch (MonteCarloIncreasingRunException $e) {
             $update += array(
                 $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
                 $app['db']->quoteIdentifier('note') => 'Run failed due to increasing issue count',
@@ -85,7 +87,8 @@ class Cron
         }
 
         $app['db']->connect();
-        $app['db']->update($app['db']->quoteIdentifier('estimates'),
+        $app['db']->update(
+            $app['db']->quoteIdentifier('estimates'),
             $update,
             array(
                 $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
@@ -109,14 +112,14 @@ class Cron
             $app['db']->quoteIdentifier('notes') => '',
         );
 
-        $userAgent = !empty($config['guzzle']['userAgent'])? $config['guzzle']['userAgent'] : null;
+        $userAgent = !empty($config['guzzle']['userAgent']) ? $config['guzzle']['userAgent'] : null;
         $counter = new \DrupalReleaseDate\DrupalIssueCount($userAgent);
 
 
         $d8results = $counter->getD8Counts();
         $queryData = $queryDataDefaults + array(
-            $app['db']->quoteIdentifier('version') => 8,
-        );
+                $app['db']->quoteIdentifier('version') => 8,
+            );
         foreach ($d8results as $resultKey => $resultValue) {
             $queryData[$app['db']->quoteIdentifier($resultKey)] = $resultValue;
         }
@@ -125,8 +128,8 @@ class Cron
 
         $d9results = $counter->getD9Counts();
         $queryData = $queryDataDefaults + array(
-            $app['db']->quoteIdentifier('version') => 9,
-        );
+                $app['db']->quoteIdentifier('version') => 9,
+            );
         foreach ($d9results as $resultKey => $resultValue) {
             $queryData[$app['db']->quoteIdentifier($resultKey)] = $resultValue;
         }

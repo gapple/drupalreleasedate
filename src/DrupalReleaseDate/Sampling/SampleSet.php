@@ -30,7 +30,8 @@ class SampleSet implements SampleSetInterface
         return $this->samples[$index];
     }
 
-    public function getLast() {
+    public function getLast()
+    {
         return $this->get($this->length() - 1);
     }
 }

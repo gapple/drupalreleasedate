@@ -83,10 +83,11 @@ class DrupalIssueCount
         14, // Reviewed & tested by the community
         15, // Patch (to be ported)
         4, // Postponed
-    //    16, // Postponed (maintainer needs more info)
+        // 16, // Postponed (maintainer needs more info)
     );
 
-    public function __construct($userAgent = null) {
+    public function __construct($userAgent = null)
+    {
         $this->client = new \Guzzle\Http\Client('https://drupal.org/');
 
         if (!empty($userAgent)) {
@@ -97,7 +98,8 @@ class DrupalIssueCount
     /**
      * Determine the version of Drupal that Drupal.org is running.
      */
-    public function determineDrupalOrgVersion() {
+    public function determineDrupalOrgVersion()
+    {
 
         if (empty($this->drupalOrgVersion)) {
             // Default to 6.x
@@ -123,26 +125,28 @@ class DrupalIssueCount
      *
      * @return array
      */
-    public function getD8Counts() {
+    public function getD8Counts()
+    {
 
         $drupalOrgVersion = $this->determineDrupalOrgVersion();
 
         if ($drupalOrgVersion == '6') {
-            return $this->getCounts(array(
+            return $this->getCounts(
+                array(
                     'version' => array('8.x'),
                     'status' => static::$fetchStatusIds,
                 ),
                 static::$dOrgD6FetchCategories,
-              'view-project-issue-search-project'
+                'view-project-issue-search-project'
             );
-        }
-        else if ($drupalOrgVersion == '7') {
-            return $this->getCounts(array(
+        } elseif ($drupalOrgVersion == '7') {
+            return $this->getCounts(
+                array(
                     'version' => array('8.x'),
                     'status' => static::$fetchStatusIds,
                 ),
                 static::$dOrgD7FetchCategories,
-              'view-project-issue-search-project-searchapi'
+                'view-project-issue-search-project-searchapi'
             );
         }
     }
@@ -152,28 +156,31 @@ class DrupalIssueCount
      *
      * @return array
      */
-    public function getD9Counts() {
+    public function getD9Counts()
+    {
 
-      $drupalOrgVersion = $this->determineDrupalOrgVersion();
+        $drupalOrgVersion = $this->determineDrupalOrgVersion();
 
-      if ($drupalOrgVersion == '6') {
-          return $this->getCounts(array(
-                  'version' => array('1859548'), // 9.x doesn't have a catch-all version, so the term id for 9.x-dev is used.
-                  'status' => static::$fetchStatusIds,
-              ),
-              static::$dOrgD6FetchCategories,
-              'view-project-issue-search-project'
-          );
-      }
-      else if ($drupalOrgVersion == '7') {
-        return $this->getCounts(array(
-                  'version' => array('9.x'),
-                  'status' => static::$fetchStatusIds,
-              ),
-              static::$dOrgD7FetchCategories,
-              'view-project-issue-search-project-searchapi'
-          );
-      }
+        if ($drupalOrgVersion == '6') {
+            return $this->getCounts(
+                array(
+                    'version' => array('1859548'),
+                    // 9.x doesn't have a catch-all version, so the term id for 9.x-dev is used.
+                    'status' => static::$fetchStatusIds,
+                ),
+                static::$dOrgD6FetchCategories,
+                'view-project-issue-search-project'
+            );
+        } elseif ($drupalOrgVersion == '7') {
+            return $this->getCounts(
+                array(
+                    'version' => array('9.x'),
+                    'status' => static::$fetchStatusIds,
+                ),
+                static::$dOrgD7FetchCategories,
+                'view-project-issue-search-project-searchapi'
+            );
+        }
     }
 
     /**
@@ -190,7 +197,8 @@ class DrupalIssueCount
      * @param $viewClass
      *   The class
      */
-    public function getCounts($commonParameters, $fetchSet, $viewClass) {
+    public function getCounts($commonParameters, $fetchSet, $viewClass)
+    {
 
         $request = $this->client->get('/project/issues/search/drupal');
 
@@ -204,10 +212,9 @@ class DrupalIssueCount
                 $query->set($parameterKey, $parameterValue);
             }
             try {
-              $results[$fetchKey] = $this->getCount($request, $viewClass);
-            }
-            catch (DrupalOrgParseException $e) {
-              $results[$fetchKey] = null;
+                $results[$fetchKey] = $this->getCount($request, $viewClass);
+            } catch (DrupalOrgParseException $e) {
+                $results[$fetchKey] = null;
             }
         }
 
@@ -225,7 +232,8 @@ class DrupalIssueCount
      * @return number
      *   The total number of issues for the search paramaters of the request.
      */
-    public function getCount(\Guzzle\Http\Message\RequestInterface $request, $viewClass) {
+    public function getCount(\Guzzle\Http\Message\RequestInterface $request, $viewClass)
+    {
 
         // Make sure page isn't set from a previous call on the same request object.
         $request->getQuery()->remove('page');
@@ -235,7 +243,9 @@ class DrupalIssueCount
         // Check if pager exists on first page; get the next page until we're at
         // the end to find the total number of pages.
         $fullPages = 0;
-        $pagerNext = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a");
+        $pagerNext = $document->xpath(
+            "//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a"
+        );
 
         while ($pagerNext) {
             $pagerNextUrl = (string) $pagerNext[0]['href'];
@@ -245,10 +255,14 @@ class DrupalIssueCount
             $request->getQuery()->set('page', $fullPages);
             $document = $this->getXmlDocument($request->send());
 
-            $pagerNext = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a");
+            $pagerNext = $document->xpath(
+                "//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a"
+            );
         }
 
-        $issueRows = $document->xpath("//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr");
+        $issueRows = $document->xpath(
+            "//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr"
+        );
 
         // Drupal.org is returning rows where all cells are empty, which bumps
         // up the count incorrectly.
@@ -271,13 +285,13 @@ class DrupalIssueCount
      * @param array $parameters
      * @return \SimpleXMLElement
      */
-    public function getXmlDocument(\Guzzle\Http\Message\Response $response) {
+    public function getXmlDocument(\Guzzle\Http\Message\Response $response)
+    {
 
         try {
             libxml_use_internal_errors(true);
             $document = $response->xml();
-        }
-        catch (\Guzzle\Common\Exception\RuntimeException $e) {
+        } catch (\Guzzle\Common\Exception\RuntimeException $e) {
             libxml_clear_errors();
 
             // Drupal.org may return invalid XML due to unescaped ampersands and
@@ -286,15 +300,14 @@ class DrupalIssueCount
             $page = (string) $response->getBody();
 
             $replace = array(
-                ' & '    => ' &amp; ',
+                ' & ' => ' &amp; ',
                 '&nbsp;' => '&#xA0;',
             );
             $page = str_replace(array_keys($replace), array_values($replace), $page);
 
             try {
                 $document = new \SimpleXMLElement($page);
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 // Throw a better specified Exception.
                 throw new DrupalOrgParseException();
             }

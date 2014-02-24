@@ -30,7 +30,7 @@ class Sample
     function setDiff($from)
     {
         $this->duration = $this->when - $from->getWhen();
-        $this->resolved =  $from->getCount() - $this->count;
+        $this->resolved = $from->getCount() - $this->count;
     }
 
     function getDuration()

@@ -19,16 +19,14 @@ class Data
             ->setMaxResults(1);
         $lastResults = $lastQuery->execute();
         $lastDate = null;
-        if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC))
-        {
+        if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
             $lastDate = new \DateTime($lastResultRow['when']);
 
             $response = new Response();
             $response->setLastModified($lastDate);
             $response->setPublic();
 
-            if ($response->isNotModified($request))
-            {
+            if ($response->isNotModified($request)) {
                 // Return 304 Not Modified response.
                 return $response;
             }
@@ -37,9 +35,12 @@ class Data
         $query = $app['db']->createQueryBuilder()
             ->select(
                 's.when',
-                's.critical_bugs', 's.critical_tasks',
-                's.major_bugs', 's.major_tasks',
-                's.normal_bugs', 's.normal_tasks'
+                's.critical_bugs',
+                's.critical_tasks',
+                's.major_bugs',
+                's.major_tasks',
+                's.normal_bugs',
+                's.normal_tasks'
             )
             ->from('samples', 's')
             ->where('version = 8')
@@ -56,25 +57,24 @@ class Data
             'normal_bugs',
             'normal_tasks',
         );
-        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC))
-        {
+        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC)) {
             $dataRow = array(
                 'when' => $resultRow['when']
             );
-            foreach ($dataKeys as $key)
-            {
-                $dataRow[$key] = isset($resultRow[$key])? ((int) $resultRow[$key]) : null;
+            foreach ($dataKeys as $key) {
+                $dataRow[$key] = isset($resultRow[$key]) ? ((int) $resultRow[$key]) : null;
             }
             $data[] = $dataRow;
         }
 
-        $response = $app->json(array(
-            'modified' => $lastResultRow['when'],
-            'data' => $data,
-        ));
+        $response = $app->json(
+            array(
+                'modified' => $lastResultRow['when'],
+                'data' => $data,
+            )
+        );
 
-        if ($lastDate)
-        {
+        if ($lastDate) {
             $response->setLastModified($lastDate);
         }
 
@@ -106,17 +106,15 @@ class Data
         $nowResult = $nowQuery->execute();
         $nowDate = null;
 
-        if ($nowResultRow = $nowResult->fetch(\PDO::FETCH_ASSOC))
-        {
+        if ($nowResultRow = $nowResult->fetch(\PDO::FETCH_ASSOC)) {
             $nowDate = new \DateTime($nowResultRow['when']);
 
             $response = new Response();
             $response->setLastModified($nowDate);
             $response->setPublic();
 
-            if ($response->isNotModified($request))
-            {
-              // Return 304 Not Modified response.
+            if ($response->isNotModified($request)) {
+                // Return 304 Not Modified response.
                 return $response;
             }
 
@@ -133,8 +131,7 @@ class Data
                 ->setParameter('now', $nowResultRow['when']);
             $dayResult = $dayQuery->execute();
 
-            if ($dayResultRow = $dayResult->fetch(\PDO::FETCH_ASSOC))
-            {
+            if ($dayResultRow = $dayResult->fetch(\PDO::FETCH_ASSOC)) {
                 $critical['day'] = $nowIssues - ($dayResultRow['critical_bugs'] + $dayResultRow['critical_tasks']);
             }
 
@@ -148,8 +145,7 @@ class Data
                 ->setParameter('now', $nowResultRow['when']);
             $weekResult = $weekQuery->execute();
 
-            if ($weekResultRow = $weekResult->fetch(\PDO::FETCH_ASSOC))
-            {
+            if ($weekResultRow = $weekResult->fetch(\PDO::FETCH_ASSOC)) {
                 $critical['week'] = $nowIssues - ($weekResultRow['critical_bugs'] + $weekResultRow['critical_tasks']);
             }
 
@@ -163,8 +159,7 @@ class Data
                 ->setParameter('now', $nowResultRow['when']);
             $monthResult = $monthQuery->execute();
 
-            if ($monthResultRow = $monthResult->fetch(\PDO::FETCH_ASSOC))
-            {
+            if ($monthResultRow = $monthResult->fetch(\PDO::FETCH_ASSOC)) {
                 $critical['month'] = $nowIssues - ($monthResultRow['critical_bugs'] + $monthResultRow['critical_tasks']);
             }
 
@@ -178,8 +173,7 @@ class Data
                 ->setParameter('now', $nowResultRow['when']);
             $quarterResult = $quarterQuery->execute();
 
-            if ($quarterResultRow = $quarterResult->fetch(\PDO::FETCH_ASSOC))
-            {
+            if ($quarterResultRow = $quarterResult->fetch(\PDO::FETCH_ASSOC)) {
                 $critical['quarter'] = $nowIssues - ($quarterResultRow['critical_bugs'] + $quarterResultRow['critical_tasks']);
             }
 
@@ -193,21 +187,21 @@ class Data
                 ->setParameter('now', $nowResultRow['when']);
             $halfResult = $halfQuery->execute();
 
-            if ($halfResultRow = $halfResult->fetch(\PDO::FETCH_ASSOC))
-            {
+            if ($halfResultRow = $halfResult->fetch(\PDO::FETCH_ASSOC)) {
                 $critical['half'] = $nowIssues - ($halfResultRow['critical_bugs'] + $halfResultRow['critical_tasks']);
             }
         }
 
-        $response = $app->json(array(
-            'modified' => $nowResultRow['when'],
-            'data' => array(
-                'critical' => $critical,
-            ),
-        ));
+        $response = $app->json(
+            array(
+                'modified' => $nowResultRow['when'],
+                'data' => array(
+                    'critical' => $critical,
+                ),
+            )
+        );
 
-        if ($nowDate)
-        {
+        if ($nowDate) {
             $response->setLastModified($nowDate);
         }
 
@@ -227,8 +221,7 @@ class Data
             ->setMaxResults(1);
         $lastResults = $lastQuery->execute();
         $lastDate = null;
-        if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC))
-        {
+        if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
             $lastDate = new \DateTime($lastResultRow['when']);
             $responseData['modified'] = $lastResultRow['when'];
 
@@ -236,8 +229,7 @@ class Data
             $response->setLastModified($lastDate);
             $response->setPublic();
 
-            if ($response->isNotModified($request))
-            {
+            if ($response->isNotModified($request)) {
                 // Return 304 Not Modified response.
                 return $response;
             }
@@ -249,8 +241,7 @@ class Data
             ->where('version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
 
-        if ($request->query->has('limit'))
-        {
+        if ($request->query->has('limit')) {
             $limit = $request->query->getInt('limit');
             $responseData['limit'] = $limit;
             $queryBuilder
@@ -261,8 +252,7 @@ class Data
         $results = $queryBuilder->execute();
 
         $responseData['data'] = array();
-        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC))
-        {
+        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC)) {
             $responseData['data'][] = array(
                 'when' => $resultRow['when'],
                 'estimate' => $resultRow['estimate'],
@@ -270,20 +260,20 @@ class Data
         }
 
         if (isset($limit)) {
-          $responseData['data'] = array_reverse($responseData['data']);
+            $responseData['data'] = array_reverse($responseData['data']);
         }
 
         $response = $app->json($responseData);
 
-        if ($lastDate)
-        {
+        if ($lastDate) {
             $response->setLastModified($lastDate);
         }
 
         return $response;
     }
 
-    public function distribution(Application $app, Request $request) {
+    public function distribution(Application $app, Request $request)
+    {
 
         $query = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate', 'e.data')
@@ -293,9 +283,9 @@ class Data
             ->setMaxResults(1);
 
         if ($request->query->has('date')) {
-          $query
-            ->andWhere($app['db']->quoteIdentifier('when') . ' = :when')
-            ->setParameter('when', $request->query->get('date'), \PDO::PARAM_STR);
+            $query
+                ->andWhere($app['db']->quoteIdentifier('when') . ' = :when')
+                ->setParameter('when', $request->query->get('date'), \PDO::PARAM_STR);
         }
 
         $results = $query->execute();
@@ -308,8 +298,7 @@ class Data
             $response->setLastModified($estimateDate);
             $response->setPublic();
 
-            if ($response->isNotModified($request))
-            {
+            if ($response->isNotModified($request)) {
                 // Return 304 Not Modified response.
                 return $response;
             }
@@ -322,19 +311,19 @@ class Data
                         'count' => $count,
                     );
                 }
-            }
-            else {
+            } else {
                 $data = null;
             }
 
-            $response = $app->json(array(
-                'modified' => $row['when'],
-                'data' => $data,
-            ));
+            $response = $app->json(
+                array(
+                    'modified' => $row['when'],
+                    'data' => $data,
+                )
+            );
 
-            if ($estimateDate)
-            {
-              $response->setLastModified($estimateDate);
+            if ($estimateDate) {
+                $response->setLastModified($estimateDate);
             }
 
             return $response;

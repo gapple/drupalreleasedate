@@ -57,24 +57,23 @@ class MonteCarlo
     public function iteration()
     {
 
-      // Get the current number of issues from the last sample in the set.
-      $issues = $currentIssues = $this->sampleSelector->getLastSample()->getCount();
+        // Get the current number of issues from the last sample in the set.
+        $issues = $currentIssues = $this->sampleSelector->getLastSample()->getCount();
 
-      $duration = 0;
+        $duration = 0;
 
-      do {
-          $sample = $this->sampleSelector->getRandomSample();
-          $duration += $sample->getDuration();
-          $issues -= $sample->getResolved();
+        do {
+            $sample = $this->sampleSelector->getRandomSample();
+            $duration += $sample->getDuration();
+            $issues -= $sample->getResolved();
 
-          // Failsafe for if simulation goes in the wrong direction too far.
-          if ($issues > $currentIssues * 10) {
-              throw new MonteCarloIncreasingRunException("Iteration failed due to increasing issue count");
-          }
-      }
-      while ($issues > 0);
+            // Failsafe for if simulation goes in the wrong direction too far.
+            if ($issues > $currentIssues * 10) {
+                throw new MonteCarloIncreasingRunException("Iteration failed due to increasing issue count");
+            }
+        } while ($issues > 0);
 
-      return $duration;
+        return $duration;
     }
 
     /**
@@ -91,12 +90,11 @@ class MonteCarlo
         for ($run = 0; $run < $iterations; $run++) {
             try {
                 $estimate += $this->iteration();
-            }
-            catch (MonteCarloIncreasingRunException $e) {
+            } catch (MonteCarloIncreasingRunException $e) {
                 $increasingFailures++;
                 if (
-                     $run > ($iterations * $this->increasingFailureThresholdRatio)
-                  && ($increasingFailures / $run) > $this->increasingFailureRatio
+                    $run > ($iterations * $this->increasingFailureThresholdRatio)
+                    && ($increasingFailures / $run) > $this->increasingFailureRatio
                 ) {
                     throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
                 }
@@ -150,12 +148,11 @@ class MonteCarlo
         for ($run = 0; $run < $iterations; $run++) {
             try {
                 $estimate = $this->iteration();
-            }
-            catch (MonteCarloIncreasingRunException $e) {
+            } catch (MonteCarloIncreasingRunException $e) {
                 $increasingFailures++;
                 if (
-                     $run > ($iterations * $this->increasingFailureThresholdRatio)
-                  && ($increasingFailures / $run) > $this->increasingFailureRatio
+                    $run > ($iterations * $this->increasingFailureThresholdRatio)
+                    && ($increasingFailures / $run) > $this->increasingFailureRatio
                 ) {
                     throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
                 }
@@ -167,8 +164,7 @@ class MonteCarlo
 
             if (isset($estimates[$bucket])) {
                 $estimates[$bucket]++;
-            }
-            else {
+            } else {
                 $estimates[$bucket] = 1;
             }
         }
