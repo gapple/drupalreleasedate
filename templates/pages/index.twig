@@ -55,10 +55,10 @@
                 $('.estimate .note').html(estimate.note);
             }
 
-            timing.start('index.loadEstimate');
+            Timing.start('index.loadEstimate');
             $.getJSON('/data/estimates.json?limit=1')
                 .done(function (response) {
-                    timing.stop('index.loadEstimate');
+                    Timing.stop('index.loadEstimate');
 
                     var estimate;
                     if (response.data && response.data[0]) {
@@ -133,16 +133,16 @@
                     updateEstimate(estimate);
 
                     if (typeof GoogleAnalyticsObject !== 'undefined') {
-                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadEstimate'), 'estimates');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('index.loadEstimate'), 'estimates');
                     }
                 })
                 .fail(function () {
                     updateEstimate();
                 });
 
-            timing.start('index.loadChanges');
+            Timing.start('index.loadChanges');
             $.getJSON('/data/changes.json').done(function (response) {
-                timing.stop('index.loadChanges');
+                Timing.stop('index.loadChanges');
 
                 $('.changes .current .value').html(response.data.critical.current);
 
@@ -168,7 +168,7 @@
                 });
 
                 if (typeof GoogleAnalyticsObject !== 'undefined') {
-                    window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('index.loadChanges'), 'changes');
+                    window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('index.loadChanges'), 'changes');
                 }
             });
         });

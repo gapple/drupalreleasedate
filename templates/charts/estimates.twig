@@ -22,12 +22,12 @@
 
             var resizeTimeout = null;
             var resizeFunction = function () {
-                timing.start('chart.redraw');
+                Timing.start('chart.redraw');
                 drawChart();
-                timing.stop('chart.redraw');
+                Timing.stop('chart.redraw');
 
                 if (typeof GoogleAnalyticsObject !== 'undefined') {
-                    window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', timing.get('chart.redraw'), 'estimates');
+                    window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'redraw', Timing.get('chart.redraw'), 'estimates');
                 }
             };
             $(window).resize(function () {
@@ -49,11 +49,11 @@
             });
 
             function loadChart() {
-                timing.start('chart.loadData');
+                Timing.start('chart.loadData');
 
                 $.get('/data/estimates.json', function (response, textStatus, jqXHR) {
-                    timing.stop('chart.loadData');
-                    timing.start('chart.processData');
+                    Timing.stop('chart.loadData');
+                    Timing.start('chart.processData');
 
                     chartData = new google.visualization.DataTable();
 
@@ -87,16 +87,16 @@
                             error
                         ]);
                     }
-                    timing.stop('chart.processData');
+                    Timing.stop('chart.processData');
 
-                    timing.start('chart.firstDraw');
+                    Timing.start('chart.firstDraw');
                     drawChart();
-                    timing.stop('chart.firstDraw');
+                    Timing.stop('chart.firstDraw');
 
                     if (typeof GoogleAnalyticsObject !== 'undefined') {
-                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', timing.get('chart.loadData'), 'estimates');
-                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', timing.get('chart.processData'), 'estimates');
-                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', timing.get('chart.firstDraw'), 'estimates');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('chart.loadData'), 'estimates');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'processData', Timing.get('chart.processData'), 'estimates');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'chart', 'firstDraw', Timing.get('chart.firstDraw'), 'estimates');
                     }
 
                     $('#chart-refresh').removeClass('disabled');
