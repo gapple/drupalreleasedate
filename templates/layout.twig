@@ -112,7 +112,7 @@
 
                     // Timer is still running.
                     if (typeof timings[key].start !== 'undefined') {
-                        return (new Date()).getTime() - timings[key].start.getTime();
+                        return timings[key].elapsed + (new Date()).getTime() - timings[key].start.getTime();
                     }
 
                     return timings[key].elapsed;
