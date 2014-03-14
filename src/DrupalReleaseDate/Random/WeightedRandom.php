@@ -83,17 +83,24 @@ abstract class WeightedRandom extends Random
      */
     abstract public function calculateWeight($value);
 
+    /**
+     * Generate a random value, according to the evaluated weights.
+     *
+     * @return int
+     */
     public function generate()
     {
-        $min = $this->weightsArray[$this->min];
-        $max = $this->weightsArray[$this->max];
-        $rand = mt_rand($min, $max);
+        $minWeight = $this->weightsArray[$this->min];
+        $maxWeight = $this->weightsArray[$this->max];
+        $rand = mt_rand($minWeight, $maxWeight);
 
-        // find the first bin that the number fits in to.
-        foreach ($this->weightsArray as $key => $bin) {
-            if ($rand <= $bin) {
-                return $key;
+        // Find the first weight that the random number fits in to.
+        $value = $this->min;
+        foreach ($this->weightsArray as $value => $weight) {
+            if ($rand <= $weight) {
+                break;
             }
         }
+        return $value;
     }
 }
