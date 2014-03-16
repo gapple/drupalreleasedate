@@ -6,33 +6,63 @@ use DrupalReleaseDate\Random\Random;
 class RandomTest extends \PHPUnit_Framework_TestCase {
 
     /**
-     * Minimum value for the generator to produce.
+     * Test that a negative minimum value is not accepted.
+     *
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Minimum value must be a positive integer
      */
-    protected $min = 1;
+    function testNegativeMin()
+    {
+        new Random(-1, 1);
+    }
 
     /**
-     * Maximim value for the generator to produce.
+     * Test that a maximum value smaller than the minimum is not accepted.
+     *
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Maximum value must be a positive integer greater than minimum value
      */
-    protected $max = 10;
+    function testSmallerMax()
+    {
+        new Random(5, 2);
+    }
 
     /**
-     * Number of iterations to retrieve from the generator when multiple results
-     * are required.
+     * Test that non-integer values are not accepted as a minimum value.
+     *
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Minimum value must be a positive integer
      */
-    protected $iterations = 10000;
+    function testNonIntegerMin()
+    {
+        new Random(1.5, 2);
+    }
 
-    function setUp() {
-        $this->generator = new Random($this->min, $this->max);
+    /**
+     * Test that non-integer values are not accepted as a maximum value.
+     *
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Maximum value must be a positive integer greater than minimum value
+     */
+    function testNonIntegerMax()
+    {
+        new Random(1, 2.5);
     }
 
     /**
      * Test that the generator only returns results in the specified range.
      */
-    function testRange() {
-        for ($i = 0; $i < $this->iterations; $i++) {
-            $rand = $this->generator->generate();
-            $this->assertGreaterThanOrEqual($this->min, $rand);
-            $this->assertLessThanOrEqual($this->max, $rand);
+    function testResultsWithinRange() {
+        $min = 1;
+        $max = 10;
+        $iterations = 1000;
+
+        $generator = new Random($min, $max);
+
+        for ($i = 0; $i < $iterations; $i++) {
+            $rand = $generator->generate();
+            $this->assertGreaterThanOrEqual($min, $rand);
+            $this->assertLessThanOrEqual($max, $rand);
         }
     }
 
@@ -40,21 +70,22 @@ class RandomTest extends \PHPUnit_Framework_TestCase {
      * Test that the generator produces a relatively flat distribution of results.
      */
     function testDistribution() {
+        $min = 1;
+        $max = 10;
+        $iterations = 10000;
 
-        $range = $this->max - $this->min + 1;
-        $expected = $this->iterations / $range;
+        $range = $max - $min + 1;
+        $expected = $iterations / $range;
 
-        $results = array();
-        for ($i = $this->min; $i <= $this->max; $i++) {
-            $results[$i] = 0;
+        $generator = new Random($min, $max);
+
+        $results = array_fill($min, $range, 0);
+
+        for ($i = 0; $i < $iterations; $i++) {
+            $results[$generator->generate()]++;
         }
 
-        for ($i = 0; $i < $this->iterations; $i++) {
-            $results[$this->generator->generate()]++;
-        }
-
-
-        foreach ($results as $key => $count) {
+        foreach ($results as $value => $count) {
             $this->assertEquals(1.0, $count / $expected, '', 0.1);
         }
     }

@@ -11,10 +11,10 @@ class Random implements RandomInterface
 
     public function __construct($min = 0, $max = 1)
     {
-        if ($min < 0 || !is_int($min)) {
+        if (!is_int($min) || $min < 0) {
             throw new \InvalidArgumentException("Minimum value must be a positive integer");
         }
-        if ($max < $min || !is_int($max)) {
+        if (!is_int($max) || $max < $min) {
             throw new \InvalidArgumentException("Maximum value must be a positive integer greater than minimum value");
         }
 
