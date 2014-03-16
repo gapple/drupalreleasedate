@@ -74,8 +74,32 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      * @expectedException RangeException
      * @expectedExceptionMessage The value 7 was given a weight of -1
      */
-    public function testNegativeWeight() {
+    public function testConstructNegativeWeight() {
         $generator = new LinearWeightedRandom(1, 10, 5, -1);
+    }
+
+    /**
+     * Check that an exception is thrown if changing the minimum value results
+     * in a negative calculated weight.
+     *
+     * @expectedException RangeException
+     * @expectedExceptionMessage The value 7 was given a weight of -1
+     */
+    public function testSetMinNegativeWeight() {
+        $generator = new LinearWeightedRandom(5, 10, 5, -1);
+        $generator->setMin(1);
+    }
+
+    /**
+     * Check that an exception is thrown if changing the maximum value results
+     * in a negative calculated weight.
+     *
+     * @expectedException RangeException
+     * @expectedExceptionMessage The value 7 was given a weight of -1
+     */
+    public function testSetMaxNegativeWeight() {
+        $generator = new LinearWeightedRandom(1, 5, 5, -1);
+        $generator->setMax(10);
     }
 
     /**
