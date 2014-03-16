@@ -57,6 +57,12 @@ abstract class WeightedRandom extends Random
             $cumulativeWeight += $weight;
             $this->weightsArray[$i] = $cumulativeWeight;
         }
+
+        // Check that the cumulative weight has not grown over PHP_INT_MAX,
+        // and been converted to a float.
+        if (!is_int($cumulativeWeight)) {
+            $this->integerWeights = false;
+        }
     }
 
     /**
