@@ -35,8 +35,21 @@ abstract class WeightedRandom extends Random
     {
         parent::__construct($min, $max);
 
+        $this->evaluateWeights();
+    }
+
+    /**
+     * Evaluate and store weights for the range currently set.
+     *
+     * @todo It is only necessary to calculate weights for higher values if
+     * the minimum value has not changed.
+     */
+    protected function evaluateWeights() {
+
+        $this->weightsArray = array();
+
         $cumulativeWeight = 0;
-        for ($i = $min; $i <= $max; $i++) {
+        for ($i = $this->min; $i <= $this->max; $i++) {
             $weight = $this->calculateWeight($i);
             if ($weight < 0) {
                 throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
@@ -49,53 +62,25 @@ abstract class WeightedRandom extends Random
     /**
      * Set a new minimum value for the generator.
      *
-     * Weighted random values may be calculated as an interval from the minimum
-     * value, so all weights will need to be recalculated.
-     *
      * @see \DrupalReleaseDate\Random\Random::setMin()
      */
     public function setMin($min)
     {
         parent::setMin($min);
 
-        $this->weightsArray = array();
-
-        $cumulativeWeight = 0;
-        for ($i = $min; $i <= $this->max; $i++) {
-            $weight = $this->calculateWeight($i);
-            if ($weight < 0) {
-                throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
-            }
-            $cumulativeWeight += $weight;
-            $this->weightsArray[$i] = $cumulativeWeight;
-        }
+        $this->evaluateWeights();
     }
 
     /**
      * Set a new maximum value for the generator.
      *
-     * Weighted random will require calculating cumulative values if the desired
-     * max is greater than the previous max.
-     *
      * @see \DrupalReleaseDate\Random\Random::setMax()
      */
     public function setMax($max)
     {
-        end($this->weightsArray);
-        $calculatedTo = key($this->weightsArray);
-
-        if ($calculatedTo < $max) {
-            $cumulativeWeight = current($this->weightsArray);
-            for ($i = $calculatedTo + 1; $i <= $max; $i++) {
-                $weight = $this->calculateWeight($i);
-                if ($weight < 0) {
-                    throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
-                }
-                $cumulativeWeight += $weight;
-                $this->weightsArray[$i] = $cumulativeWeight;
-            }
-        }
         parent::setMax($max);
+
+        $this->evaluateWeights();
     }
 
     /**
