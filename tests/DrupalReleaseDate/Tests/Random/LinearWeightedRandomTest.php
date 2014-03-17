@@ -6,12 +6,6 @@ use DrupalReleaseDate\Random\LinearWeightedRandom;
 class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
 
     /**
-     * Number of iterations to retrieve from the generator when multiple results
-     * are required.
-     */
-    protected $iterations = 1000;
-
-    /**
      * Test that the generator only returns results in the specified range.
      */
     public function testRange() {
@@ -19,7 +13,7 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
         $max = 15;
         $generator = new LinearWeightedRandom($min, $max);
 
-        for ($i = 0; $i < $this->iterations; $i++) {
+        for ($i = 0; $i < RANDOM_BASE_ITERATIONS; $i++) {
             $rand = $generator->generate();
             $this->assertGreaterThanOrEqual($min, $rand);
             $this->assertLessThanOrEqual($max, $rand);
@@ -57,17 +51,6 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * Check that the constuctor throws an exception if the base value provided
-     * is a negative number.
-     *
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Base must be a positive number
-     */
-    public function testInvalidBase() {
-        $generator = new LinearWeightedRandom(1, 10, -1);
-    }
-
-    /**
      * Check that the constructor throws an exception if a calculated weight is
      * a negative number.
      *
@@ -75,7 +58,7 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage The value 7 was given a weight of -1
      */
     public function testConstructNegativeWeight() {
-        $generator = new LinearWeightedRandom(1, 10, 5, -1);
+        $generator = new LinearWeightedRandom(1, 10, -1, 5);
     }
 
     /**
@@ -86,7 +69,7 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage The value 7 was given a weight of -1
      */
     public function testSetMinNegativeWeight() {
-        $generator = new LinearWeightedRandom(5, 10, 5, -1);
+        $generator = new LinearWeightedRandom(6, 10, -1, 5);
         $generator->setMin(1);
     }
 
@@ -98,7 +81,7 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage The value 7 was given a weight of -1
      */
     public function testSetMaxNegativeWeight() {
-        $generator = new LinearWeightedRandom(1, 5, 5, -1);
+        $generator = new LinearWeightedRandom(1, 5, -1, 5);
         $generator->setMax(10);
     }
 
@@ -115,25 +98,22 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      * @param int $max
      * @param
      */
-    protected function checkDistribution(\DrupalReleaseDate\Random\WeightedRandom $generator, $min, $max, $base = 1, $slope = 1) {
+    protected function checkDistribution(\DrupalReleaseDate\Random\WeightedRandom $generator, $min, $max, $slope = 1, $base = 1) {
 
         $range = $max - $min + 1;
         $probabilitySum = $range / 2 * ((($range - 1) * $slope + $base) + $base);
 
-        $results = array();
-        for ($i = $min; $i <= $max; $i++) {
-            $results[$i] = 0;
-        }
+        $results = array_fill($min, $range, 0);
 
-        for ($i = 0; $i < ($this->iterations * $probabilitySum); $i++) {
+        for ($i = 0; $i < (RANDOM_BASE_ITERATIONS * $probabilitySum); $i++) {
             $results[$generator->generate()]++;
         }
 
         // TODO make the required results adaptive based on the range of the generator
         //      and the number of iterations performed.
         $weight = (float) $base;
-        foreach ($results as $key => $count) {
-            $this->assertEquals($weight, $count / ($this->iterations), '', 0.2);
+        foreach ($results as $value => $count) {
+            $this->assertEquals($weight, $count / (RANDOM_BASE_ITERATIONS), '', 0.2);
             $weight += $slope;
         }
     }
@@ -184,11 +164,11 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      */
     public function testDistributionChangeBase() {
 
-        $generator = new LinearWeightedRandom(1, 5, 2);
-        $this->checkDistribution($generator, 1, 5, 2);
+        $generator = new LinearWeightedRandom(1, 5, 1, 2);
+        $this->checkDistribution($generator, 1, 5, 1 ,2);
 
-        $generator = new LinearWeightedRandom(1, 5, 10);
-        $this->checkDistribution($generator, 1, 5, 10);
+        $generator = new LinearWeightedRandom(1, 5, 1, 10);
+        $this->checkDistribution($generator, 1, 5, 1, 10);
     }
 
     /**
@@ -197,11 +177,11 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      */
     public function testDistributionChangeSlope() {
 
-        $generator = new LinearWeightedRandom(2, 7, 1, 2.5);
-        $this->checkDistribution($generator, 2, 7, 1, 2.5);
+        $generator = new LinearWeightedRandom(2, 7, 2.5);
+        $this->checkDistribution($generator, 2, 7, 2.5);
 
-        $generator = new LinearWeightedRandom(2, 7, 1, 0.5);
-        $this->checkDistribution($generator, 2, 7, 1, 0.5);
+        $generator = new LinearWeightedRandom(2, 7, 0.5);
+        $this->checkDistribution($generator, 2, 7, 0.5);
     }
 
     /**
@@ -210,10 +190,10 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      */
     public function testDistributionChangeBaseAndSlope() {
 
-        $generator = new LinearWeightedRandom(2, 7, 5, 2.5);
-        $this->checkDistribution($generator, 2, 7, 5, 2.5);
+        $generator = new LinearWeightedRandom(2, 7, 2.5, 5);
+        $this->checkDistribution($generator, 2, 7, 2.5, 5);
 
-        $generator = new LinearWeightedRandom(2, 7, 1, 0.5);
-        $this->checkDistribution($generator, 2, 7, 1, 0.5);
+        $generator = new LinearWeightedRandom(2, 7, 0.5, 2);
+        $this->checkDistribution($generator, 2, 7, 0.5, 2);
     }
 }

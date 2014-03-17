@@ -1,11 +1,16 @@
 <?php
 namespace DrupalReleaseDate\Random;
 
-class QuadraticWeightedRandom extends WeightedRandom
+class QuadraticWeightedRandom extends PolynomialWeightedRandom
 {
-
-    public function calculateWeight($value)
+    public function __construct($min, $max, $a = 1, $b = 0, $c = 1)
     {
-        return pow($value - $this->min + 1, 2);
+        $coefficients = array(
+            2 => $a,
+            1 => $b,
+            0 => $c,
+        );
+
+        parent::__construct($min, $max, $coefficients);
     }
 }

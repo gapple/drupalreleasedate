@@ -44,7 +44,7 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
         $rate = 2;
         $generator = new GeometricWeightedRandom($min, $max, $rate);
 
-        for ($i = 0; $i < 1000; $i++) {
+        for ($i = 0; $i < RANDOM_BASE_ITERATIONS; $i++) {
             $rand = $generator->generate();
             $this->assertGreaterThanOrEqual($min, $rand);
             $this->assertLessThanOrEqual($max, $rand);
@@ -102,14 +102,12 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      */
     protected function checkDistribution(\DrupalReleaseDate\Random\WeightedRandom $generator, $min, $max, $rate)
     {
-        $baseIterations = 1000;
-
         $range = $max - $min + 1;
         $probabilitySum = (1 - pow($rate, $range)) / (1 - $rate);
 
         $results = array_fill($min, $range, 0);
 
-        for ($i = 0; $i < ($baseIterations * $probabilitySum); $i++) {
+        for ($i = 0; $i < (RANDOM_BASE_ITERATIONS * $probabilitySum); $i++) {
             $results[$generator->generate()]++;
         }
 
@@ -117,7 +115,7 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
         //      and the number of iterations performed.
         $weight = 1.0;
         foreach ($results as $value => $count) {
-            $this->assertEquals($weight, $count / $baseIterations, '', 0.2);
+            $this->assertEquals($weight, $count / RANDOM_BASE_ITERATIONS, '', 0.2);
             $weight *= $rate;
         }
     }
