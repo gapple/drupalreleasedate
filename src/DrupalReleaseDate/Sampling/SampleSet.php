@@ -14,13 +14,13 @@ class SampleSet implements SampleSetInterface
         return $this->length;
     }
 
-    public function insert($when, $count)
+    public function insert($sample)
     {
-        $last = null;
         if ($this->length) {
-            $last = $this->samples[$this->length - 1];
+            $sample->setDiff($this->samples[$this->length - 1]);
         }
-        $this->samples[] = new Sample($when, $count, $last);
+
+        $this->samples[] = $sample;
 
         $this->length++;
     }

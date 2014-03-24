@@ -4,6 +4,7 @@ namespace DrupalReleaseDate\Controllers;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 
+use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
@@ -34,7 +35,7 @@ class Cron
         ";
         $results = $app['db']->query($sql);
         while ($result = $results->fetchObject()) {
-            $samples->insert(strtotime($result->when), $result->critical_bugs + $result->critical_tasks);
+            $samples->insert(new Sample(strtotime($result->when), $result->critical_bugs + $result->critical_tasks));
         }
 
         // Insert empty before run, update if succsesful.
@@ -65,7 +66,7 @@ class Cron
         try {
             $estimateDistribution = $monteCarlo->runDistribution($iterations);
 
-            $medianIterations = array_sum($distribution) / 2;
+            $medianIterations = array_sum($estimateDistribution) / 2;
             $countSum = 0;
             foreach ($estimateDistribution as $estimate => $count) {
                 $countSum += $count;

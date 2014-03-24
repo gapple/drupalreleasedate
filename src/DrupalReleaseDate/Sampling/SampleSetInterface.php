@@ -5,7 +5,7 @@ interface SampleSetInterface
 {
     public function length();
 
-    public function insert($when, $count);
+    public function insert($sample);
 
     public function get($index);
 

@@ -1,6 +1,7 @@
 <?php
 namespace DrupalReleaseDate\Sampling\Tests;
 
+use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 
 class SampleSetTest extends \PHPUnit_Framework_TestCase {
@@ -10,10 +11,10 @@ class SampleSetTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals(0, $sampleset->length());
 
-        $sampleset->insert(1, 4);
-        $sampleset->insert(2, 3);
-        $sampleset->insert(3, 2);
-        $sampleset->insert(4, 1);
+        $sampleset->insert(new Sample(1, 4));
+        $sampleset->insert(new Sample(2, 3));
+        $sampleset->insert(new Sample(3, 2));
+        $sampleset->insert(new Sample(4, 1));
 
         $this->assertEquals(4, $sampleset->length());
     }
@@ -21,10 +22,10 @@ class SampleSetTest extends \PHPUnit_Framework_TestCase {
     function testGetSample() {
         $sampleset = new SampleSet();
 
-        $sampleset->insert(1, 4);
-        $sampleset->insert(2, 3);
-        $sampleset->insert(3, 2);
-        $sampleset->insert(4, 1);
+        $sampleset->insert(new Sample(1, 4));
+        $sampleset->insert(new Sample(2, 3));
+        $sampleset->insert(new Sample(3, 2));
+        $sampleset->insert(new Sample(4, 1));
 
         $this->assertEquals(1, $sampleset->get(0)->getWhen());
         $this->assertEquals(4, $sampleset->get(3)->getWhen());
