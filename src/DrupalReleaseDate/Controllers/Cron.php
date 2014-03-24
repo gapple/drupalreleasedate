@@ -65,7 +65,7 @@ class Cron
         try {
             $estimateDistribution = $monteCarlo->runDistribution($iterations);
 
-            $medianIterations = array_sum($distribution) / 2;
+            $medianIterations = array_sum($estimateDistribution) / 2;
             $countSum = 0;
             foreach ($estimateDistribution as $estimate => $count) {
                 $countSum += $count;
