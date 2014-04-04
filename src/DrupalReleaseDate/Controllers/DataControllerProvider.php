@@ -17,8 +17,8 @@ class DataControllerProvider implements ControllerProviderInterface
         $controllers->get('/estimates.json', 'DrupalReleaseDate\Controllers\Data::estimates');
         $controllers->get('/distribution.json', 'DrupalReleaseDate\Controllers\Data::distribution');
 
-        $controllers->after(
-            function (Request $request, Response $response) {
+        $controllers
+            ->after(function (Request $request, Response $response) {
                 // Respond as JSONP if necessary
                 if (($response instanceof JsonResponse) && $request->get('callback') !== null) {
                     $response->setCallBack($request->get('callback'));
@@ -29,8 +29,16 @@ class DataControllerProvider implements ControllerProviderInterface
                 // Allow caching for one hour.
                 $response->setMaxAge(3600);
                 $response->setSharedMaxAge(3600);
-            }
-        );
+            })
+            ->after(function (Request $request, Response $response) {
+                // Compress the response if supported by client.
+                $response->setVary('Accept-Encoding');
+
+                if (strpos($request->headers->get('Accept-Encoding'), 'gzip') !== false) {
+                    $response->setContent(gzencode($response->getContent()));
+                    $response->headers->set('Content-Encoding', 'gzip');
+                }
+            }, Application::LATE_EVENT);
 
         return $controllers;
     }
