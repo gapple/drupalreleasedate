@@ -5,46 +5,12 @@ class DrupalIssueCount
 {
     protected $client;
 
-    protected $drupalOrgVersion = null;
-
     /**
-     * Set of criteria to fetch issues for on D6 version of Drupal.org
+     * Set of criteria to fetch issues for.
      *
      * @var array
      */
-    protected static $dOrgD6FetchCategories = array(
-        'critical_bugs' => array(
-            'priorities' => array(1),
-            'categories' => array('bug'),
-        ),
-        'critical_tasks' => array(
-            'priorities' => array(1),
-            'categories' => array('task'),
-        ),
-        'major_bugs' => array(
-            'priorities' => array(4),
-            'categories' => array('bug'),
-        ),
-        'major_tasks' => array(
-            'priorities' => array(4),
-            'categories' => array('task'),
-        ),
-        'normal_bugs' => array(
-            'priorities' => array(2),
-            'categories' => array('bug'),
-        ),
-        'normal_tasks' => array(
-            'priorities' => array(2),
-            'categories' => array('task'),
-        ),
-    );
-
-    /**
-     * Set of criteria to fetch issues for on D7 version of Drupal.org
-     *
-     * @var array
-     */
-    protected static $dOrgD7FetchCategories = array(
+    protected static $fetchCategories = array(
         'critical_bugs' => array(
             'priorities' => array(400),
             'categories' => array(1),
@@ -96,59 +62,19 @@ class DrupalIssueCount
     }
 
     /**
-     * Determine the version of Drupal that Drupal.org is running.
-     */
-    public function determineDrupalOrgVersion()
-    {
-
-        if (empty($this->drupalOrgVersion)) {
-            // Default to 6.x
-            $this->drupalOrgVersion = '6';
-
-            // We need a simple page that parses cleanly in both versions.
-            $request = $this->client->get('/about');
-
-            $document = $this->getXmlDocument($request->send());
-
-            $generator = $document->xpath("//_xmlns:meta[@name='Generator']");
-
-            if (!empty($generator[0]['content']) && stripos($generator[0]['content'], 'Drupal 7') !== false) {
-                $this->drupalOrgVersion = '7';
-            }
-        }
-
-        return $this->drupalOrgVersion;
-    }
-
-    /**
      * Get the count of issues against Drupal 8.
      *
      * @return array
      */
     public function getD8Counts()
     {
-
-        $drupalOrgVersion = $this->determineDrupalOrgVersion();
-
-        if ($drupalOrgVersion == '6') {
-            return $this->getCounts(
-                array(
-                    'version' => array('8.x'),
-                    'status' => static::$fetchStatusIds,
-                ),
-                static::$dOrgD6FetchCategories,
-                'view-project-issue-search-project'
-            );
-        } elseif ($drupalOrgVersion == '7') {
-            return $this->getCounts(
-                array(
-                    'version' => array('8.x'),
-                    'status' => static::$fetchStatusIds,
-                ),
-                static::$dOrgD7FetchCategories,
-                'view-project-issue-search-project-searchapi'
-            );
-        }
+        return $this->getCounts(
+            array(
+                'version' => array('8.x'),
+                'status' => static::$fetchStatusIds,
+            ),
+            static::$fetchCategories
+        );
     }
 
     /**
@@ -158,29 +84,13 @@ class DrupalIssueCount
      */
     public function getD9Counts()
     {
-
-        $drupalOrgVersion = $this->determineDrupalOrgVersion();
-
-        if ($drupalOrgVersion == '6') {
-            return $this->getCounts(
-                array(
-                    'version' => array('1859548'),
-                    // 9.x doesn't have a catch-all version, so the term id for 9.x-dev is used.
-                    'status' => static::$fetchStatusIds,
-                ),
-                static::$dOrgD6FetchCategories,
-                'view-project-issue-search-project'
-            );
-        } elseif ($drupalOrgVersion == '7') {
-            return $this->getCounts(
-                array(
-                    'version' => array('9.x'),
-                    'status' => static::$fetchStatusIds,
-                ),
-                static::$dOrgD7FetchCategories,
-                'view-project-issue-search-project-searchapi'
-            );
-        }
+        return $this->getCounts(
+            array(
+                'version' => array('9.x'),
+                'status' => static::$fetchStatusIds,
+            ),
+            static::$fetchCategories
+        );
     }
 
     /**
@@ -194,10 +104,8 @@ class DrupalIssueCount
      *     'setKey' => array(
      *       'parameterKey' => 'parameterValue',
      *     )
-     * @param $viewClass
-     *   The class
      */
-    public function getCounts($commonParameters, $fetchSet, $viewClass)
+    public function getCounts($commonParameters, $fetchSet)
     {
 
         $request = $this->client->get('/project/issues/search/drupal');
@@ -212,7 +120,7 @@ class DrupalIssueCount
                 $query->set($parameterKey, $parameterValue);
             }
             try {
-                $results[$fetchKey] = $this->getCount($request, $viewClass);
+                $results[$fetchKey] = $this->getCount($request);
             } catch (DrupalOrgParseException $e) {
                 $results[$fetchKey] = null;
             }
@@ -227,12 +135,10 @@ class DrupalIssueCount
      *
      * @param array $request
      *   Guzzle request for the first page of results.
-     * @param string $viewClass
-     *   CSS class for the views table contianing issues.
      * @return number
      *   The total number of issues for the search paramaters of the request.
      */
-    public function getCount(\Guzzle\Http\Message\RequestInterface $request, $viewClass)
+    public function getCount(\Guzzle\Http\Message\RequestInterface $request)
     {
 
         // Make sure page isn't set from a previous call on the same request object.
@@ -244,7 +150,7 @@ class DrupalIssueCount
         // the end to find the total number of pages.
         $fullPages = 0;
         $pagerNext = $document->xpath(
-            "//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a"
+            "//_xmlns:div[contains(concat(' ', @class, ' '), ' view-project-issue-search-project-searchapi ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a"
         );
 
         while ($pagerNext) {
@@ -256,12 +162,12 @@ class DrupalIssueCount
             $document = $this->getXmlDocument($request->send());
 
             $pagerNext = $document->xpath(
-                "//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a"
+                "//_xmlns:div[contains(concat(' ', @class, ' '), ' view-project-issue-search-project-searchapi ')]//_xmlns:li[contains(concat(' ', @class, ' '), ' pager-next ')]//_xmlns:a"
             );
         }
 
         $issueRows = $document->xpath(
-            "//_xmlns:div[contains(concat(' ', @class, ' '), ' {$viewClass} ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr"
+            "//_xmlns:div[contains(concat(' ', @class, ' '), ' view-project-issue-search-project-searchapi ')]//_xmlns:table[contains(concat(' ', @class, ' '), ' views-table ')]/_xmlns:tbody/_xmlns:tr"
         );
 
         // Drupal.org is returning rows where all cells are empty, which bumps
