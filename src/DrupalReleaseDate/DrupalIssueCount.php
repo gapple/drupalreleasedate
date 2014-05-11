@@ -110,14 +110,13 @@ class DrupalIssueCount
      */
     public function getCounts($commonParameters, $fetchSet)
     {
-
-        $request = $this->client->get('/project/issues/search/drupal');
-
-        $query = $request->getQuery();
-        $query->merge($commonParameters);
-
         $results = array();
         foreach ($fetchSet as $fetchKey => $fetchParameters) {
+            $request = $this->client->get('/project/issues/search/drupal');
+
+            $query = $request->getQuery();
+            $query->merge($commonParameters);
+
             // Override each of the unique values for this fetch set.
             foreach ($fetchParameters as $parameterKey => $parameterValue) {
                 $query->set($parameterKey, $parameterValue);
