@@ -112,8 +112,11 @@ class Cron
             $app['db']->quoteIdentifier('notes') => '',
         );
 
-        $userAgent = !empty($config['guzzle']['userAgent']) ? $config['guzzle']['userAgent'] : null;
-        $counter = new \DrupalReleaseDate\DrupalIssueCount($userAgent);
+        $guzzleClient = new \Guzzle\Http\Client();
+        if (!empty($config['guzzle']['userAgent'])) {
+            $guzzleClient->setUserAgent($config['guzzle']['userAgent'], true);
+        }
+        $counter = new \DrupalReleaseDate\DrupalIssueCount($guzzleClient);
 
 
         $d8results = $counter->getD8Counts();
