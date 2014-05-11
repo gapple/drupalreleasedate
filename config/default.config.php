@@ -69,3 +69,48 @@ $config['estimate.timeout'] = 600;
  * How many iterations to run in the Monte Carlo simulation.
  */
 $config['estimate.iterations'] = 100000;
+
+/**
+ * Configure the sets of criteria for fetching issue counts.
+ */
+$config['drupal_issues'] = array(
+    // Provide values that will be used as the default for all sets.
+    'common' => array(
+        'status' => array(
+            1, // Active
+            13, // Needs work
+            8, // Needs review
+            14, // Reviewed & tested by the community
+            15, // Patch (to be ported)
+            4, // Postponed
+            // 16, // Postponed (maintainer needs more info)
+        ),
+    ),
+    // Provide the separate requests that will be issued, and their parameters.
+    'sets' => array(
+        'critical_bugs' => array(
+            'priorities' => array(400),
+            'categories' => array(1),
+        ),
+        'critical_tasks' => array(
+            'priorities' => array(400),
+            'categories' => array(2),
+        ),
+        'major_bugs' => array(
+            'priorities' => array(300),
+            'categories' => array(1),
+        ),
+        'major_tasks' => array(
+            'priorities' => array(300),
+            'categories' => array(2),
+        ),
+        'normal_bugs' => array(
+            'priorities' => array(200),
+            'categories' => array(1),
+        ),
+        'normal_tasks' => array(
+            'priorities' => array(200),
+            'categories' => array(2),
+        ),
+    ),
+);

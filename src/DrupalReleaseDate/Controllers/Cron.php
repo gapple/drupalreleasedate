@@ -119,7 +119,10 @@ class Cron
         $counter = new \DrupalReleaseDate\DrupalIssueCount($guzzleClient);
 
 
-        $d8results = $counter->getD8Counts();
+        $d8CommonParameters = array(
+            'version' => array('8.x')
+        ) + $config['drupal_issues']['common'];
+        $d8results = $counter->getCounts($d8CommonParameters, $config['drupal_issues']['sets']);
         $queryData = $queryDataDefaults + array(
                 $app['db']->quoteIdentifier('version') => 8,
             );
@@ -129,7 +132,10 @@ class Cron
         $app['db']->insert($app['db']->quoteIdentifier('samples'), $queryData);
 
 
-        $d9results = $counter->getD9Counts();
+        $d9CommonParameters = array(
+            'version' => array('9.x')
+        ) + $config['drupal_issues']['common'];
+        $d9results = $counter->getCounts($d9CommonParameters, $config['drupal_issues']['sets']);
         $queryData = $queryDataDefaults + array(
                 $app['db']->quoteIdentifier('version') => 9,
             );

@@ -5,54 +5,11 @@ use Symfony\Component\DomCrawler;
 
 class DrupalIssueCount
 {
+    /**
+     * Guzzle client used for requests.
+     * @var \Guzzle\Http\ClientInterface
+     */
     protected $client;
-
-    /**
-     * Set of criteria to fetch issues for.
-     *
-     * @var array
-     */
-    protected static $fetchCategories = array(
-        'critical_bugs' => array(
-            'priorities' => array(400),
-            'categories' => array(1),
-        ),
-        'critical_tasks' => array(
-            'priorities' => array(400),
-            'categories' => array(2),
-        ),
-        'major_bugs' => array(
-            'priorities' => array(300),
-            'categories' => array(1),
-        ),
-        'major_tasks' => array(
-            'priorities' => array(300),
-            'categories' => array(2),
-        ),
-        'normal_bugs' => array(
-            'priorities' => array(200),
-            'categories' => array(1),
-        ),
-        'normal_tasks' => array(
-            'priorities' => array(200),
-            'categories' => array(2),
-        ),
-    );
-
-    /**
-     * Set of status IDs to include in issue counts.
-     *
-     * @var array
-     */
-    protected static $fetchStatusIds = array(
-        1, // Active
-        13, // Needs work
-        8, // Needs review
-        14, // Reviewed & tested by the community
-        15, // Patch (to be ported)
-        4, // Postponed
-        // 16, // Postponed (maintainer needs more info)
-    );
 
     public function __construct(\Guzzle\Http\ClientInterface $client = null)
     {
@@ -62,38 +19,6 @@ class DrupalIssueCount
 
         $this->client = $client;
         $this->client->setBaseUrl('https://drupal.org/');
-    }
-
-    /**
-     * Get the count of issues against Drupal 8.
-     *
-     * @return array
-     */
-    public function getD8Counts()
-    {
-        return $this->getCounts(
-            array(
-                'version' => array('8.x'),
-                'status' => static::$fetchStatusIds,
-            ),
-            static::$fetchCategories
-        );
-    }
-
-    /**
-     * Get the count of issues against Drupal 9.
-     *
-     * @return array
-     */
-    public function getD9Counts()
-    {
-        return $this->getCounts(
-            array(
-                'version' => array('9.x'),
-                'status' => static::$fetchStatusIds,
-            ),
-            static::$fetchCategories
-        );
     }
 
     /**
@@ -114,13 +39,10 @@ class DrupalIssueCount
         foreach ($fetchSet as $fetchKey => $fetchParameters) {
             $request = $this->client->get('/project/issues/search/drupal');
 
-            $query = $request->getQuery();
-            $query->merge($commonParameters);
+            $request->getQuery()
+                ->overwriteWith($commonParameters)
+                ->overwriteWith($fetchParameters);
 
-            // Override each of the unique values for this fetch set.
-            foreach ($fetchParameters as $parameterKey => $parameterValue) {
-                $query->set($parameterKey, $parameterValue);
-            }
             try {
                 $results[$fetchKey] = $this->getCount($request);
             } catch (Exception $e) {
