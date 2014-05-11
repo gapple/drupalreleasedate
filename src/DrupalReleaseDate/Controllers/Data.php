@@ -32,45 +32,30 @@ class Data
             }
         }
 
-        $query = $app['db']->createQueryBuilder()
+        $sampleValuesResult = $app['db']->createQueryBuilder()
             ->select(
-                's.when',
-                's.critical_bugs',
-                's.critical_tasks',
-                's.major_bugs',
-                's.major_tasks',
-                's.normal_bugs',
-                's.normal_tasks'
+                'sv.when',
+                'sv.key',
+                'sv.value'
             )
-            ->from('samples', 's')
+            ->from('sample_values', 'sv')
             ->where('version = 8')
-            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
-
-        $results = $query->execute();
+            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC')
+            ->execute();
 
         $data = array();
-        $dataKeys = array(
-            'critical_bugs',
-            'critical_tasks',
-            'major_bugs',
-            'major_tasks',
-            'normal_bugs',
-            'normal_tasks',
-        );
-        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC)) {
-            $dataRow = array(
-                'when' => $resultRow['when']
-            );
-            foreach ($dataKeys as $key) {
-                $dataRow[$key] = isset($resultRow[$key]) ? ((int) $resultRow[$key]) : null;
+        while ($sampleValueRow = $sampleValuesResult->fetch(\PDO::FETCH_ASSOC)) {
+            if (!isset($data[$sampleValueRow['when']])) {
+                $data[$sampleValueRow['when']] = array(
+                    'when' => $sampleValueRow['when'],
+                );
             }
-            $data[] = $dataRow;
+            $data[$sampleValueRow['when']][$sampleValueRow['key']] = $app['db']->convertToPhpValue($sampleValueRow['value'], 'smallint');
         }
-
         $response = $app->json(
             array(
                 'modified' => $lastResultRow['when'],
-                'data' => $data,
+                'data' => array_values($data),
             )
         );
 

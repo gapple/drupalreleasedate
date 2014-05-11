@@ -109,7 +109,6 @@ class Cron
 
         $queryDataDefaults = array(
             $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
-            $app['db']->quoteIdentifier('notes') => '',
         );
 
         $guzzleClient = new \Guzzle\Http\Client();
@@ -126,10 +125,12 @@ class Cron
         $queryData = $queryDataDefaults + array(
                 $app['db']->quoteIdentifier('version') => 8,
             );
-        foreach ($d8results as $resultKey => $resultValue) {
-            $queryData[$app['db']->quoteIdentifier($resultKey)] = $resultValue;
-        }
         $app['db']->insert($app['db']->quoteIdentifier('samples'), $queryData);
+        foreach ($d8results as $resultKey => $resultValue) {
+            $queryData[$app['db']->quoteIdentifier('key')] = $resultKey;
+            $queryData[$app['db']->quoteIdentifier('value')] = $resultValue;
+            $app['db']->insert($app['db']->quoteIdentifier('sample_values'), $queryData);
+        }
 
 
         $d9CommonParameters = array(
@@ -139,10 +140,12 @@ class Cron
         $queryData = $queryDataDefaults + array(
                 $app['db']->quoteIdentifier('version') => 9,
             );
-        foreach ($d9results as $resultKey => $resultValue) {
-            $queryData[$app['db']->quoteIdentifier($resultKey)] = $resultValue;
-        }
         $app['db']->insert($app['db']->quoteIdentifier('samples'), $queryData);
+        foreach ($d9results as $resultKey => $resultValue) {
+            $queryData[$app['db']->quoteIdentifier('key')] = $resultKey;
+            $queryData[$app['db']->quoteIdentifier('value')] = $resultValue;
+            $app['db']->insert($app['db']->quoteIdentifier('sample_values'), $queryData);
+        }
 
         return '';
     }
