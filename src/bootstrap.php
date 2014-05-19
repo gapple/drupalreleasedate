@@ -1,13 +1,15 @@
 <?php
-require_once APPROOT . 'vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $app = new Silex\Application();
 
 $config = array();
-if (file_exists(APPROOT . 'config/config.php')) {
-    require_once(APPROOT . 'config/config.php');
+if (file_exists(__DIR__ . '/../config/config.php')) {
+    require_once(__DIR__ . '/../config/config.php');
 }
 $app['config'] = $config;
+
+$app['config.dir'] = __DIR__ . '/../config';
 
 $app->register(
     new Silex\Provider\DoctrineServiceProvider(),
@@ -20,7 +22,7 @@ if (isset($config['http_cache']) && $config['http_cache'] !== false) {
     $app->register(
         new Silex\Provider\HttpCacheServiceProvider(),
         array(
-            'http_cache.cache_dir' => APPROOT . 'cache/http',
+            'http_cache.cache_dir' => __DIR__ . '/../cache/http',
             'http_cache.esi'       => null,
             'http_cache.options'   => (isset($config['http_cache']) && is_array($config['http_cache']))? $config['http_cache'] : array(),
         )
@@ -30,7 +32,7 @@ if (isset($config['http_cache']) && $config['http_cache'] !== false) {
 $app->register(
     new Silex\Provider\TwigServiceProvider(),
     array(
-        'twig.path'    => APPROOT . '/templates',
+        'twig.path'    => __DIR__ . '/../templates',
         'twig.options' => isset($config['twig']) ? $config['twig'] : array(),
     )
 );
@@ -44,3 +46,5 @@ $app['twig'] = $app->share(
         }
     )
 );
+
+return $app;

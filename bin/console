@@ -1,0 +1,6 @@
+#!/usr/bin/env php
+<?php
+
+$console = require __DIR__.'/../src/console.php';
+
+$console->run();

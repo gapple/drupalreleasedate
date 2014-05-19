@@ -1,5 +1,6 @@
 <?php
-require_once('bootstrap.php');
+
+$app = require_once('bootstrap.php');
 
 $app->mount('/', new \DrupalReleaseDate\Controllers\PagesControllerProvider());
 $app->mount('/chart', new \DrupalReleaseDate\Controllers\ChartsControllerProvider());
