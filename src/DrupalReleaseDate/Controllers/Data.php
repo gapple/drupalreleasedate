@@ -67,32 +67,24 @@ class Data
     }
 
     /**
-     * Get changes in the number of critical issues over recent periods in time.
+     * Get sample values at set periods back in time.
      */
-    public function changes(Application $app, Request $request)
+    public function historical(Application $app, Request $request)
     {
+        $data = array();
 
-        $critical = array(
-            'current' => null,
-            'day' => null,
-            'week' => null,
-            'month' => null,
-            'quarter' => null,
-            'half' => null,
-        );
-
-        $nowQuery = $app['db']->createQueryBuilder()
-            ->select('s.when', 's.critical_bugs', 's.critical_tasks')
+        $nowDate = null;
+        $currentSample = $app['db']->createQueryBuilder()
+            ->select('s.when')
             ->from('samples', 's')
             ->where('version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
-            ->setMaxResults(1);
+            ->setMaxResults(1)
+            ->execute()
+            ->fetch(\PDO::FETCH_ASSOC);
 
-        $nowResult = $nowQuery->execute();
-        $nowDate = null;
-
-        if ($nowResultRow = $nowResult->fetch(\PDO::FETCH_ASSOC)) {
-            $nowDate = new \DateTime($nowResultRow['when']);
+        if ($currentSample) {
+            $nowDate = new \DateTime($currentSample['when']);
 
             $response = new Response();
             $response->setLastModified($nowDate);
@@ -103,86 +95,53 @@ class Data
                 return $response;
             }
 
-            $nowIssues = $nowResultRow['critical_bugs'] + $nowResultRow['critical_tasks'];
-            $critical['current'] = $nowIssues;
+            $periods = array(
+                'current' => null,
+                'day' => '1 DAY',
+                'week' => '1 WEEK',
+                'month' => '1 MONTH',
+                'quarter' => '3 MONTH',
+                'half' => '6 MONTH',
+                'year' => '1 YEAR',
+            );
+            foreach ($periods as $periodKey => $periodInterval) {
 
-            $dayQuery = $app['db']->createQueryBuilder()
-                ->select('s.critical_bugs', 's.critical_tasks')
-                ->from('samples', 's')
-                ->where('version = 8')
-                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 1 DAY)')
-                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
-                ->setMaxResults(1)
-                ->setParameter('now', $nowResultRow['when']);
-            $dayResult = $dayQuery->execute();
+                $pastSampleQuery = $app['db']->createQueryBuilder()
+                    ->select('s.version', 's.when')
+                    ->from('samples', 's')
+                    ->where('version = 8')
+                    ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+                    ->setMaxResults(1);
+                if ($periodInterval) {
+                    $pastSampleQuery
+                        ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL ' . $periodInterval . ')')
+                        ->setParameter('now', $currentSample['when']);
+                }
+                $pastSample = $pastSampleQuery
+                    ->execute()
+                    ->fetch(\PDO::FETCH_ASSOC);
 
-            if ($dayResultRow = $dayResult->fetch(\PDO::FETCH_ASSOC)) {
-                $critical['day'] = $nowIssues - ($dayResultRow['critical_bugs'] + $dayResultRow['critical_tasks']);
-            }
+                if ($pastSample) {
+                    $pastSampleValuesResult = $app['db']->createQueryBuilder()
+                        ->select('sv.key', 'sv.value')
+                        ->from('sample_values', 'sv')
+                        ->where($app['db']->quoteIdentifier('version') . ' = :version')
+                        ->andWhere($app['db']->quoteIdentifier('when') . ' = :when')
+                        ->setParameter('version', $pastSample['version'])
+                        ->setParameter('when', $pastSample['when'])
+                        ->execute();
 
-            $weekQuery = $app['db']->createQueryBuilder()
-                ->select('s.critical_bugs', 's.critical_tasks')
-                ->from('samples', 's')
-                ->where('version = 8')
-                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 1 WEEK)')
-                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
-                ->setMaxResults(1)
-                ->setParameter('now', $nowResultRow['when']);
-            $weekResult = $weekQuery->execute();
-
-            if ($weekResultRow = $weekResult->fetch(\PDO::FETCH_ASSOC)) {
-                $critical['week'] = $nowIssues - ($weekResultRow['critical_bugs'] + $weekResultRow['critical_tasks']);
-            }
-
-            $monthQuery = $app['db']->createQueryBuilder()
-                ->select('s.critical_bugs', 's.critical_tasks')
-                ->from('samples', 's')
-                ->where('version = 8')
-                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 1 MONTH)')
-                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
-                ->setMaxResults(1)
-                ->setParameter('now', $nowResultRow['when']);
-            $monthResult = $monthQuery->execute();
-
-            if ($monthResultRow = $monthResult->fetch(\PDO::FETCH_ASSOC)) {
-                $critical['month'] = $nowIssues - ($monthResultRow['critical_bugs'] + $monthResultRow['critical_tasks']);
-            }
-
-            $quarterQuery = $app['db']->createQueryBuilder()
-                ->select('s.critical_bugs', 's.critical_tasks')
-                ->from('samples', 's')
-                ->where('version = 8')
-                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 3 MONTH)')
-                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
-                ->setMaxResults(1)
-                ->setParameter('now', $nowResultRow['when']);
-            $quarterResult = $quarterQuery->execute();
-
-            if ($quarterResultRow = $quarterResult->fetch(\PDO::FETCH_ASSOC)) {
-                $critical['quarter'] = $nowIssues - ($quarterResultRow['critical_bugs'] + $quarterResultRow['critical_tasks']);
-            }
-
-            $halfQuery = $app['db']->createQueryBuilder()
-                ->select('s.critical_bugs', 's.critical_tasks')
-                ->from('samples', 's')
-                ->where('version = 8')
-                ->andWhere($app['db']->quoteIdentifier('when') . ' < DATE_SUB( :now , INTERVAL 6 MONTH)')
-                ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
-                ->setMaxResults(1)
-                ->setParameter('now', $nowResultRow['when']);
-            $halfResult = $halfQuery->execute();
-
-            if ($halfResultRow = $halfResult->fetch(\PDO::FETCH_ASSOC)) {
-                $critical['half'] = $nowIssues - ($halfResultRow['critical_bugs'] + $halfResultRow['critical_tasks']);
+                    while($pastSampleValue = $pastSampleValuesResult->fetch(\PDO::FETCH_ASSOC)) {
+                        $data[$periodKey][$pastSampleValue['key']] = $app['db']->convertToPhpValue($pastSampleValue['value'], 'smallint');
+                    }
+                }
             }
         }
 
         $response = $app->json(
             array(
-                'modified' => $nowResultRow['when'],
-                'data' => array(
-                    'critical' => $critical,
-                ),
+                'modified' => $currentSample['when'],
+                'data' => $data,
             )
         );
 

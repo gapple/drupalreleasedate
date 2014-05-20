@@ -40,18 +40,59 @@ __/data/samples.json__
 }
 ```
 
-__/data/changes.json__
+__/data/historical-samples.json__
 
 ```
 {
-    "modified":"2014-01-25 00:17:01",
-    "data":{
-        "critical":{
-            "day":2,
-            "week":2,
-            "month":18,
-            "quarter":17,
-            "half":-1
+    "modified": "2014-03-21 12:17:02",
+    "data": {
+        "current": {
+            "critical_bugs": 39,
+            "critical_tasks": 78,
+            "major_bugs": 231,
+            "major_tasks": 253,
+            "normal_bugs": 1938,
+            "normal_tasks": 2946
+        },
+        "day": {
+            "critical_bugs": 42,
+            "critical_tasks": 77,
+            "major_bugs": 231,
+            "major_tasks": 253,
+            "normal_bugs": 1935,
+            "normal_tasks": 2946
+        },
+        "week": {
+            "critical_bugs": 42,
+            "critical_tasks": 73,
+            "major_bugs": 232,
+            "major_tasks": 262,
+            "normal_bugs": 1927,
+            "normal_tasks": 2931
+        },
+        "month": {
+            "critical_bugs": 38,
+            "critical_tasks": 78,
+            "major_bugs": 228,
+            "major_tasks": 258,
+            "normal_bugs": 1954,
+            "normal_tasks": 2948
+        },
+        "quarter": {
+            "critical_bugs": 33,
+            "critical_tasks": 87,
+            "major_bugs": 211,
+            "major_tasks": 279,
+            "normal_bugs": null,
+            "normal_tasks": 3011
+        },
+        "half": {
+            "critical_bugs": 41,
+            "critical_tasks": 84,
+            "major_bugs": 199,
+            "major_tasks": 209,
+            "normal_bugs": 1925,
+            "normal_tasks": 3130
         }
     }
 }
@@ -60,7 +101,7 @@ __/data/changes.json__
 __/data/estimates.json__
 
 Optional Parameters:
-- __limit__ *(integer)*  
+- __limit__ *(integer)*
   Restrict the results to the requested number of newest values.
 
 ```
