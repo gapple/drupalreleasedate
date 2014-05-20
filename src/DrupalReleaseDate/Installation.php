@@ -50,11 +50,12 @@ class Installation
 
     public function getPendingUpdates()
     {
+        $self = $this;
         $currentVersion = $this->getVersion();
         $updates = array_filter(
             $this->getUpdates(),
-            function ($method) use ($currentVersion) {
-                return self::getVersionFromUpdateMethod($method) > $currentVersion;
+            function ($method) use ($self, $currentVersion) {
+                return $self->getVersionFromUpdateMethod($method) > $currentVersion;
             }
         );
 
