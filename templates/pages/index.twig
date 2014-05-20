@@ -11,32 +11,61 @@
         </section>
 
         <section class="changes">
-            <h4>Critical Issue Changes</h4>
-
-            <div class="current">
-                <span class="name">Current:</span>
-                <span class="value">?</span>
-            </div>
-            <div class="period" data-name='day'>
-                <span class="name">Day:</span>
-                <span class="delta">?</span>
-            </div>
-            <div class="period" data-name='week'>
-                <span class="name">Week:</span>
-                <span class="delta">?</span>
-            </div>
-            <div class="period" data-name='month'>
-                <span class="name">Month:</span>
-                <span class="delta">?</span>
-            </div>
-            <div class="period" data-name='quarter'>
-                <span class="name">3 Month:</span>
-                <span class="delta">?</span>
-            </div>
-            <div class="period" data-name='half'>
-                <span class="name">6 Month:</span>
-                <span class="delta">?</span>
-            </div>
+            <h4>Issue Changes</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th/>
+                        <th>Critical</th>
+                        <th>Major</th>
+                        <th>Normal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-current>
+                        <th>Current</th>
+                        <td data-key='critical'>?</td>
+                        <td data-key='major'>?</td>
+                        <td data-key='normal'>?</td>
+                    </tr>
+                    <tr data-period='day'>
+                        <th>Day</th>
+                        <td data-key='critical'>?</td>
+                        <td data-key='major'>?</td>
+                        <td data-key='normal'>?</td>
+                    </tr>
+                    <tr data-period='week'>
+                        <th>Week</th>
+                        <td data-key='critical'>?</td>
+                        <td data-key='major'>?</td>
+                        <td data-key='normal'>?</td>
+                    </tr>
+                    <tr data-period='month'>
+                        <th>Month</th>
+                        <td data-key='critical'>?</td>
+                        <td data-key='major'>?</td>
+                        <td data-key='normal'>?</td>
+                    </tr>
+                    <tr data-period='quarter'>
+                        <th>3 Month</th>
+                        <td data-key='critical'>?</td>
+                        <td data-key='major'>?</td>
+                        <td data-key='normal'>?</td>
+                    </tr>
+                    <tr data-period='half'>
+                        <th>6 Month</th>
+                        <td data-key='critical'>?</td>
+                        <td data-key='major'>?</td>
+                        <td data-key='normal'>?</td>
+                    </tr>
+                    <tr data-period='year'>
+                        <th>Year</th>
+                        <td data-key='critical'>?</td>
+                        <td data-key='major'>?</td>
+                        <td data-key='normal'>?</td>
+                    </tr>
+                </tbody>
+            </table>
         </section>
     </div>
 {% endblock %}
@@ -140,35 +169,84 @@
                     updateEstimate();
                 });
 
-            Timing.start('index.loadChanges');
-            $.getJSON('/data/changes.json').done(function (response) {
-                Timing.stop('index.loadChanges');
-
-                $('.changes .current .value').html(response.data.critical.current);
-
-                $('.changes .period').each(function () {
-                    var $period = $(this);
-                    var $delta = $period.find('.delta');
-                    var name = $period.data('name');
-                    var delta = '?';
-
-                    $delta.removeClass('up down');
-                    if (name && typeof response.data.critical[name] !== 'undefined') {
-                        delta = response.data.critical[name];
-
-                        if (delta > 0) {
-                            delta = '+' + delta;
-                            $delta.addClass('up');
-                        }
-                        else if (delta < 0) {
-                            $delta.addClass('down');
-                        }
+            var historicalSamplesMapping = {
+                'critical': function (data) {
+                    if (
+                        typeof data.critical_tasks === 'undefined' ||
+                        data.critical_tasks === null ||
+                        typeof data.critical_bugs === 'undefined' ||
+                        data.critical_bugs === null
+                    ) {
+                        return null;
                     }
-                    $delta.html(delta);
+                    return data.critical_tasks + data.critical_bugs;
+                },
+                'major': function (data) {
+                    if (
+                        typeof data.major_tasks === 'undefined' ||
+                        data.major_tasks === null ||
+                        typeof data.major_bugs === 'undefined' ||
+                        data.major_bugs === null
+                    ) {
+                        return null;
+                    }
+                    return data.major_tasks + data.major_bugs;
+                },
+                'normal': function (data) {
+                    if (
+                        typeof data.normal_tasks === 'undefined' ||
+                        data.normal_tasks === null ||
+                        typeof data.normal_bugs === 'undefined' ||
+                        data.normal_bugs === null
+                    ) {
+                        return null;
+                    }
+                    return data.normal_tasks + data.normal_bugs;
+                },
+            };
+            Timing.start('index.loadHistoricalSamples');
+            $.getJSON('/data/historical-samples.json').done(function (response) {
+                Timing.stop('index.loadHistoricalSamples');
+
+                $('.changes [data-current] td[data-key]').each(function () {
+                    var key = $(this).data('key');
+                    var value = historicalSamplesMapping[key](response.data.current)
+                    if (value) {
+                        $(this).html(value);
+                    }
+                });
+
+                $('.changes [data-period]').each(function () {
+                    var period = $(this).data('period');
+
+                    if (typeof response.data[period] === 'undefined') {
+                        return;
+                    }
+
+                    $(this).find('td[data-key]').each(function () {
+                        var key = $(this).data('key');
+                        var currentValue = historicalSamplesMapping[key](response.data.current);
+                        var pastValue = historicalSamplesMapping[key](response.data[period]);
+
+                        if (currentValue !== null && pastValue !== null) {
+                            var delta = currentValue - pastValue;
+
+                            if (delta > 0) {
+                                delta = '+' + delta;
+                                $(this).addClass('up');
+                            }
+                            else if (delta < 0) {
+                                $(this).addClass('down');
+                            }
+
+                            $(this).html(delta);
+                        }
+
+                    });
                 });
 
                 if (typeof GoogleAnalyticsObject !== 'undefined') {
-                    window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('index.loadChanges'), 'changes');
+                    window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('index.loadHistoricalSamples'), 'historical-samples');
                 }
             });
         });

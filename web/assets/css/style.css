@@ -33,19 +33,20 @@ section {
 .changes h4 {
   margin-bottom: 3px;
 }
-.changes .name {
-  display: block;
-  float: left;
-  clear: left;
-  width: 50%;
-  margin-left: -1.5ex;
-  text-align: right;
+.changes table {
+  margin: auto;
 }
-.changes .delta,
-.changes .value {
-  display: block;
-  float: left;
-  width: 5ex;
+.changes th {
+  font-weight: 400;
+}
+.changes td {
+  font-weigth: 200;
+}
+.changes thead th {
+  padding-left: 2ex;
+}
+.changes th,
+.changes td {
   text-align: right;
 }
 .changes .up {
