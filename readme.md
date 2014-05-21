@@ -128,8 +128,8 @@ browsers.
 ## Installation and Setup ##
 
  1. Install dependencies with [Composer](http://getcomposer.org/) by running
-    `composer install` in the root directory of the project.
- 2. Initialize a database with the schema file in `/src/schema.sql`
- 3. Copy `/config/default.config.php` to `/config/config.php`, and adjust as
-    needed.
- 4. Setup Apache to serve `/web` as the document root
+    `composer install` in the root directory of the project
+ 2. Copy `config/default.config.php` to `config/config.php`, and adjust as
+    needed
+ 3. Run `bin/console install` to set up the database
+ 4. Configure Apache to serve `web` as the document root
