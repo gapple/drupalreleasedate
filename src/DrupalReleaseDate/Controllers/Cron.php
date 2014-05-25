@@ -26,15 +26,19 @@ class Cron
 
         // Run estimate simulation
         $samples = new SampleSet();
-        $sql = "
-            SELECT " . $app['db']->quoteIdentifier('when') . ", " . $app['db']->quoteIdentifier('critical_bugs') . "," . $app['db']->quoteIdentifier('critical_tasks') . "
-                FROM " . $app['db']->quoteIdentifier('samples') . "
-                WHERE " . $app['db']->quoteIdentifier('version') . " = 8
-                ORDER BY " . $app['db']->quoteIdentifier('when') . " ASC
-        ";
-        $results = $app['db']->query($sql);
-        while ($result = $results->fetchObject()) {
-            $samples->insert(strtotime($result->when), $result->critical_bugs + $result->critical_tasks);
+        $samplesResultSet = $app['db']->createQueryBuilder()
+            ->select('s.when', 'sv_bugs.value + sv_tasks.value AS value')
+            ->from('samples', 's')
+            ->join('s', 'sample_values', 'sv_bugs', 's.version = sv_bugs.version && s.when = sv_bugs.when && sv_bugs.key="critical_bugs"')
+            ->join('s', 'sample_values', 'sv_tasks', 's.version = sv_tasks.version && s.when = sv_tasks.when && sv_tasks.key="critical_tasks"')
+            ->where('s.version = 8')
+            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC')
+            ->execute();
+        while ($result = $samplesResultSet->fetchObject()) {
+            $samples->insert(
+                $app['db']->convertToPhpValue($result->when, 'datetime')->getTimestamp(),
+                $app['db']->convertToPhpValue($result->value, 'smallint')
+            );
         }
 
         // Insert empty before run, update if succsesful.
