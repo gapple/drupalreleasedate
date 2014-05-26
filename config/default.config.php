@@ -6,6 +6,9 @@
  * Copy to config.php and make any changes there.
  */
 
+// Set the umask so that cache files are group writable.
+// umask(0002);
+
 /**
  * Enable debugging features.
  */
