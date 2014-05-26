@@ -1,14 +1,18 @@
 <?php
-
-use Symfony\Component\Console\Application;
+use DrupalReleaseDate\Console;
+use Cilex\Provider\Console\Adapter\Silex\ConsoleServiceProvider;
 
 $app = require_once('bootstrap.php');
 
-$console = new Application('DrupalReleaseDate', '0.1.0');
-$console->setDispatcher($app['dispatcher']);
+$app->register(new ConsoleServiceProvider(), array(
+    'console.name' => 'DrupalReleaseDate',
+    'console.version' => '0.1.0',
+));
 
-$installation = new \DrupalReleaseDate\Installation($app);
-$console->add(new \DrupalReleaseDate\Console\InstallCommand($installation));
-$console->add(new \DrupalReleaseDate\Console\UpdateCommand($installation));
+$console = $app['console'];
+
+$console->add(new Console\InstallCommand());
+$console->add(new Console\UpdateCommand());
+$console->add(new Console\CacheClearCommand());
 
 return $console;

@@ -8,21 +8,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateCommand extends Command
 {
-    /**
-     *
-     * @var \DrupalReleaseDate\Installation
-     */
-    protected $installation;
-
-    /**
-     * @param \DrupalReleaseDate\Installation
-     */
-    public function __construct(Installation $installation)
-    {
-        $this->installation = $installation;
-        parent::__construct();
-    }
-
     protected function configure()
     {
         $this
@@ -32,7 +17,8 @@ class UpdateCommand extends Command
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->installation->update();
+        $installation = new Installation($this->getApplication()->getContainer());
+        $installation->update();
         $output->writeln('Update Complete');
     }
 }
