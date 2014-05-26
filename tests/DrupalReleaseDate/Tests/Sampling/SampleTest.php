@@ -16,8 +16,8 @@ class SampleTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals($time, $sample->getWhen());
         $this->assertEquals($value, $sample->getCount());
-        $this->assertNull($sample->getDuration());
-        $this->assertNull($sample->getResolved());
+        $this->assertEquals(0, $sample->getDuration());
+        $this->assertEquals(0, $sample->getResolved());
     }
 
     function testDifference() {

@@ -5,7 +5,7 @@ use DrupalReleaseDate\Random\RandomInterface;
 
 class SampleSetRandomSampleSelector implements RandomSampleSelectorInterface
 {
-    public $sampleSet;
+    protected $sampleSet;
     protected $randomGenerator;
 
     public function __construct(SampleSet $sampleSet, RandomInterface $randomGenerator = null)

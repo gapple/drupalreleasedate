@@ -133,3 +133,11 @@ browsers.
     needed
  3. Run `bin/console install` to set up the database
  4. Configure Apache to serve `web` as the document root
+
+## Running Tests ##
+
+PHPUnit tests can be run with `vendor/bin/phpunit`
+
+Some global constants affect the behaviour of tests, particularly those that
+check the aggregate outcome of random results.  To change these constants, copy
+`phpunit.xml.dist` to `phpunit.xml`, and adjust the values as needed.

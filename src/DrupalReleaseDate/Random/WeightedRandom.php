@@ -20,22 +20,53 @@ abstract class WeightedRandom extends Random
      */
     protected $weightsArray = array();
 
-    public function __construct($min = 0, $max = 1)
+    /**
+     * Specify if the generator will only use integer values for weights.
+     *
+     * If set to false, the generator will use a float value internally to
+     * determine the value to be returned so that results are not biased by
+     * integer rounding.
+     *
+     * @var boolean
+     */
+    protected $integerWeights = true;
+
+    public function __construct($min, $max)
     {
         parent::__construct($min, $max);
 
+        $this->evaluateWeights();
+    }
+
+    /**
+     * Evaluate and store weights for the range currently set.
+     *
+     * @todo It is only necessary to calculate weights for higher values if
+     * the minimum value has not changed.
+     */
+    protected function evaluateWeights() {
+
+        $this->weightsArray = array();
+
         $cumulativeWeight = 0;
-        for ($i = $min; $i <= $max; $i++) {
-            $cumulativeWeight += $this->calculateWeight($i);
+        for ($i = $this->min; $i <= $this->max; $i++) {
+            $weight = $this->calculateWeight($i);
+            if ($weight < 0) {
+                throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
+            }
+            $cumulativeWeight += $weight;
             $this->weightsArray[$i] = $cumulativeWeight;
+        }
+
+        // Check that the cumulative weight has not grown over PHP_INT_MAX,
+        // and been converted to a float.
+        if (!is_int($cumulativeWeight)) {
+            $this->integerWeights = false;
         }
     }
 
     /**
      * Set a new minimum value for the generator.
-     *
-     * Weighted random values may be calculated as an interval from the minimum
-     * value, so all weights will need to be recalculated.
      *
      * @see \DrupalReleaseDate\Random\Random::setMin()
      */
@@ -43,36 +74,19 @@ abstract class WeightedRandom extends Random
     {
         parent::setMin($min);
 
-        $this->weightsArray = array();
-
-        $cumulativeWeight = 0;
-        for ($i = $min; $i <= $this->max; $i++) {
-            $cumulativeWeight += $this->calculateWeight($i);
-            $this->weightsArray[$i] = $cumulativeWeight;
-        }
+        $this->evaluateWeights();
     }
 
     /**
      * Set a new maximum value for the generator.
      *
-     * Weighted random will require calculating cumulative values if the desired
-     * max is greater than the previous max.
-     *
      * @see \DrupalReleaseDate\Random\Random::setMax()
      */
     public function setMax($max)
     {
-        end($this->weightsArray);
-        $calculatedTo = key($this->weightsArray);
-
-        if ($calculatedTo < $max) {
-            $cumulativeWeight = current($this->weightsArray);
-            for ($i = $calculatedTo + 1; $i <= $max; $i++) {
-                $cumulativeWeight += $this->calculateWeight($i);
-                $this->weightsArray[$i] = $cumulativeWeight;
-            }
-        }
         parent::setMax($max);
+
+        $this->evaluateWeights();
     }
 
     /**
@@ -90,9 +104,13 @@ abstract class WeightedRandom extends Random
      */
     public function generate()
     {
-        $minWeight = $this->weightsArray[$this->min];
         $maxWeight = $this->weightsArray[$this->max];
-        $rand = mt_rand($minWeight, $maxWeight);
+
+        if ($this->integerWeights) {
+            $rand = mt_rand(1, $maxWeight);
+        } else {
+            $rand = (mt_rand() / mt_getrandmax()) * $maxWeight;
+        }
 
         // Find the first weight that the random number fits in to.
         $value = $this->min;

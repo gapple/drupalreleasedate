@@ -1,6 +1,7 @@
 <?php
 namespace DrupalReleaseDate\Tests;
 
+use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
@@ -22,10 +23,10 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
     function testSingleAverage() {
         $sampleset = new SampleSet();
 
-        $sampleset->insert(10, 10);
-        $sampleset->insert(20,  9);
-        $sampleset->insert(30,  8);
-        $sampleset->insert(40,  7);
+        $sampleset->insert(new Sample(10, 10));
+        $sampleset->insert(new Sample(20,  9));
+        $sampleset->insert(new Sample(30,  8));
+        $sampleset->insert(new Sample(40,  7));
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
 
@@ -46,10 +47,10 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
     function testAverage() {
         $sampleset = new SampleSet();
 
-        $sampleset->insert(10, 10);
-        $sampleset->insert(20,  9);
-        $sampleset->insert(40,  8);
-        $sampleset->insert(80,  7);
+        $sampleset->insert(new Sample(10, 10));
+        $sampleset->insert(new Sample(20,  9));
+        $sampleset->insert(new Sample(40,  8));
+        $sampleset->insert(new Sample(80,  7));
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
 
@@ -69,10 +70,10 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
     function testSingleMedian() {
         $sampleset = new SampleSet();
 
-        $sampleset->insert(10, 10);
-        $sampleset->insert(20,  9);
-        $sampleset->insert(30,  8);
-        $sampleset->insert(40,  7);
+        $sampleset->insert(new Sample(10, 10));
+        $sampleset->insert(new Sample(20,  9));
+        $sampleset->insert(new Sample(30,  8));
+        $sampleset->insert(new Sample(40,  7));
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
 
@@ -94,10 +95,10 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
     function testMedian() {
         $sampleset = new SampleSet();
 
-        $sampleset->insert(10, 10);
-        $sampleset->insert(20,  9);
-        $sampleset->insert(40,  8);
-        $sampleset->insert(80,  7);
+        $sampleset->insert(new Sample(10, 10));
+        $sampleset->insert(new Sample(20,  9));
+        $sampleset->insert(new Sample(40,  8));
+        $sampleset->insert(new Sample(80,  7));
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
 
@@ -121,10 +122,10 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
     function testIncreasingAverageRun() {
         $sampleset = new SampleSet();
 
-        $sampleset->insert(10, 10);
-        $sampleset->insert(20, 11);
-        $sampleset->insert(30, 12);
-        $sampleset->insert(40, 13);
+        $sampleset->insert(new Sample(10, 10));
+        $sampleset->insert(new Sample(20, 11));
+        $sampleset->insert(new Sample(30, 12));
+        $sampleset->insert(new Sample(40, 13));
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
 
@@ -145,10 +146,10 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
     function testIncreasingMedianRun() {
         $sampleset = new SampleSet();
 
-        $sampleset->insert(10, 10);
-        $sampleset->insert(20, 11);
-        $sampleset->insert(30, 12);
-        $sampleset->insert(40, 13);
+        $sampleset->insert(new Sample(10, 10));
+        $sampleset->insert(new Sample(20, 11));
+        $sampleset->insert(new Sample(30, 12));
+        $sampleset->insert(new Sample(40, 13));
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
 

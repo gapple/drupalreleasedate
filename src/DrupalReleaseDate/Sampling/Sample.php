@@ -5,8 +5,8 @@ class Sample
 {
     protected $when;
     protected $count;
-    protected $resolved;
-    protected $duration;
+    protected $resolved = 0;
+    protected $duration = 0;
 
     function __construct($when, $count, $last = null)
     {

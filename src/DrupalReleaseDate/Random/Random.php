@@ -6,11 +6,18 @@ namespace DrupalReleaseDate\Random;
  */
 class Random implements RandomInterface
 {
-    protected $min = 0;
-    protected $max = 1;
+    protected $min;
+    protected $max;
 
     public function __construct($min = 0, $max = 1)
     {
+        if (!is_int($min) || $min < 0) {
+            throw new \InvalidArgumentException("Minimum value must be a positive integer");
+        }
+        if (!is_int($max) || $max < $min) {
+            throw new \InvalidArgumentException("Maximum value must be a positive integer greater than minimum value");
+        }
+
         $this->min = $min;
         $this->max = $max;
     }

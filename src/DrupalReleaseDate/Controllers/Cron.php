@@ -4,6 +4,7 @@ namespace DrupalReleaseDate\Controllers;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 
+use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
@@ -35,10 +36,10 @@ class Cron
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC')
             ->execute();
         while ($result = $samplesResultSet->fetchObject()) {
-            $samples->insert(
+            $samples->insert(new Sample(
                 $app['db']->convertToPhpValue($result->when, 'datetime')->getTimestamp(),
                 $app['db']->convertToPhpValue($result->value, 'smallint')
-            );
+            ));
         }
 
         // Insert empty before run, update if succsesful.
