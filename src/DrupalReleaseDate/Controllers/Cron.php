@@ -4,9 +4,12 @@ namespace DrupalReleaseDate\Controllers;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 
+use DrupalReleaseDate\Random\GeometricWeightedRandom;
 use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
+use DrupalReleaseDate\Sampling\TimeGroupedSampleSetCollection;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
+use DrupalReleaseDate\Sampling\TimeGroupedRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
 use DrupalReleaseDate\MonteCarloIncreasingRunException;
 
@@ -25,8 +28,9 @@ class Cron
     {
         $config = $app['config'];
 
-        // Run estimate simulation
-        $samples = new SampleSet();
+        // Group samples by week.
+        $samples = new TimeGroupedSampleSetCollection(604800);
+
         $samplesResultSet = $app['db']->createQueryBuilder()
             ->select('s.when', 'sv_bugs.value + sv_tasks.value AS value')
             ->from('samples', 's')
@@ -60,7 +64,9 @@ class Cron
             set_time_limit($config['estimate.timeout']);
         }
 
-        $sampleSelector = new SampleSetRandomSampleSelector($samples);
+        // Give samples twice the weight of those from six months before.
+        $geometricRandom = new GeometricWeightedRandom(0, $samples->length() - 1, pow(2, 1/26));
+        $sampleSelector = new TimeGroupedRandomSampleSelector($samples, $geometricRandom);
 
         $monteCarlo = new MonteCarlo($sampleSelector);
         $iterations = (!empty($config['estimate.iterations']) ? $config['estimate.iterations'] : 100000);
