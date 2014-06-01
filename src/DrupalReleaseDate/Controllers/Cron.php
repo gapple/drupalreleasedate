@@ -34,7 +34,9 @@ class Cron
             ->where('s.version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC')
             ->execute();
+        $lastResult = null;
         while ($result = $samplesResultSet->fetchObject()) {
+            $lastResult = $result;
             $samples->insert(
                 $app['db']->convertToPhpValue($result->when, 'datetime')->getTimestamp(),
                 $app['db']->convertToPhpValue($result->value, 'smallint')
@@ -45,7 +47,7 @@ class Cron
         $app['db']->insert(
             $app['db']->quoteIdentifier('estimates'),
             array(
-                $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
+                $app['db']->quoteIdentifier('when') => $lastResult->when,
                 $app['db']->quoteIdentifier('version') => 8,
                 $app['db']->quoteIdentifier('estimate') => null,
                 $app['db']->quoteIdentifier('note') => 'Timeout during run',
@@ -95,7 +97,7 @@ class Cron
             $app['db']->quoteIdentifier('estimates'),
             $update,
             array(
-                $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
+                $app['db']->quoteIdentifier('when') => $lastResult->when,
                 $app['db']->quoteIdentifier('version') => 8,
             )
         );
