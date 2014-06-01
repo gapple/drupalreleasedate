@@ -39,7 +39,9 @@ class Cron
             ->where('s.version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC')
             ->execute();
+        $lastResult = null;
         while ($result = $samplesResultSet->fetchObject()) {
+            $lastResult = $result;
             $samples->insert(new Sample(
                 $app['db']->convertToPhpValue($result->when, 'datetime')->getTimestamp(),
                 $app['db']->convertToPhpValue($result->value, 'smallint')
@@ -50,7 +52,7 @@ class Cron
         $app['db']->insert(
             $app['db']->quoteIdentifier('estimates'),
             array(
-                $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
+                $app['db']->quoteIdentifier('when') => $lastResult->when,
                 $app['db']->quoteIdentifier('version') => 8,
                 $app['db']->quoteIdentifier('estimate') => null,
                 $app['db']->quoteIdentifier('note') => 'Timeout during run',
@@ -78,21 +80,24 @@ class Cron
 
             $medianIterations = array_sum($estimateDistribution) / 2;
             $countSum = 0;
-            foreach ($estimateDistribution as $estimate => $count) {
+            foreach ($estimateDistribution as $estimateInterval => $count) {
                 $countSum += $count;
                 if ($countSum >= $medianIterations) {
                     break;
                 }
             }
 
+            $estimateDate = (new DateTime('@' . $_SERVER['REQUEST_TIME']))
+                ->add(DateInterval::createFromDateString($estimateInterval . ' seconds'));
+
             $update += array(
-                $app['db']->quoteIdentifier('estimate') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME'] + $estimate),
+                $app['db']->quoteIdentifier('estimate') => $app['db']->convertToDatabaseValue($estimateDate, 'date'),
                 $app['db']->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
                 $app['db']->quoteIdentifier('data') => serialize($estimateDistribution),
             );
         } catch (MonteCarloIncreasingRunException $e) {
             $update += array(
-                $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
+                $app['db']->quoteIdentifier('estimate') => '0000-00-00',
                 $app['db']->quoteIdentifier('note') => 'Run failed due to increasing issue count',
             );
         }
@@ -102,7 +107,7 @@ class Cron
             $app['db']->quoteIdentifier('estimates'),
             $update,
             array(
-                $app['db']->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
+                $app['db']->quoteIdentifier('when') => $lastResult->when,
                 $app['db']->quoteIdentifier('version') => 8,
             )
         );

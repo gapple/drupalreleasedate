@@ -178,4 +178,22 @@ class Installation
 
         $synchronizer->updateSchema($schema);
     }
+
+    /**
+     * Convert estimate to only store date and not time.
+     */
+    public function update_2() {
+
+        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+
+        // Create sample_values table.
+        $schema = clone $schema;
+        $schema
+            ->getTable('estimates')
+            ->getColumn('estimate')
+            ->setType(\Doctrine\DBAL\Types\Type::getType('date'));
+
+        $synchronizer->updateSchema($schema);
+    }
 }

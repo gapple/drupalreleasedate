@@ -13,6 +13,5 @@ $console = $app['console'];
 
 $console->add(new Console\InstallCommand());
 $console->add(new Console\UpdateCommand());
-$console->add(new Console\CacheClearCommand());
 
 return $console;
