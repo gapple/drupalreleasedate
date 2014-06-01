@@ -1,6 +1,9 @@
 <?php
 namespace DrupalReleaseDate\Controllers;
 
+use DateTime;
+use DateInterval;
+
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +23,7 @@ class Data
         $lastResults = $lastQuery->execute();
         $lastDate = null;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
-            $lastDate = new \DateTime($lastResultRow['when']);
+            $lastDate = new DateTime($lastResultRow['when']);
 
             $response = new Response();
             $response->setLastModified($lastDate);
@@ -45,16 +48,18 @@ class Data
 
         $data = array();
         while ($sampleValueRow = $sampleValuesResult->fetch(\PDO::FETCH_ASSOC)) {
-            if (!isset($data[$sampleValueRow['when']])) {
-                $data[$sampleValueRow['when']] = array(
-                    'when' => $sampleValueRow['when'],
+            $valueWhen = $app['db']->convertToPhpValue($sampleValueRow['when'], 'datetime');
+            $valueWhenTimestamp = $valueWhen->getTimestamp();
+            if (!isset($data[$valueWhenTimestamp])) {
+                $data[$valueWhenTimestamp] = array(
+                    'when' => $valueWhen->format(DateTime::ISO8601),
                 );
             }
-            $data[$sampleValueRow['when']][$sampleValueRow['key']] = $app['db']->convertToPhpValue($sampleValueRow['value'], 'smallint');
+            $data[$valueWhenTimestamp][$sampleValueRow['key']] = $app['db']->convertToPhpValue($sampleValueRow['value'], 'smallint');
         }
         $response = $app->json(
             array(
-                'modified' => $lastResultRow['when'],
+                'modified' => $lastDate->format(DateTime::ISO8601),
                 'data' => array_values($data),
             )
         );
@@ -84,7 +89,7 @@ class Data
             ->fetch(\PDO::FETCH_ASSOC);
 
         if ($currentSample) {
-            $nowDate = new \DateTime($currentSample['when']);
+            $nowDate = new DateTime($currentSample['when']);
 
             $response = new Response();
             $response->setLastModified($nowDate);
@@ -140,7 +145,7 @@ class Data
 
         $response = $app->json(
             array(
-                'modified' => $currentSample['when'],
+                'modified' => $nowDate->format(DateTime::ISO8601),
                 'data' => $data,
             )
         );
@@ -166,8 +171,8 @@ class Data
         $lastResults = $lastQuery->execute();
         $lastDate = null;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
-            $lastDate = new \DateTime($lastResultRow['when']);
-            $responseData['modified'] = $lastResultRow['when'];
+            $lastDate = new DateTime($lastResultRow['when']);
+            $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
 
             $response = new Response();
             $response->setLastModified($lastDate);
@@ -198,7 +203,7 @@ class Data
         $responseData['data'] = array();
         while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC)) {
             $responseData['data'][] = array(
-                'when' => $resultRow['when'],
+                'when' => $app['db']->convertToPhpValue($resultRow['when'], 'datetime')->format(DateTime::ISO8601),
                 'estimate' => $resultRow['estimate'],
             );
         }
@@ -236,7 +241,7 @@ class Data
 
         if ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
 
-            $estimateDate = new \DateTime($row['when']);
+            $estimateDate = new DateTime($row['when']);
 
             $response = new Response();
             $response->setLastModified($estimateDate);
@@ -250,8 +255,10 @@ class Data
             if (!empty($row['data'])) {
                 $data = unserialize($row['data']);
                 foreach ($data as $key => $count) {
+                    $dataDate = clone $estimateDate;
+                    $dataDate->add(DateInterval::createFromDateString($key . ' seconds'));
                     $data[$key] = array(
-                        'when' => date('Y-m-d H:i:s', strtotime($row['when'] . " +" . $key . " seconds")),
+                        'when' => $dataDate->format('Y-m-d'),
                         'count' => $count,
                     );
                 }
@@ -261,7 +268,7 @@ class Data
 
             $response = $app->json(
                 array(
-                    'modified' => $row['when'],
+                    'modified' => $estimateDate->format(DateTime::ISO8601),
                     'data' => $data,
                 )
             );
