@@ -13,6 +13,33 @@ class Data
 
     public function samples(Application $app, Request $request)
     {
+        $responseData = array();
+
+        $from = null;
+        if ($request->query->has('from')) {
+            try {
+                $from = new DateTime($request->query->get('from'));
+                $responseData['from'] = $from->format(DateTime::ISO8601);
+            }
+            catch (\Exception $e) {
+                $app->abort(400, 'Invalid "from" parameter');
+            }
+        }
+        $to = null;
+        if ($request->query->has('to')) {
+            try {
+                $to = new DateTime($request->query->get('to'));
+                $responseData['to'] = $to->format(DateTime::ISO8601);
+            }
+            catch (\Exception $e) {
+                $app->abort(400, 'Invalid "to" parameter');
+            }
+        }
+
+        if ($from && $to && $from->diff($to)->invert) {
+            $app->abort(400, 'Invalid "from" and "to" parameters');
+        }
+
         // Check against Last-Modified header.
         $lastQuery = $app['db']->createQueryBuilder()
             ->select('s.when')
@@ -20,10 +47,22 @@ class Data
             ->where('version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
+        if ($from) {
+            $lastQuery
+                ->andWhere('s.when >= :from')
+                ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+        }
+        if ($to) {
+            $lastQuery
+                ->andWhere('s.when <= :to')
+                ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+        }
+
         $lastResults = $lastQuery->execute();
         $lastDate = null;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
             $lastDate = new DateTime($lastResultRow['when']);
+            $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
 
             $response = new Response();
             $response->setLastModified($lastDate);
@@ -35,7 +74,7 @@ class Data
             }
         }
 
-        $sampleValuesResult = $app['db']->createQueryBuilder()
+        $sampleValuesQuery = $app['db']->createQueryBuilder()
             ->select(
                 'sv.when',
                 'sv.key',
@@ -43,8 +82,18 @@ class Data
             )
             ->from('sample_values', 'sv')
             ->where('version = 8')
-            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC')
-            ->execute();
+            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
+        if ($from) {
+            $sampleValuesQuery
+                ->andWhere('sv.when >= :from')
+                ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+        }
+        if ($to) {
+            $sampleValuesQuery
+                ->andWhere('sv.when <= :to')
+                ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+        }
+        $sampleValuesResult = $sampleValuesQuery->execute();
 
         $data = array();
         while ($sampleValueRow = $sampleValuesResult->fetch(\PDO::FETCH_ASSOC)) {
@@ -57,16 +106,15 @@ class Data
             }
             $data[$valueWhenTimestamp][$sampleValueRow['key']] = $app['db']->convertToPhpValue($sampleValueRow['value'], 'smallint');
         }
-        $response = $app->json(
-            array(
-                'modified' => $lastDate->format(DateTime::ISO8601),
-                'data' => array_values($data),
-            )
-        );
+        $responseData['data'] = array_values($data);
+
+        $response = $app->json($responseData);
 
         if ($lastDate) {
             $response->setLastModified($lastDate);
         }
+
+        // TODO if $to is in the past, this result can be cached indefinitely.
 
         return $response;
     }
