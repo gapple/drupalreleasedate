@@ -161,6 +161,31 @@ class Data
     {
         $responseData = array();
 
+        $from = null;
+        if ($request->query->has('from')) {
+            try {
+                $from = new DateTime($request->query->get('from'));
+                $responseData['from'] = $from->format(DateTime::ISO8601);
+            }
+            catch (\Exception $e) {
+                $app->abort(400, 'Invalid "from" parameter');
+            }
+        }
+        $to = null;
+        if ($request->query->has('to')) {
+            try {
+                $to = new DateTime($request->query->get('to'));
+                $responseData['to'] = $to->format(DateTime::ISO8601);
+            }
+            catch (\Exception $e) {
+                $app->abort(400, 'Invalid "to" parameter');
+            }
+        }
+
+        if ($from && $to && $from->diff($to)->invert) {
+            $app->abort(400, 'Invalid "from" and "to" parameters');
+        }
+
         // Check against Last-Modified header.
         $lastQuery = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate')
@@ -168,6 +193,17 @@ class Data
             ->where('version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
+        if ($from) {
+            $lastQuery
+                ->andWhere('e.when >= :from')
+                ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+        }
+        if ($to) {
+            $lastQuery
+                ->andWhere('e.when <= :to')
+                ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+        }
+
         $lastResults = $lastQuery->execute();
         $lastDate = null;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
@@ -189,9 +225,22 @@ class Data
             ->from('estimates', 'e')
             ->where('version = 8')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
+        if ($from) {
+            $queryBuilder
+                ->andWhere('e.when >= :from')
+                ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+        }
+        if ($to) {
+            $queryBuilder
+                ->andWhere('e.when <= :to')
+                ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+        }
 
         if ($request->query->has('limit')) {
             $limit = $request->query->getInt('limit');
+            if ($limit <= 0) {
+                $app->abort(400, 'Invalid "limit" parameter');
+            }
             $responseData['limit'] = $limit;
             $queryBuilder
                 ->setMaxResults($limit)
@@ -217,6 +266,8 @@ class Data
         if ($lastDate) {
             $response->setLastModified($lastDate);
         }
+
+        // TODO if $to is in the past, this result can be cached indefinitely.
 
         return $response;
     }
