@@ -67,7 +67,7 @@
                         var when = new Date(data[i].when.replace(' ', 'T'));
                         var estimate = null;
                         var error = null;
-                        if (data[i].estimate === null || data[i].estimate === '0000-00-00 00:00:00') {
+                        if (data[i].estimate === null || data[i].estimate === '0000-00-00') {
                             error = {
                                 v: 0,
                                 f: 'N/A'

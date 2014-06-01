@@ -73,21 +73,24 @@ class Cron
 
             $medianIterations = array_sum($estimateDistribution) / 2;
             $countSum = 0;
-            foreach ($estimateDistribution as $estimate => $count) {
+            foreach ($estimateDistribution as $estimateInterval => $count) {
                 $countSum += $count;
                 if ($countSum >= $medianIterations) {
                     break;
                 }
             }
 
+            $estimateDate = (new DateTime('@' . $_SERVER['REQUEST_TIME']))
+                ->add(DateInterval::createFromDateString($estimateInterval . ' seconds'));
+
             $update += array(
-                $app['db']->quoteIdentifier('estimate') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME'] + $estimate),
+                $app['db']->quoteIdentifier('estimate') => $app['db']->convertToDatabaseValue($estimateDate, 'date'),
                 $app['db']->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
                 $app['db']->quoteIdentifier('data') => serialize($estimateDistribution),
             );
         } catch (MonteCarloIncreasingRunException $e) {
             $update += array(
-                $app['db']->quoteIdentifier('estimate') => '0000-00-00 00:00:00',
+                $app['db']->quoteIdentifier('estimate') => '0000-00-00',
                 $app['db']->quoteIdentifier('note') => 'Run failed due to increasing issue count',
             );
         }
