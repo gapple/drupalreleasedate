@@ -98,13 +98,14 @@
                             };
                         }
                         else {
-                            var estimateDate = new Date(response.data[0].estimate.replace(' ', 'T') + '-07:00');
+                            var estimateDate = new Date(response.data[0].estimate);
                             var estimateString = '';
 
                             if (window.Intl && typeof window.Intl === "object") {
                                 estimateString = estimateDate.toLocaleDateString(
                                     'en-US',
                                     {
+                                        timeZone: 'UTC',
                                         month: 'long',
                                         day: 'numeric',
                                         year: 'numeric'
@@ -112,7 +113,7 @@
                                 );
                             }
                             else {
-                                switch (estimateDate.getMonth()) {
+                                switch (estimateDate.getUTCMonth()) {
                                     case 0:
                                         estimateString = 'January';
                                         break;
@@ -150,7 +151,7 @@
                                         estimateString = 'December';
                                         break;
                                 }
-                                estimateString += ' ' + estimateDate.getDate() + ', ' + estimateDate.getFullYear();
+                                estimateString += ' ' + estimateDate.getUTCDate() + ', ' + estimateDate.getUTCFullYear();
                             }
 
                             estimate = {
