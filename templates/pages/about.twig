@@ -14,16 +14,10 @@
             </p>
 
             <p>
-                A Monte Carlo simulation is then run each day to estimate the time
-                required to complete the currently remaining number of issues.
-                At this time a flat distribution is used to select samples, but there is
-                <a href="https://github.com/gapple/drupalreleasedate/issues/2">an open issue</a>
-                to weight recent values more heavily.
-            </p>
-
-            <p>
-                For the date displayed on the front page, an additional 6 weeks is then
-                added to the estimate to account for the Release Candidate period.
+                A Monte Carlo simulation is then run each day to estimate the
+                time required to complete the currently remaining number of
+                issues. Samples are chosen with a weighted distribution to
+                emphasize recent changes.
             </p>
 
             <p>
