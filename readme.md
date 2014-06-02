@@ -11,8 +11,9 @@ Access the site at http://drupalreleasedate.com/
 
 Public JSON feeds are provided for access to all of the site's data.
 
-Array values are typically returned ordered from oldest to newest values, but
-this may not be guaranteed.
+Date parameters can be specified in any valid [PHP DateTime format](http://php.net/manual/en/datetime.formats.php)
+
+Dates are returned in ISO8601 format.
 
 *__Note__: This project is still in active development, and so the data response
 format is subject to change at any time, though backwards compatibility will be
@@ -23,18 +24,26 @@ maintained as best as possible.*
 
 __/data/samples.json__
 
+Keys may vary within each sample according to what values were fetched at the
+time the sample was taken. A value may be `null` if an attempt to fetch the value
+was made but failed.
+
+Optional Parameters:
+- __from__ *(date)*
+  Restrict the results to values on or after the specified date
+- __to__ *(date)*
+  Restrict the results to values on or before the specified date
+
 ```
 {
-    "modified": "2014-01-25 00:17:01",
+    "modified": "2014-05-31T18:17:01-0700",
     "data": [
         {
-            "when": "2013-05-29 12:35:00",
+            "when": "2013-05-29T12:35:00-0700",
             "critical_bugs": 26,
             "critical_tasks": 46,
             "major_bugs": 125,
-            "major_tasks": 157,
-            "normal_bugs": null,
-            "normal_tasks": null
+            "major_tasks": 157
         }
     ]
 }
@@ -44,7 +53,7 @@ __/data/historical-samples.json__
 
 ```
 {
-    "modified": "2014-03-21 12:17:02",
+    "modified": "2014-05-31T18:17:01-0700",
     "data": {
         "current": {
             "critical_bugs": 39,
@@ -101,18 +110,47 @@ __/data/historical-samples.json__
 __/data/estimates.json__
 
 Optional Parameters:
+- __from__ *(date)*
+  Restrict the results to values on or after the specified date
+- __to__ *(date)*
+  Restrict the results to values on or before the specified date
 - __limit__ *(integer)*
-  Restrict the results to the requested number of newest values.
+  Restrict the results to the requested number of newest values
 
 ```
 {
-    "modified": "2014-01-25 02:48:34",
+    "modified": "2014-05-31T02:42:59-0700",
     "data": [
         {
-            "when": "2013-05-31 08:46:00",
-            "estimate": "2013-08-24 04:35:22"
+            "when": "2013-05-31T08:46:00-0700",
+            "estimate": "2013-08-24"
         }
     ]
+}
+```
+
+__/data/distribution.json__
+
+Retrieve the distribution used to calculate an estimate.  If a specific date
+isn't provided, the latest estimate is used.
+
+Optional Parameters:
+- __date__ *(date)*
+  The estimate date to return the distribution for.
+
+```
+{
+    "modified": "2014-05-31T18:17:01-0700",
+    "data": {
+        "3715200": {
+            "when": "2014-07-13",
+            "count": 1
+        },
+        "5961600": {
+            "when": "2014-08-08",
+            "count": 1
+        }
+    }
 }
 ```
 
