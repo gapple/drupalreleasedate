@@ -322,6 +322,18 @@ class Data
 
     public function distribution(Application $app, Request $request)
     {
+        $responseData = array();
+
+        $date = null;
+        if ($request->query->has('date')) {
+            try {
+                $date = new DateTime($request->query->get('date'));
+                $responseData['date'] = $date->format(DateTime::ISO8601);
+            }
+            catch (\Exception $e) {
+                $app->abort(400, 'Invalid "date" parameter');
+            }
+        }
 
         $query = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate', 'e.data')
@@ -330,10 +342,10 @@ class Data
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
 
-        if ($request->query->has('date')) {
+        if ($date) {
             $query
-                ->andWhere($app['db']->quoteIdentifier('when') . ' = :when')
-                ->setParameter('when', $request->query->get('date'), \PDO::PARAM_STR);
+                ->andWhere('e.when = :when')
+                ->setParameter('when', $app['db']->convertToDatabaseValue($date, 'datetime'), \PDO::PARAM_STR);
         }
 
         $results = $query->execute();
@@ -341,6 +353,7 @@ class Data
         if ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
 
             $estimateDate = new DateTime($row['when']);
+            $responseData['modified'] = $estimateDate->format(DateTime::ISO8601);
 
             $response = new Response();
             $response->setLastModified($estimateDate);
@@ -364,19 +377,19 @@ class Data
             } else {
                 $data = null;
             }
+            $responseData['data'] = $data;
 
-            $response = $app->json(
-                array(
-                    'modified' => $estimateDate->format(DateTime::ISO8601),
-                    'data' => $data,
-                )
-            );
+            $response = $app->json($responseData);
 
             if ($estimateDate) {
                 $response->setLastModified($estimateDate);
             }
 
             return $response;
+        }
+        else if ($date) {
+            // A specific date was requested, but no result was available.
+            $app->abort(404, 'No data for requested date');
         }
 
         // TODO return failure response.
