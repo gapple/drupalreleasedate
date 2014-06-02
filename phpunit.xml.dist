@@ -19,7 +19,7 @@
             longer to run.
             Default: 1000
         -->
-        <const name="RANDOM_BASE_ITERATIONS" value="1000"/>
+        <const name="RANDOM_BASE_ITERATIONS" value="4000"/>
     </php>
     <testsuites>
         <testsuite name="DrupalReleaseDate Test Suite">
