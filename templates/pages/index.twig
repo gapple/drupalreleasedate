@@ -91,7 +91,7 @@
 
                     var estimate;
                     if (response.data && response.data[0]) {
-                        if (response.data[0].estimate === null || response.data[0].estimate == '0000-00-00 00:00:00') {
+                        if (response.data[0].estimate === null || response.data[0].estimate == '0000-00-00') {
                             estimate = {
                                 value: 'N/A',
                                 note: 'An estimate could not be calculated with the current data'
