@@ -80,15 +80,7 @@ class Cron
 
         try {
             $estimateDistribution = $monteCarlo->runDistribution($iterations);
-
-            $medianIterations = array_sum($estimateDistribution) / 2;
-            $countSum = 0;
-            foreach ($estimateDistribution as $estimateInterval => $count) {
-                $countSum += $count;
-                if ($countSum >= $medianIterations) {
-                    break;
-                }
-            }
+            $estimateInterval = MonteCarlo::getMedianFromDistribution($estimateDistribution);
 
             $estimateDate = (new DateTime('@' . $_SERVER['REQUEST_TIME']))
                 ->add(DateInterval::createFromDateString($estimateInterval . ' seconds'));

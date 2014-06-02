@@ -105,17 +105,13 @@ class MonteCarlo
     }
 
     /**
-     * Get the median estimate value from the specified number of iterations.
+     * Return the median value from a distribution array.
      *
-     * @param number $iterations
-     * @param number $bucketSize
-     * @return number
+     * @param  array $distribution An array as returned from MonteCarlo::runDistribution()
+     * @return int
      */
-    public function runMedian($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    public static function getMedianFromDistribution($distribution)
     {
-
-        $distribution = $this->runDistribution($iterations, $bucketSize);
-
         // Calculate the number of iterations required to acheive a median value.
         $medianIterations = array_sum($distribution) / 2;
 
@@ -128,6 +124,18 @@ class MonteCarlo
         }
 
         return $estimate;
+    }
+
+    /**
+     * Get the median estimate value from the specified number of iterations.
+     *
+     * @param number $iterations
+     * @param number $bucketSize
+     * @return number
+     */
+    public function runMedian($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    {
+        return self::getMedianFromDistribution($this->runDistribution($iterations, $bucketSize));
     }
 
     /**
