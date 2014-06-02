@@ -82,8 +82,8 @@ class Cron
             $estimateDistribution = $monteCarlo->runDistribution($iterations);
             $estimateInterval = MonteCarlo::getMedianFromDistribution($estimateDistribution);
 
-            $estimateDate = (new DateTime('@' . $_SERVER['REQUEST_TIME']))
-                ->add(DateInterval::createFromDateString($estimateInterval . ' seconds'));
+            $estimateDate = new DateTime('@' . $_SERVER['REQUEST_TIME']);
+            $estimateDate->add(DateInterval::createFromDateString($estimateInterval . ' seconds'));
 
             $update += array(
                 $app['db']->quoteIdentifier('estimate') => $app['db']->convertToDatabaseValue($estimateDate, 'date'),
