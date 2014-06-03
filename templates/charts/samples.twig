@@ -60,13 +60,15 @@
                     chartData.addColumn('number', 'Critical');
                     chartData.addColumn('number', 'Major');
                     chartData.addColumn('number', 'Normal');
+                    chartData.addColumn('number', 'Beta Blockers');
 
                     var data = response.data;
 
                     for (var i in data) {
                         var critical = null,
                             major = null,
-                            normal = null;
+                            normal = null,
+                            betaBlockers = null;
 
                         if (data[i].critical_bugs != null && data[i].critical_tasks != null) {
                             critical = data[i].critical_bugs + data[i].critical_tasks;
@@ -77,12 +79,16 @@
                         if (data[i].normal_bugs != null && data[i].normal_tasks != null) {
                             normal = data[i].normal_bugs + data[i].normal_tasks;
                         }
+                        if (data[i].beta_blockers != null) {
+                            betaBlockers = data[i].beta_blockers;
+                        }
 
                         chartData.addRow([
                             new Date(data[i].when.replace(' ', 'T')),
                             critical,
                             major,
-                            normal
+                            normal,
+                            betaBlockers
                         ]);
                     }
                     Timing.stop('chart.processData');
@@ -118,7 +124,7 @@
                     chartData,
                     {
                         title: 'Issue Count',
-                        colors: ['red', 'blue', 'green'],
+                        colors: ['red', 'blue', 'green', 'orange'],
                         hAxis: {},
                         vAxis: {
                             minValue: 0,
