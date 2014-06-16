@@ -14,13 +14,109 @@
     {{ parent() }}
     <script type="text/javascript">
         $(function () {
-            var chart, chartData;
+            var chart, chartData, dataView;
             var $chart = $('#chart');
+
+            var columns = [
+                {
+                    index: 0,
+                    key: 'date',
+                    type: 'datetime',
+                    label: 'Date',
+                    value: function(row) {
+                        return new Date(row.when);
+                    }
+                },
+                {
+                    index: 1,
+                    key: 'critical',
+                    type: 'number',
+                    label: 'Critical',
+                    color: 'red',
+                    disabledColor: '#FFD9D9',
+                    trendline: true,
+                    visible: true,
+                    value: function(row) {
+                        if (
+                            typeof row.critical_bugs === 'undefined' ||
+                            row.critical_bugs === null ||
+                            typeof row.critical_tasks === 'undefined' ||
+                            row.critical_tasks === null
+                        ) {
+                            return null;
+                        }
+
+                        return row.critical_bugs + row.critical_tasks;
+                    }
+                },
+                {
+                    index: 2,
+                    key: 'major',
+                    type: 'number',
+                    label: 'Major',
+                    color: 'blue',
+                    disabledColor: '#D9D9FF',
+                    trendline: true,
+                    visible: true,
+                    value: function(row) {
+                        if (
+                            typeof row.major_bugs === 'undefined' ||
+                            row.major_bugs === null ||
+                            typeof row.major_tasks === 'undefined' ||
+                            row.major_tasks === null
+                        ) {
+                            return null;
+                        }
+
+                        return row.major_bugs + row.major_tasks;
+                    }
+                },
+                {
+                    index: 3,
+                    key: 'normal',
+                    type: 'number',
+                    label: 'Normal',
+                    color: 'green',
+                    disabledColor: '#C3E6C3',
+                    trendline: true,
+                    visible: true,
+                    value: function(row) {
+                        if (
+                            typeof row.normal_bugs === 'undefined' ||
+                            row.normal_bugs === null ||
+                            typeof row.normal_tasks === 'undefined' ||
+                            row.normal_tasks === null
+                        ) {
+                            return null;
+                        }
+
+                        return row.normal_bugs + row.normal_tasks;
+                    }
+                },
+                {
+                    index: 4,
+                    key: 'beta_blockers',
+                    type: 'number',
+                    label: 'Beta Blockers',
+                    color: 'orange',
+                    disabledColor: '#F2E5CE',
+                    trendline: false,
+                    visible: true,
+                    value: function(row) {
+                        if (typeof row.beta_blockers === 'undefined') {
+                            return null;
+                        }
+                        return row.beta_blockers;
+                    }
+                }
+            ];
+
+            var nullFunc = function() {return null;};
 
             google.setOnLoadCallback(loadChart);
 
             var resizeTimeout = null;
-            var resizeFunction = function () {
+            var redrawChart = function () {
                 Timing.start('chart.redraw');
                 drawChart();
                 Timing.stop('chart.redraw');
@@ -31,7 +127,7 @@
             };
             $(window).resize(function () {
                 clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(resizeFunction, 100);
+                resizeTimeout = setTimeout(redrawChart, 100);
             });
 
             $('#chart-refresh').click(function (event) {
@@ -55,41 +151,20 @@
                     Timing.start('chart.processData');
 
                     chartData = new google.visualization.DataTable();
+                    for (var i = 0; i < columns.length; i++) {
+                        chartData.addColumn(columns[i].type, columns[i].label);
+                    }
 
-                    chartData.addColumn('datetime', 'Time');
-                    chartData.addColumn('number', 'Critical');
-                    chartData.addColumn('number', 'Major');
-                    chartData.addColumn('number', 'Normal');
-                    chartData.addColumn('number', 'Beta Blockers');
+                    dataView = new google.visualization.DataView(chartData);
 
                     var data = response.data;
 
-                    for (var i in data) {
-                        var critical = null,
-                            major = null,
-                            normal = null,
-                            betaBlockers = null;
-
-                        if (data[i].critical_bugs != null && data[i].critical_tasks != null) {
-                            critical = data[i].critical_bugs + data[i].critical_tasks;
+                    for (var d in data) {
+                        var row = [];
+                        for (var i = 0; i < columns.length; i++) {
+                            row.push(columns[i].value(data[d]));
                         }
-                        if (data[i].major_bugs != null && data[i].major_tasks != null) {
-                            major = data[i].major_bugs + data[i].major_tasks;
-                        }
-                        if (data[i].normal_bugs != null && data[i].normal_tasks != null) {
-                            normal = data[i].normal_bugs + data[i].normal_tasks;
-                        }
-                        if (data[i].beta_blockers != null) {
-                            betaBlockers = data[i].beta_blockers;
-                        }
-
-                        chartData.addRow([
-                            new Date(data[i].when.replace(' ', 'T')),
-                            critical,
-                            major,
-                            normal,
-                            betaBlockers
-                        ]);
+                        chartData.addRow(row);
                     }
                     Timing.stop('chart.processData');
 
@@ -116,34 +191,63 @@
                 }
                 else {
                     chart = new google.visualization.LineChart($chart.get(0));
+
+                    // Toggle visibility of data series on click of legend.
+                    google.visualization.events.addListener(chart, 'click', function (target) {
+                        if (target.targetID.match(/^legendentry#\d+$/)) {
+
+                            // Disable selection of entire data series.
+                            setTimeout(function () {chart.setSelection(null)}, 0);
+
+                            var index = parseInt(target.targetID.slice(12)) + 1;
+                            columns[index].visible = !columns[index].visible;
+                            redrawChart();
+                        }
+                    });
                 }
 
                 $chart.css('height', ($(document).height() * 0.8));
 
+
+                var visibleColumnIndexes = [0];
+                var trendlines = {};
+                var colors = [];
+
+                for (var i = 1; i < columns.length; i++) {
+                    if (columns[i].visible) {
+                        if (columns[i].trendline) {
+                            trendlines[visibleColumnIndexes.length - 1] = {
+                                visibleInLegend: false,
+                                opacity: 0.2
+                            };
+                        }
+                        colors.push(columns[i].color);
+
+                        visibleColumnIndexes.push(i);
+                    }
+                    else {
+                      colors.push(columns[i].disabledColor);
+
+                      visibleColumnIndexes.push({
+                        calc: nullFunc,
+                        type: columns[i].type,
+                        label: columns[i].label,
+                      });
+                    }
+                };
+                dataView.setColumns(visibleColumnIndexes);
+
                 chart.draw(
-                    chartData,
+                    dataView,
                     {
                         title: 'Issue Count',
-                        colors: ['red', 'blue', 'green', 'orange'],
+                        colors: colors,
                         hAxis: {},
                         vAxis: {
                             minValue: 0,
                             logScale: true
                         },
-                        trendlines: {
-                            0: {
-                                visibleInLegend: false,
-                                opacity: 0.2
-                            },
-                            1: {
-                                visibleInLegend: false,
-                                opacity: 0.2
-                            },
-                            2: {
-                                visibleInLegend: false,
-                                opacity: 0.2
-                            }
-                        }
+                        trendlines: trendlines
                     }
                 );
             };
