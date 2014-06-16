@@ -208,7 +208,7 @@
 
                 $chart.css('height', ($(document).height() * 0.8));
 
-
+                var visibleColumnCount = 0;
                 var visibleColumnIndexes = [0];
                 var trendlines = {};
                 var colors = [];
@@ -224,6 +224,7 @@
                         colors.push(columns[i].color);
 
                         visibleColumnIndexes.push(i);
+                        visibleColumnCount++;
                     }
                     else {
                       colors.push(columns[i].disabledColor);
@@ -244,8 +245,7 @@
                         colors: colors,
                         hAxis: {},
                         vAxis: {
-                            minValue: 0,
-                            logScale: true
+                            logScale: visibleColumnCount > 1
                         },
                         trendlines: trendlines
                     }
