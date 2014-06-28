@@ -237,6 +237,8 @@
                                 $(this).addClass('up');
                             }
                             else if (delta < 0) {
+                                // Convert negative symbol to a 'minus' character so that it is read by screen readers in digit mode.
+                                delta = '−' + delta.toString().slice(1);
                                 $(this).addClass('down');
                             }
 
