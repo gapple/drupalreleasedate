@@ -6,6 +6,9 @@ estimating a release date based on collected samples.
 
 Access the site at http://drupalreleasedate.com/
 
+[![Build Status](https://img.shields.io/travis/gapple/drupalreleasedate/master.svg?style=flat)](https://travis-ci.org/gapple/drupalreleasedate)
+[![Coverage Status](https://img.shields.io/coveralls/gapple/drupalreleasedate/master.svg?style=flat)](https://coveralls.io/r/gapple/drupalreleasedate?branch=master)
+
 
 ## Data API ##
 
