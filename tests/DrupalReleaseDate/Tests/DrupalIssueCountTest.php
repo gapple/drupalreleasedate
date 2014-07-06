@@ -6,6 +6,31 @@ use DrupalReleaseDate\DrupalIssueCount;
 
 class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
 {
+
+    /**
+     * Test a count request that encounters an error in the response.
+     */
+    public function testFailedCount()
+    {
+
+        $mockPlugin = new MockPlugin();
+        $client = new \Guzzle\Http\Client();
+        $client->addSubscriber($mockPlugin);
+
+        $mockPlugin->addResponse(new \Guzzle\Http\Message\Response(503));
+
+        $issueCounter = new DrupalIssueCount($client);
+
+        $issueCount = $issueCounter->getCounts(
+            array(),
+            array(
+                'test' => array(),
+            )
+        );
+
+        $this->assertNull($issueCount['test']);
+    }
+
     /**
      * Test a count request that can be satisfied by a single page.
      */

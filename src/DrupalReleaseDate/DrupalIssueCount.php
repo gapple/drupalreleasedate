@@ -45,7 +45,7 @@ class DrupalIssueCount
 
             try {
                 $results[$fetchKey] = $this->getCount($request);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $results[$fetchKey] = null;
             }
         }
