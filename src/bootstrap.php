@@ -18,6 +18,8 @@ $app->register(
     )
 );
 
+$app->register(new Silex\Provider\ServiceControllerServiceProvider());
+
 if (isset($config['http_cache']) && $config['http_cache'] !== false) {
     $app->register(
         new Silex\Provider\HttpCacheServiceProvider(),

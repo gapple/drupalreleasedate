@@ -6,19 +6,25 @@ use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use DrupalReleaseDate\Controllers\Cron as CronController;
+
 class CronControllerProvider implements ControllerProviderInterface
 {
     public function connect(Application $app)
     {
+        $app['cron.controller'] = $app->share(function() use ($app) {
+            return new CronController($app['db']);
+        });
+
         $controllers = $app['controllers_factory'];
 
-        $controllers->get('/', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
+        $controllers->get('/', 'cron.controller:emptyResponse');
         // Handle request to update estimate value
-        $controllers->get('/update-estimate', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
-        $controllers->get('/update-estimate/{key}', 'DrupalReleaseDate\Controllers\Cron::updateEstimate');
+        $controllers->get('/update-estimate', 'cron.controller:emptyResponse');
+        $controllers->get('/update-estimate/{key}', 'cron.controller:updateEstimate');
         // Handle request to get latest issue counts
-        $controllers->get('/fetch-counts', 'DrupalReleaseDate\Controllers\Cron::emptyResponse');
-        $controllers->get('/fetch-counts/{key}', 'DrupalReleaseDate\Controllers\Cron::fetchCounts');
+        $controllers->get('/fetch-counts', 'cron.controller:emptyResponse');
+        $controllers->get('/fetch-counts/{key}', 'cron.controller:fetchCounts');
 
         // Check key in request before running cron.
         $controllers->before(
