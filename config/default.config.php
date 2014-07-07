@@ -41,7 +41,7 @@ $config['http_cache'] = array(
  * @see http://silex.sensiolabs.org/doc/providers/twig.html
  */
 $config['twig'] = array(
-    'cache' => APPROOT . 'cache/twig',
+    'cache' => __DIR__ . '/../cache/twig',
 );
 
 /**
