@@ -231,9 +231,11 @@
 
                         if (currentValue !== null && pastValue !== null) {
                             var delta = currentValue - pastValue;
+                            var deltaPercent = (delta / pastValue * 100).toPrecision(2);
 
                             if (delta > 0) {
                                 delta = '+' + delta;
+                                deltaPercent = '+' + deltaPercent;
                                 $(this).addClass('up');
                             }
                             else if (delta < 0) {
@@ -242,7 +244,9 @@
                                 $(this).addClass('down');
                             }
 
-                            $(this).html(delta);
+                            $(this)
+                                .html(delta)
+                                .attr('title', deltaPercent + '%');
                         }
 
                     });
