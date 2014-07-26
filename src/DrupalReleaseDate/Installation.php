@@ -221,4 +221,33 @@ class Installation
             ->set('e.completed', 'e.when')
             ->execute();
     }
+
+    /**
+     * Update format of data for existing estimates.
+     */
+    public function update_4()
+    {
+        $estimates = $this->app['db']->createQueryBuilder()
+            ->select('e.*')
+            ->from('estimates', 'e')
+            ->where('e.data != ""')
+            ->execute();
+
+
+        while ($estimate = $estimates->fetch(\PDO::FETCH_OBJ)) {
+            $dataArray = unserialize($estimate->data);
+
+            $dataObject = \DrupalReleaseDate\EstimateDistribution::fromArray($dataArray);
+
+            $this->app['db']->createQueryBuilder()
+                ->update('estimates', 'e')
+                ->set('e.data', ':data')
+                ->where('e.version = :version')
+                ->andWhere('e.when = :when')
+                ->setParameter('data', serialize($dataObject))
+                ->setParameter('version', $estimate->version)
+                ->setParameter('when', $estimate->when)
+                ->execute();
+        }
+    }
 }

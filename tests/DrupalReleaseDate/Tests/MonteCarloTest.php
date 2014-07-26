@@ -16,6 +16,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * is predictable within a single run.
      *
      * @covers \DrupalReleaseDate\MonteCarlo
+     * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
@@ -36,7 +37,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
-        $result = $montecarlo->runAverage(1);
+        $result = $montecarlo->runAverage(1, 10);
 
         $this->assertEquals(70, $result);
     }
@@ -49,6 +50,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * iterations.
      *
      * @covers \DrupalReleaseDate\MonteCarlo
+     * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
@@ -69,7 +71,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
-        $result = $montecarlo->runAverage(RANDOM_BASE_ITERATIONS);
+        $result = $montecarlo->runAverage(RANDOM_BASE_ITERATIONS, 10);
 
         $this->assertEquals(163.0, $result, '', 1);
     }
@@ -81,6 +83,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * is predictable within a single run.
      *
      * @covers \DrupalReleaseDate\MonteCarlo
+     * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
@@ -115,6 +118,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * iterations.
      *
      * @covers \DrupalReleaseDate\MonteCarlo
+     * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
@@ -148,9 +152,11 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * Since all iterations will fail, the first run after the threshold is met
      * will cause the run to fail.
+     *
      * @expectedExceptionMessage Run aborted after iteration 11
      *
      * @covers \DrupalReleaseDate\MonteCarlo
+     * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
@@ -181,9 +187,11 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * Since all iterations will fail, the first run after the threshold is met
      * will cause the run to fail.
+     *
      * @expectedExceptionMessage Run aborted after iteration 11
      *
      * @covers \DrupalReleaseDate\MonteCarlo
+     * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet

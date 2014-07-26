@@ -368,8 +368,8 @@ class Data
             }
 
             if (!empty($row['data'])) {
-                $data = unserialize($row['data']);
-                foreach ($data as $key => $count) {
+                $estimateDistribution = unserialize($row['data']);
+                foreach ($estimateDistribution as $key => $count) {
                     $dataDate = clone $estimateDate;
                     $dataDate->add(DateInterval::createFromDateString($key . ' seconds'));
                     $data[$key] = array(
