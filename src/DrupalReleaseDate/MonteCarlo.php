@@ -79,53 +79,52 @@ class MonteCarlo
     }
 
     /**
+     * Get the distribution of estimates from the specified number of
+     * iterations, grouped into buckets of the specified size.
+     *
+     * @param unknown $iterations
+     * @param unknown $bucketSize
+     *   The period in seconds to group estimates by.
+     * @return EstimateDistribution
+     */
+    public function runDistribution($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    {
+        $estimates = new EstimateDistribution();
+
+        $increasingFailures = 0;
+
+        for ($run = 0; $run < $iterations; $run++) {
+            try {
+                $estimate = $this->iteration();
+            } catch (MonteCarloIncreasingRunException $e) {
+                $estimates->failure();
+                if (
+                    $run > ($iterations * $this->increasingFailureThresholdRatio)
+                    && ($estimates->getFailures() / $run) > $this->increasingFailureRatio
+                ) {
+                    throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
+                }
+
+                continue;
+            }
+
+            $bucket = $estimate - $estimate % $bucketSize;
+
+            $estimates->success($bucket);
+        }
+
+        return $estimates;
+    }
+
+    /**
      * Get the average value of the specified number of iterations.
      *
      * @param number $iterations
      * @return number
      */
-    public function runAverage($iterations = self::DEFAULT_ITERATIONS)
+    public function runAverage($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
     {
-        $increasingFailures = 0;
-
-        $estimate = 0;
-        for ($run = 0; $run < $iterations; $run++) {
-            try {
-                $estimate += $this->iteration();
-            } catch (MonteCarloIncreasingRunException $e) {
-                $increasingFailures++;
-                if (
-                    $run > ($iterations * $this->increasingFailureThresholdRatio)
-                    && ($increasingFailures / $run) > $this->increasingFailureRatio
-                ) {
-                    throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
-                }
-            }
-        }
-
-        return $estimate / ($iterations - $increasingFailures);
-    }
-
-    /**
-     * Return the median value from a distribution array.
-     *
-     * @param  array $distribution An array as returned from MonteCarlo::runDistribution()
-     * @return int
-     */
-    public static function getMedianFromDistribution($distribution)
-    {
-        // Calculate the number of iterations required to acheive a median value.
-        $medianIterations = array_sum($distribution) / 2;
-
-        $countSum = 0;
-        foreach ($distribution as $estimate => $count) {
-            $countSum += $count;
-            if ($countSum >= $medianIterations) {
-                break;
-            }
-        }
-
-        return $estimate;
+        return $this->runDistribution($iterations, $bucketSize)->getAverage();
     }
 
     /**
@@ -137,50 +136,6 @@ class MonteCarlo
      */
     public function runMedian($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
     {
-        return self::getMedianFromDistribution($this->runDistribution($iterations, $bucketSize));
-    }
-
-    /**
-     * Get the distribution of estimates from the specified number of
-     * iterations, grouped into buckets of the specified size.
-     *
-     * @param unknown $iterations
-     * @param unknown $bucketSize
-     *   The period in seconds to group estimates by.
-     * @return number
-     */
-    public function runDistribution($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
-    {
-        $estimates = array();
-
-        $increasingFailures = 0;
-
-        for ($run = 0; $run < $iterations; $run++) {
-            try {
-                $estimate = $this->iteration();
-            } catch (MonteCarloIncreasingRunException $e) {
-                $increasingFailures++;
-                if (
-                    $run > ($iterations * $this->increasingFailureThresholdRatio)
-                    && ($increasingFailures / $run) > $this->increasingFailureRatio
-                ) {
-                    throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
-                }
-
-                continue;
-            }
-
-            $bucket = $estimate - $estimate % $bucketSize;
-
-            if (isset($estimates[$bucket])) {
-                $estimates[$bucket]++;
-            } else {
-                $estimates[$bucket] = 1;
-            }
-        }
-
-        ksort($estimates);
-
-        return $estimates;
+        return $this->runDistribution($iterations, $bucketSize)->getMedian();
     }
 }

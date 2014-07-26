@@ -9,16 +9,20 @@ use DrupalReleaseDate\MonteCarlo;
 class MonteCarloTest extends \PHPUnit_Framework_TestCase {
 
     /**
-     * Number of iterations to retrieve from the generator when multiple results
-     * are required.
-     */
-    protected $iterations = 10000;
-
-    /**
      * Test a  MonteCarlo run returning the average value.
      *
      * Since we set up all of the samples to have equal variance, the result
      * is predictable within a single run.
+     *
+     * @covers \DrupalReleaseDate\MonteCarlo::__construct
+     * @covers \DrupalReleaseDate\MonteCarlo::runAverage
+     * @covers \DrupalReleaseDate\MonteCarlo::runDistribution
+     * @covers \DrupalReleaseDate\MonteCarlo::iteration
+     * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\Sampling\Sample
+     * @uses \DrupalReleaseDate\Sampling\SampleSet
+     * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
      */
     function testSingleAverage() {
         $sampleset = new SampleSet();
@@ -32,7 +36,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
-        $result = $montecarlo->runAverage(1);
+        $result = $montecarlo->runAverage(1, 10);
 
         $this->assertEquals(70, $result);
     }
@@ -43,6 +47,16 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
      * With varying time periods between samples, the result is not predictable
      * for a single run, but should converge on the same value after many
      * iterations.
+     *
+     * @covers \DrupalReleaseDate\MonteCarlo::__construct
+     * @covers \DrupalReleaseDate\MonteCarlo::runAverage
+     * @covers \DrupalReleaseDate\MonteCarlo::runDistribution
+     * @covers \DrupalReleaseDate\MonteCarlo::iteration
+     * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\Sampling\Sample
+     * @uses \DrupalReleaseDate\Sampling\SampleSet
+     * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
      */
     function testAverage() {
         $sampleset = new SampleSet();
@@ -56,7 +70,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
-        $result = $montecarlo->runAverage($this->iterations);
+        $result = $montecarlo->runAverage(RANDOM_BASE_ITERATIONS, 10);
 
         $this->assertEquals(163.0, $result, '', 1);
     }
@@ -66,6 +80,16 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
      *
      * Since we set up all of the samples to have equal variance, the result
      * is predictable within a single run.
+     *
+     * @covers \DrupalReleaseDate\MonteCarlo::__construct
+     * @covers \DrupalReleaseDate\MonteCarlo::runMedian
+     * @covers \DrupalReleaseDate\MonteCarlo::runDistribution
+     * @covers \DrupalReleaseDate\MonteCarlo::iteration
+     * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\Sampling\Sample
+     * @uses \DrupalReleaseDate\Sampling\SampleSet
+     * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
      */
     function testSingleMedian() {
         $sampleset = new SampleSet();
@@ -91,6 +115,16 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
      * With varying time periods between samples, the result is not predictable
      * for a single run, but should converge on the same value after many
      * iterations.
+     *
+     * @covers \DrupalReleaseDate\MonteCarlo::__construct
+     * @covers \DrupalReleaseDate\MonteCarlo::runMedian
+     * @covers \DrupalReleaseDate\MonteCarlo::runDistribution
+     * @covers \DrupalReleaseDate\MonteCarlo::iteration
+     * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\Sampling\Sample
+     * @uses \DrupalReleaseDate\Sampling\SampleSet
+     * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
      */
     function testMedian() {
         $sampleset = new SampleSet();
@@ -105,7 +139,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
         $montecarlo = new MonteCarlo($sampleSelector);
 
         // Run multiple iterations, grouping into buckets of size 10.
-        $result = $montecarlo->runMedian($this->iterations, 10);
+        $result = $montecarlo->runMedian(RANDOM_BASE_ITERATIONS, 10);
 
         $this->assertEquals(160, $result);
     }
@@ -117,7 +151,18 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
      *
      * Since all iterations will fail, the first run after the threshold is met
      * will cause the run to fail.
+     *
      * @expectedExceptionMessage Run aborted after iteration 11
+     *
+     * @covers \DrupalReleaseDate\MonteCarlo::__construct
+     * @covers \DrupalReleaseDate\MonteCarlo::runAverage
+     * @covers \DrupalReleaseDate\MonteCarlo::runDistribution
+     * @covers \DrupalReleaseDate\MonteCarlo::iteration
+     * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\Sampling\Sample
+     * @uses \DrupalReleaseDate\Sampling\SampleSet
+     * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
      */
     function testIncreasingAverageRun() {
         $sampleset = new SampleSet();
@@ -141,7 +186,18 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase {
      *
      * Since all iterations will fail, the first run after the threshold is met
      * will cause the run to fail.
+     *
      * @expectedExceptionMessage Run aborted after iteration 11
+     *
+     * @covers \DrupalReleaseDate\MonteCarlo::__construct
+     * @covers \DrupalReleaseDate\MonteCarlo::runMedian
+     * @covers \DrupalReleaseDate\MonteCarlo::runDistribution
+     * @covers \DrupalReleaseDate\MonteCarlo::iteration
+     * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\Sampling\Sample
+     * @uses \DrupalReleaseDate\Sampling\SampleSet
+     * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
      */
     function testIncreasingMedianRun() {
         $sampleset = new SampleSet();
