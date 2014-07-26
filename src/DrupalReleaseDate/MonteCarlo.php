@@ -58,7 +58,7 @@ class MonteCarlo
     {
 
         // Get the current number of issues from the last sample in the set.
-        $issues = $currentIssues = $this->sampleSelector->getLastSample()->getCount();
+        $issues = $highestIssues = $this->sampleSelector->getLastSample()->getCount();
 
         $duration = 0;
 
@@ -67,8 +67,10 @@ class MonteCarlo
             $duration += $sample->getDuration();
             $issues -= $sample->getResolved();
 
+            $highestIssues = max($highestIssues, $sample->getCount());
+
             // Failsafe for if simulation goes in the wrong direction too far.
-            if ($issues > $currentIssues * 10) {
+            if ($issues > $highestIssues * 10) {
                 throw new MonteCarloIncreasingRunException("Iteration failed due to increasing issue count");
             }
         } while ($issues > 0);
