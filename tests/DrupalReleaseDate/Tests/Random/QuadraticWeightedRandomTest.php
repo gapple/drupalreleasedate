@@ -3,12 +3,16 @@ namespace DrupalReleaseDate\Tests\Random;
 
 use DrupalReleaseDate\Random\QuadraticWeightedRandom;
 
-class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase {
+class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase
+{
 
     /**
      * Test that the generator only returns results in the specified range.
+     *
+     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
      */
-    function testRange() {
+    function testRange()
+    {
         $min = 2;
         $max = 15;
         $generator = new QuadraticWeightedRandom($min, $max);
@@ -20,7 +24,12 @@ class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase {
         }
     }
 
-    function testSimpleWeights() {
+    /**
+     *
+     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
+     */
+    function testSimpleWeights()
+    {
         $min = 1;
         $max = 10;
         $generator = new QuadraticWeightedRandom($min, $max);
@@ -33,7 +42,12 @@ class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase {
         }
     }
 
-    function testShiftedWeights() {
+    /**
+     *
+     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
+     */
+    function testShiftedWeights()
+    {
         $min = 3;
         $max = 12;
         $generator = new QuadraticWeightedRandom($min, $max);
@@ -54,8 +68,11 @@ class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase {
      * Since the sum of probabilities is greater than in a flat distribution,
      * addtional iterations need to be performed to get sufficient precision for
      * the least likely items.
+     *
+     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
      */
-    function testDistribution() {
+    function testDistribution()
+    {
         $min = 3;
         $max = 8;
         $generator = new QuadraticWeightedRandom($min, $max);

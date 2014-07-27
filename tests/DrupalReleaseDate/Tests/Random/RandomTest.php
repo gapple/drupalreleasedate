@@ -3,13 +3,16 @@ namespace DrupalReleaseDate\Tests\Random;
 
 use DrupalReleaseDate\Random\Random;
 
-class RandomTest extends \PHPUnit_Framework_TestCase {
+class RandomTest extends \PHPUnit_Framework_TestCase
+{
 
     /**
      * Test that a negative minimum value is not accepted.
      *
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Minimum value must be a positive integer
+     *
+     * @covers \DrupalReleaseDate\Random\Random
      */
     function testNegativeMin()
     {
@@ -21,6 +24,8 @@ class RandomTest extends \PHPUnit_Framework_TestCase {
      *
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Maximum value must be a positive integer greater than minimum value
+     *
+     * @covers \DrupalReleaseDate\Random\Random
      */
     function testSmallerMax()
     {
@@ -32,6 +37,8 @@ class RandomTest extends \PHPUnit_Framework_TestCase {
      *
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Minimum value must be a positive integer
+     *
+     * @covers \DrupalReleaseDate\Random\Random
      */
     function testNonIntegerMin()
     {
@@ -43,6 +50,8 @@ class RandomTest extends \PHPUnit_Framework_TestCase {
      *
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Maximum value must be a positive integer greater than minimum value
+     *
+     * @covers \DrupalReleaseDate\Random\Random
      */
     function testNonIntegerMax()
     {
@@ -51,8 +60,11 @@ class RandomTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * Test that the generator only returns results in the specified range.
+     *
+     * @covers \DrupalReleaseDate\Random\Random
      */
-    function testResultsWithinRange() {
+    function testResultsWithinRange()
+    {
         $min = 1;
         $max = 10;
 
@@ -67,8 +79,11 @@ class RandomTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * Test that the generator produces a relatively flat distribution of results.
+     *
+     * @covers \DrupalReleaseDate\Random\Random
      */
-    function testDistribution() {
+    function testDistribution()
+    {
         $min = 1;
         $max = 10;
 
