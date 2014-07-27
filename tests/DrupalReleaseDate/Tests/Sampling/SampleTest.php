@@ -3,13 +3,20 @@ namespace DrupalReleaseDate\Sampling\Tests;
 
 use DrupalReleaseDate\Sampling\Sample;
 
-class SampleTest extends \PHPUnit_Framework_TestCase {
+class SampleTest extends \PHPUnit_Framework_TestCase
+{
 
-    function setup() {
+    function setup()
+    {
         $this->now = time();
     }
 
-    function testGetters() {
+    /**
+     *
+     * @covers \DrupalReleaseDate\Sampling\Sample
+     */
+    function testGetters()
+    {
         $time = $this->now;
         $value = 50;
         $sample = new Sample($time, $value);
@@ -20,7 +27,12 @@ class SampleTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(0, $sample->getResolved());
     }
 
-    function testDifference() {
+    /**
+     *
+     * @covers \DrupalReleaseDate\Sampling\Sample
+     */
+    function testDifference()
+    {
         $time1 = $this->now - 600;
         $value1 = 50;
         $sample1 = new Sample($time1, $value1);
@@ -33,7 +45,12 @@ class SampleTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($value1 - $value2, $sample2->getResolved());
     }
 
-    function testNegativeCountDifference() {
+    /**
+     *
+     * @covers \DrupalReleaseDate\Sampling\Sample
+     */
+    function testNegativeCountDifference()
+    {
         $time1 = $this->now - 600;
         $value1 = 40;
         $sample1 = new Sample($time1, $value1);
