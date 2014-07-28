@@ -10,12 +10,6 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * Number of iterations to retrieve from the generator when multiple results
-     * are required.
-     */
-    protected $iterations = 10000;
-
-    /**
      * Test a  MonteCarlo run returning the average value.
      *
      * Since we set up all of the samples to have equal variance, the result
@@ -71,7 +65,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
-        $result = $montecarlo->runAverage($this->iterations);
+        $result = $montecarlo->runAverage(RANDOM_BASE_ITERATIONS);
 
         $this->assertEquals(163.0, $result, '', 1);
     }
@@ -134,7 +128,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $montecarlo = new MonteCarlo($sampleSelector);
 
         // Run multiple iterations, grouping into buckets of size 10.
-        $result = $montecarlo->runMedian($this->iterations, 10);
+        $result = $montecarlo->runMedian(RANDOM_BASE_ITERATIONS, 10);
 
         $this->assertEquals(160, $result);
     }
