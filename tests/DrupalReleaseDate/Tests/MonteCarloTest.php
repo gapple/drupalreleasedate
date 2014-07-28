@@ -30,7 +30,9 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30,  8));
         $sampleset->insert(new Sample(40,  7));
 
-        $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
+        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
@@ -61,7 +63,9 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(40,  8));
         $sampleset->insert(new Sample(80,  7));
 
-        $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
+        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
@@ -91,7 +95,9 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30,  8));
         $sampleset->insert(new Sample(40,  7));
 
-        $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
+        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
@@ -123,7 +129,9 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(40,  8));
         $sampleset->insert(new Sample(80,  7));
 
-        $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
+        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
@@ -157,7 +165,9 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30, 12));
         $sampleset->insert(new Sample(40, 13));
 
-        $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
+        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
@@ -188,7 +198,9 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30, 12));
         $sampleset->insert(new Sample(40, 13));
 
-        $sampleSelector = new SampleSetRandomSampleSelector($sampleset);
+        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 

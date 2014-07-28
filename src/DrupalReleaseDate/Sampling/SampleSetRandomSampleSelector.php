@@ -8,13 +8,9 @@ class SampleSetRandomSampleSelector implements RandomSampleSelectorInterface
     protected $sampleSet;
     protected $randomGenerator;
 
-    public function __construct(SampleSet $sampleSet, RandomInterface $randomGenerator = null)
+    public function __construct(SampleSet $sampleSet, RandomInterface $randomGenerator)
     {
         $this->sampleSet = $sampleSet;
-
-        if (!$randomGenerator) {
-            $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleSet->length() - 1);
-        }
         $this->randomGenerator = $randomGenerator;
     }
 
