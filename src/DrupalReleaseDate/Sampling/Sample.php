@@ -5,8 +5,7 @@ class Sample
 {
     protected $when;
     protected $count;
-    protected $resolved = 0;
-    protected $duration = 0;
+    protected $diffTarget;
 
     function __construct($when, $count, $last = null)
     {
@@ -29,17 +28,22 @@ class Sample
 
     function setDiff($from)
     {
-        $this->duration = $this->when - $from->getWhen();
-        $this->resolved = $from->getCount() - $this->count;
+        $this->diffTarget = $from;
     }
 
     function getDuration()
     {
-        return $this->duration;
+        if (!isset($this->diffTarget)) {
+            return 0;
+        }
+        return $this->when - $this->diffTarget->getWhen();
     }
 
     function getResolved()
     {
-        return $this->resolved;
+        if (!isset($this->diffTarget)) {
+            return 0;
+        }
+        return $this->diffTarget->getCount() - $this->count;
     }
 }
