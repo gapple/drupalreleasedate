@@ -14,7 +14,7 @@
     {{ parent() }}
     <script type="text/javascript">
         $(function () {
-            var chart, chartData, dataView;
+            var chart, chartData, dataView, userVisibleColumns;
             var $chart = $('#chart');
 
             var columns = [
@@ -111,6 +111,18 @@
                 }
             ];
 
+            // Load user's last column visibility state if available.
+            if (window.localStorage) {
+                userVisibleColumns = window.localStorage.getItem('chart.samples.visible-columns');
+                userVisibleColumns = userVisibleColumns? JSON.parse(userVisibleColumns) : {};
+
+                for (var i = 1; i < columns.length; i++) {
+                    if (typeof userVisibleColumns[columns[i].key] !== 'undefined') {
+                        columns[i].visible = userVisibleColumns[columns[i].key];
+                    }
+                }
+            }
+
             var nullFunc = function() {return null;};
 
             google.setOnLoadCallback(loadChart);
@@ -201,6 +213,12 @@
 
                             var index = parseInt(target.targetID.slice(12)) + 1;
                             columns[index].visible = !columns[index].visible;
+
+                            if (window.localStorage) {
+                                userVisibleColumns[columns[index].key] = columns[index].visible;
+                                window.localStorage.setItem('chart.samples.visible-columns', JSON.stringify(userVisibleColumns));
+                            }
+
                             redrawChart();
                         }
                     });
