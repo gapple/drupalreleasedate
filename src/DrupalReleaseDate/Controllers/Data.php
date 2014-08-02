@@ -239,6 +239,7 @@ class Data
             ->select('e.when', 'e.estimate')
             ->from('estimates', 'e')
             ->where('version = 8')
+            ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
         if ($from) {
@@ -272,6 +273,7 @@ class Data
             ->select('e.when', 'e.estimate')
             ->from('estimates', 'e')
             ->where('version = 8')
+            ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
         if ($from) {
             $queryBuilder
@@ -339,6 +341,7 @@ class Data
             ->select('e.when', 'e.estimate', 'e.data')
             ->from('estimates', 'e')
             ->where('version = 8')
+            ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
 

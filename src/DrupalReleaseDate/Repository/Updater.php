@@ -9,7 +9,6 @@ use DrupalReleaseDate\Random\GeometricWeightedRandom;
 use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\TimeGroupedSampleSetCollection;
-use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
 use DrupalReleaseDate\Sampling\TimeGroupedRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
 use DrupalReleaseDate\MonteCarloIncreasingRunException;
@@ -61,15 +60,14 @@ class Updater
             ));
         }
 
-        // Insert empty before run, update if succsesful.
+        // Insert empty before run, update if successful.
         $db->insert(
             $db->quoteIdentifier('estimates'),
             array(
                 $db->quoteIdentifier('when') => $lastResult->when,
                 $db->quoteIdentifier('version') => 8,
-                $db->quoteIdentifier('estimate') => null,
-                $db->quoteIdentifier('note') => 'Timeout during run',
                 $db->quoteIdentifier('data') => '',
+                $db->quoteIdentifier('started') => $db->convertToDatabaseValue(new DateTime(), 'datetime'),
             )
         );
         // Close connection during processing to prevent "Database has gone away" exception.
@@ -105,6 +103,10 @@ class Updater
                 $db->quoteIdentifier('note') => 'Run failed due to increasing issue count',
             );
         }
+
+        $update += array(
+            $db->quoteIdentifier('completed') => $db->convertToDatabaseValue(new DateTime(), 'datetime'),
+        );
 
         $db->connect();
         $db->update(
