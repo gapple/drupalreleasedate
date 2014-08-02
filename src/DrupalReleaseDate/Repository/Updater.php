@@ -49,6 +49,7 @@ class Updater
             ->join('s', 'sample_values', 'sv_bugs', 's.version = sv_bugs.version && s.when = sv_bugs.when && sv_bugs.key="critical_bugs"')
             ->join('s', 'sample_values', 'sv_tasks', 's.version = sv_tasks.version && s.when = sv_tasks.when && sv_tasks.key="critical_tasks"')
             ->where('s.version = 8')
+            ->having('value IS NOT NULL')
             ->orderBy($db->quoteIdentifier('when'), 'ASC')
             ->execute();
         $lastResult = null;
