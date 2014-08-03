@@ -26,9 +26,11 @@ class DataControllerProvider implements ControllerProviderInterface
 
                 $response->headers->set('Access-Control-Allow-Origin', '*');
 
-                // Allow caching for one hour.
-                $response->setMaxAge(3600);
-                $response->setSharedMaxAge(3600);
+                // Set default caching headers.
+                $response->setPublic();
+                if ($response->getMaxAge() == null) {
+                    $response->setMaxAge(3600);
+                }
             })
             ->after(function (Request $request, Response $response) {
                 // Compress the response if supported by client.

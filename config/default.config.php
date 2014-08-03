@@ -65,6 +65,20 @@ $config['google'] = array(
 $config['cron.key'] = '';
 
 /**
+ * Specify the time between fetching samples in seconds.
+ *
+ * This allows more accurate caching headers.
+ */
+$config['sample.interval'] = 21600; // 6 hours
+
+/**
+ * Specify the time between calculation estimates in seconds.
+ *
+ * This allows more accurate caching headers.
+ */
+$config['estimate.interval'] = 86400; // 24 hours
+
+/**
  * Time limit for running estimation, in seconds.
  */
 $config['estimate.timeout'] = 600;

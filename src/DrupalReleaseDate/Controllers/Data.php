@@ -64,12 +64,26 @@ class Data
             $lastDate = new DateTime($lastResultRow['when']);
             $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
 
+            $nowDate = new DateTime();
+            if ($to && $to < $nowDate){
+                // If the request limits to data in the past, we can set a very long expiry since the results will never change.
+                $cacheMaxAge = 31536000;
+            }
+            else {
+                // Calculate cache max age based on the time to the next sample.
+                $nextSampleDate = clone $lastDate;
+                $nextSampleDate->add(new DateInterval('PT' . $app['config']['sample.interval'] . 'S'));
+                $nextSampleInterval = $nextSampleDate->getTimestamp() - $nowDate->getTimestamp();
+                $cacheMaxAge = max(900, $nextSampleInterval);
+            }
+
             $response = new Response();
             $response->setLastModified($lastDate);
             $response->setPublic();
 
             if ($response->isNotModified($request)) {
                 // Return 304 Not Modified response.
+                $response->setMaxAge($cacheMaxAge);
                 return $response;
             }
         }
@@ -114,7 +128,7 @@ class Data
             $response->setLastModified($lastDate);
         }
 
-        // TODO if $to is in the past, this result can be cached indefinitely.
+        $response->setMaxAge($cacheMaxAge);
 
         return $response;
     }
@@ -126,7 +140,7 @@ class Data
     {
         $data = array();
 
-        $nowDate = null;
+        $currentDate = null;
         $currentSample = $app['db']->createQueryBuilder()
             ->select('s.when')
             ->from('samples', 's')
@@ -137,14 +151,22 @@ class Data
             ->fetch(\PDO::FETCH_ASSOC);
 
         if ($currentSample) {
-            $nowDate = new DateTime($currentSample['when']);
+            $currentDate = new DateTime($currentSample['when']);
+
+            // Calculate cache max age based on the time to the next sample.
+            $nextSampleDate = clone $currentDate;
+            $nextSampleDate->add(new DateInterval('PT' . $app['config']['sample.interval'] . 'S'));
+            $nowDate = new DateTime();
+            $nextSampleInterval = $nextSampleDate->getTimestamp() - $nowDate->getTimestamp();
+            $cacheMaxAge = max(900, $nextSampleInterval);
 
             $response = new Response();
-            $response->setLastModified($nowDate);
+            $response->setLastModified($currentDate);
             $response->setPublic();
 
             if ($response->isNotModified($request)) {
                 // Return 304 Not Modified response.
+                $response->setMaxAge($cacheMaxAge);
                 return $response;
             }
 
@@ -193,14 +215,16 @@ class Data
 
         $response = $app->json(
             array(
-                'modified' => $nowDate->format(DateTime::ISO8601),
+                'modified' => $currentDate->format(DateTime::ISO8601),
                 'data' => $data,
             )
         );
 
-        if ($nowDate) {
-            $response->setLastModified($nowDate);
+        if ($currentDate) {
+            $response->setLastModified($currentDate);
         }
+
+        $response->setMaxAge($cacheMaxAge);
 
         return $response;
     }
@@ -259,12 +283,26 @@ class Data
             $lastDate = new DateTime($lastResultRow['when']);
             $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
 
+            $nowDate = new DateTime();
+            if ($to && $to < $nowDate){
+                // If the request limits to data in the past, we can set a very long expiry since the results will never change.
+                $cacheMaxAge = 31536000;
+            }
+            else {
+                // Calculate cache max age based on the time to the next estimate.
+                $nextEstimateDate = clone $lastDate;
+                $nextEstimateDate->add(new DateInterval('PT' . $app['config']['estimate.interval'] . 'S'));
+                $nextEstimateInterval = $nextEstimateDate->getTimestamp() - $nowDate->getTimestamp();
+                $cacheMaxAge = max(1800, $nextEstimateInterval);
+            }
+
             $response = new Response();
             $response->setLastModified($lastDate);
             $response->setPublic();
 
             if ($response->isNotModified($request)) {
                 // Return 304 Not Modified response.
+                $response->setMaxAge($cacheMaxAge);
                 return $response;
             }
         }
@@ -317,7 +355,7 @@ class Data
             $response->setLastModified($lastDate);
         }
 
-        // TODO if $to is in the past, this result can be cached indefinitely.
+        $response->setMaxAge($cacheMaxAge);
 
         return $response;
     }
@@ -358,12 +396,27 @@ class Data
             $estimateDate = new DateTime($row['when']);
             $responseData['modified'] = $estimateDate->format(DateTime::ISO8601);
 
+
+            $nowDate = new DateTime();
+            if ($date){
+                // If the request limits to data in the past, we can set a very long expiry since the results will never change.
+                $cacheMaxAge = 31536000;
+            }
+            else {
+                // Calculate cache max age based on the time to the next estimate.
+                $nextEstimateDate = clone $estimateDate;
+                $nextEstimateDate->add(new DateInterval('PT' . $app['config']['estimate.interval'] . 'S'));
+                $nextEstimateInterval = $nextEstimateDate->getTimestamp() - $nowDate->getTimestamp();
+                $cacheMaxAge = max(1800, $nextEstimateInterval);
+            }
+
             $response = new Response();
             $response->setLastModified($estimateDate);
             $response->setPublic();
 
             if ($response->isNotModified($request)) {
                 // Return 304 Not Modified response.
+                $response->setMaxAge($cacheMaxAge);
                 return $response;
             }
             $data = array();
@@ -389,6 +442,8 @@ class Data
             if ($estimateDate) {
                 $response->setLastModified($estimateDate);
             }
+
+            $response->setMaxAge($cacheMaxAge);
 
             return $response;
         }
