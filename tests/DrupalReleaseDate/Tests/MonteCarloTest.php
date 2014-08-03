@@ -148,7 +148,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that when sampled values increase, the run errors out as expected.
      *
-     * @expectedException \DrupalReleaseDate\MonteCarloIncreasingRunException
+     * @expectedException \DrupalReleaseDate\MonteCarlo\IncreasingException
      *
      * Since all iterations will fail, the first run after the threshold is met
      * will cause the run to fail.
@@ -157,6 +157,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\MonteCarlo\IncreasingException<extended>
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
@@ -183,7 +184,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that when sampled values increase, the run errors out as expected.
      *
-     * @expectedException \DrupalReleaseDate\MonteCarloIncreasingRunException
+     * @expectedException \DrupalReleaseDate\MonteCarlo\IncreasingException
      *
      * Since all iterations will fail, the first run after the threshold is met
      * will cause the run to fail.
@@ -192,6 +193,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\MonteCarlo\IncreasingException<extended>
      * @uses \DrupalReleaseDate\Random\Random
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
@@ -213,6 +215,36 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $montecarlo = new MonteCarlo($sampleSelector);
 
         $median = $montecarlo->runMedian(100, 10);
-        $this->assertEquals(0, $median);
+    }
+
+    /**
+     * Test with a sample set that will never complete and hit the timeout.
+     *
+     * @expectedException \DrupalReleaseDate\MonteCarlo\TimeoutException
+     *
+     * @expectedExceptionMessage Run aborted during iteration 1
+     *
+     * @covers \DrupalReleaseDate\MonteCarlo
+     * @uses \DrupalReleaseDate\EstimateDistribution
+     * @uses \DrupalReleaseDate\MonteCarlo\TimeoutException<extended>
+     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\Sampling\Sample
+     * @uses \DrupalReleaseDate\Sampling\SampleSet
+     * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
+     */
+    public function testTimeoutRun() {
+
+        $sampleset = new SampleSet();
+
+        $sampleset->insert(new Sample(10, 10));
+        $sampleset->insert(new Sample(20, 10));
+
+        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+
+        $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
+
+        $montecarlo = new MonteCarlo($sampleSelector);
+
+        $median = $montecarlo->runMedian(100, 10, 5);
     }
 }

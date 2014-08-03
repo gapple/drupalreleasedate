@@ -366,9 +366,11 @@ class Data
                 // Return 304 Not Modified response.
                 return $response;
             }
+            $data = array();
 
             if (!empty($row['data'])) {
                 $estimateDistribution = unserialize($row['data']);
+
                 foreach ($estimateDistribution as $key => $count) {
                     $dataDate = clone $estimateDate;
                     $dataDate->add(DateInterval::createFromDateString($key . ' seconds'));

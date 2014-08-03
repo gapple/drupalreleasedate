@@ -2,6 +2,8 @@
 namespace DrupalReleaseDate;
 
 use \DrupalReleaseDate\Sampling\RandomSampleSelectorInterface;
+use \DrupalReleaseDate\MonteCarlo\IncreasingException;
+use \DrupalReleaseDate\MonteCarlo\TimeoutException;
 
 class MonteCarlo
 {
@@ -10,7 +12,7 @@ class MonteCarlo
      * The default number of iterations to perform when running an estimate.
      * @var number
      */
-    const DEFAULT_ITERATIONS = 10000;
+    const DEFAULT_ITERATIONS = 100000;
 
     /**
      * The default size for grouping distribution samples into buckets (One day)
@@ -18,6 +20,8 @@ class MonteCarlo
      * @var number
      */
     const DEFAULT_BUCKET_SIZE = 86400;
+
+    const DEFAULT_TIME_LIMIT = 3600;
 
     protected $sampleSelector;
 
@@ -52,9 +56,11 @@ class MonteCarlo
     /**
      * Get an estimated value from a single iteration.
      *
+     * @param int $abortTime
+     *   The Unix timestamp at which to abort running the iteration.
      * @return number
      */
-    public function iteration()
+    public function iteration($abortTime = null)
     {
 
         // Get the current number of issues from the last sample in the set.
@@ -71,8 +77,12 @@ class MonteCarlo
 
             // Failsafe for if simulation goes in the wrong direction too far.
             if ($issues > $highestIssues * 10) {
-                throw new MonteCarloIncreasingRunException("Iteration failed due to increasing issue count");
+                throw new IncreasingException("Iteration failed due to increasing issue count");
             }
+            if ($abortTime && time() >= $abortTime) {
+                throw new TimeoutException();
+            }
+
         } while ($issues > 0);
 
         return $duration;
@@ -82,35 +92,45 @@ class MonteCarlo
      * Get the distribution of estimates from the specified number of
      * iterations, grouped into buckets of the specified size.
      *
-     * @param unknown $iterations
-     * @param unknown $bucketSize
+     * @param int $iterations
+     * @param int $bucketSize
      *   The period in seconds to group estimates by.
+     * @param int $timeLimit
+     *   The number of seconds to allow the estimation to run for.
      * @return EstimateDistribution
      */
-    public function runDistribution($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    public function runDistribution($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE, $timeLimit = self::DEFAULT_TIME_LIMIT)
     {
         $estimates = new EstimateDistribution();
 
         $increasingFailures = 0;
 
-        for ($run = 0; $run < $iterations; $run++) {
+        $abortTime = time() + $timeLimit;
+
+        for ($run = 1; $run <= $iterations; $run++) {
             try {
-                $estimate = $this->iteration();
-            } catch (MonteCarloIncreasingRunException $e) {
+                $estimate = $this->iteration($abortTime);
+
+                $bucket = $estimate - $estimate % $bucketSize;
+
+                $estimates->success($bucket);
+
+            } catch (IncreasingException $e) {
                 $estimates->failure();
+
                 if (
                     $run > ($iterations * $this->increasingFailureThresholdRatio)
                     && ($estimates->getFailures() / $run) > $this->increasingFailureRatio
                 ) {
-                    throw new MonteCarloIncreasingRunException('Run aborted after iteration ' . $run, 0, $e);
+                    $runException = new IncreasingException('Run aborted after iteration ' . $run, 0, $e);
+                    $runException->setDistribution($estimates);
+                    throw $runException;
                 }
-
-                continue;
+            } catch (TimeoutException $e) {
+                $runException = new TimeoutException('Run aborted during iteration ' . $run, 0, $e);
+                $runException->setDistribution($estimates);
+                throw $runException;
             }
-
-            $bucket = $estimate - $estimate % $bucketSize;
-
-            $estimates->success($bucket);
         }
 
         return $estimates;
@@ -119,23 +139,30 @@ class MonteCarlo
     /**
      * Get the average value of the specified number of iterations.
      *
-     * @param number $iterations
+     * @param int $iterations
+     * @param int $bucketSize
+     *   The period in seconds to group estimates by.
+     * @param int $timeLimit
+     *   The number of seconds to allow the estimation to run for.
      * @return number
      */
-    public function runAverage($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    public function runAverage($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE, $timeLimit = self::DEFAULT_TIME_LIMIT)
     {
-        return $this->runDistribution($iterations, $bucketSize)->getAverage();
+        return $this->runDistribution($iterations, $bucketSize, $timeLimit)->getAverage();
     }
 
     /**
      * Get the median estimate value from the specified number of iterations.
      *
-     * @param number $iterations
-     * @param number $bucketSize
+     * @param int $iterations
+     * @param int $bucketSize
+     *   The period in seconds to group estimates by.
+     * @param int $timeLimit
+     *   The number of seconds to allow the estimation to run for.
      * @return number
      */
-    public function runMedian($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE)
+    public function runMedian($iterations = self::DEFAULT_ITERATIONS, $bucketSize = self::DEFAULT_BUCKET_SIZE, $timeLimit = self::DEFAULT_TIME_LIMIT)
     {
-        return $this->runDistribution($iterations, $bucketSize)->getMedian();
+        return $this->runDistribution($iterations, $bucketSize, $timeLimit)->getMedian();
     }
 }

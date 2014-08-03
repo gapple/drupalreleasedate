@@ -11,7 +11,8 @@ use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\TimeGroupedSampleSetCollection;
 use DrupalReleaseDate\Sampling\TimeGroupedRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
-use DrupalReleaseDate\MonteCarloIncreasingRunException;
+use DrupalReleaseDate\MonteCarlo\IncreasingException;
+use DrupalReleaseDate\MonteCarlo\TimeoutException;
 
 /**
  * Class to encapsulate methods that make updates to the database.
@@ -34,7 +35,8 @@ class Updater
     public function estimate(array $config = array())
     {
         $config += array(
-            'iterations' => 100000,
+            'iterations' => MonteCarlo::DEFAULT_ITERATIONS,
+            'timeout' => MonteCarlo::DEFAULT_TIME_LIMIT,
         );
 
         $db = $this->db;
@@ -73,10 +75,6 @@ class Updater
         // Close connection during processing to prevent "Database has gone away" exception.
         $db->close();
 
-        if (isset($config['timeout'])) {
-            set_time_limit($config['timeout']);
-        }
-
         // Give samples twice the weight of those from six months before.
         $geometricRandom = new GeometricWeightedRandom(0, $samples->length() - 1, pow(2, 1/26));
         $sampleSelector = new TimeGroupedRandomSampleSelector($samples, $geometricRandom);
@@ -86,8 +84,9 @@ class Updater
         $update = array();
 
         try {
-            $estimateDistribution = $monteCarlo->runDistribution($config['iterations']);
-            $estimateInterval = MonteCarlo::getMedianFromDistribution($estimateDistribution);
+            set_time_limit($config['timeout'] + 30);
+            $estimateDistribution = $monteCarlo->runDistribution($config['iterations'], MonteCarlo::DEFAULT_BUCKET_SIZE, $config['timeout']);
+            $estimateInterval = $estimateDistribution->getMedian();
 
             $estimateDate = new DateTime('@' . $_SERVER['REQUEST_TIME']);
             $estimateDate->add(DateInterval::createFromDateString($estimateInterval . ' seconds'));
@@ -95,16 +94,23 @@ class Updater
             $update += array(
                 $db->quoteIdentifier('estimate') => $db->convertToDatabaseValue($estimateDate, 'date'),
                 $db->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
-                $db->quoteIdentifier('data') => serialize($estimateDistribution),
+
             );
-        } catch (MonteCarloIncreasingRunException $e) {
+        } catch (IncreasingException $e) {
+            $estimateDistribution = $e->getDistribution();
             $update += array(
                 $db->quoteIdentifier('estimate') => '0000-00-00',
                 $db->quoteIdentifier('note') => 'Run failed due to increasing issue count',
             );
+        } catch (TimeoutException $e) {
+            $estimateDistribution = $e->getDistribution();
+            $update += array(
+                $db->quoteIdentifier('note') => 'Run failed due to timeout',
+            );
         }
 
         $update += array(
+            $db->quoteIdentifier('data') => serialize($estimateDistribution),
             $db->quoteIdentifier('completed') => $db->convertToDatabaseValue(new DateTime(), 'datetime'),
         );
 
