@@ -20,6 +20,7 @@ class EstimateDistribution implements \IteratorAggregate
 
     public function getIterator()
     {
+        ksort($this->data);
         return new \ArrayIterator($this->data);
     }
 
