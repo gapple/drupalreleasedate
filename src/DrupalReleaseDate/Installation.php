@@ -68,7 +68,7 @@ class Installation
             return;
         }
 
-        $this->doInstall();
+        $this->installSchema();
 
         $version = 0;
         $updateMethods = $this->getUpdates();
@@ -90,7 +90,7 @@ class Installation
     /**
      * Helper method to run the actions needed for installation.
      */
-    public function doInstall()
+    protected function installSchema()
     {
         $schema = new \Doctrine\DBAL\Schema\Schema();
 
@@ -123,10 +123,9 @@ class Installation
     /**
      * Normalize sample storage in database.
      */
-    public function update_1 ()
+    protected function update_1 ()
     {
         $schema = $this->app['db']->getSchemaManager()->createSchema();
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
 
         // Create sample_values table.
         $schema = clone $schema;
@@ -137,6 +136,7 @@ class Installation
         $sample_values->addColumn('value', 'smallint', array('notnull' => false));
         $sample_values->setPrimaryKey(array('version', 'when', 'key'));
 
+        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
 
         // Select all samples.
@@ -184,11 +184,10 @@ class Installation
     /**
      * Convert estimate to only store date and not time.
      */
-    public function update_2()
+    protected function update_2()
     {
 
         $schema = $this->app['db']->getSchemaManager()->createSchema();
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
 
         $schema = clone $schema;
         $schema
@@ -196,23 +195,24 @@ class Installation
             ->getColumn('estimate')
             ->setType(\Doctrine\DBAL\Types\Type::getType('date'));
 
+        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
     }
 
     /**
      * Add column to estimates to record time of completion.
      */
-    public function update_3()
+    protected function update_3()
     {
 
         $schema = $this->app['db']->getSchemaManager()->createSchema();
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
 
         $schema = clone $schema;
         $estimates = $schema->getTable('estimates');
         $estimates->addColumn('started', 'datetime');
         $estimates->addColumn('completed', 'datetime', array('notnull' => false));
 
+        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
 
         $this->app['db']->createQueryBuilder()
@@ -225,7 +225,7 @@ class Installation
     /**
      * Update format of data for existing estimates.
      */
-    public function update_4()
+    protected function update_4()
     {
         $estimates = $this->app['db']->createQueryBuilder()
             ->select('e.*')
