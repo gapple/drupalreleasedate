@@ -250,4 +250,51 @@ class Installation
                 ->execute();
         }
     }
+
+    /**
+     * Update version fields to store semantic version string.
+     */
+    protected function update_5()
+    {
+        // Update version field type.
+        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $schema = clone $schema;
+
+        $estimates = $schema->getTable('estimates');
+        $estimates->changeColumn('version', array(
+            'type' => \Doctrine\DBAL\Types\Type::getType('string'),
+            'length' => 32,
+        ));
+
+        $samples = $schema->getTable('samples');
+        $samples->changeColumn('version', array(
+            'type' => \Doctrine\DBAL\Types\Type::getType('string'),
+            'length' => 32,
+        ));
+
+        $sampleValues = $schema->getTable('sample_values');
+        $sampleValues->changeColumn('version', array(
+            'type' => \Doctrine\DBAL\Types\Type::getType('string'),
+            'length' => 32,
+        ));
+
+        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer->updateSchema($schema);
+
+        // Convert existing data.
+        $this->app['db']->createQueryBuilder()
+            ->update('estimates', 'e')
+            ->set('e.version', 'CONCAT(e.version, ".0")')
+            ->execute();
+
+        $this->app['db']->createQueryBuilder()
+            ->update('samples', 's')
+            ->set('s.version', 'CONCAT(s.version, ".0")')
+            ->execute();
+
+        $this->app['db']->createQueryBuilder()
+            ->update('sample_values', 'sv')
+            ->set('sv.version', 'CONCAT(sv.version, ".0")')
+            ->execute();
+    }
 }

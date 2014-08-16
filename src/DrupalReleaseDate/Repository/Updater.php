@@ -49,7 +49,7 @@ class Updater
             ->from('samples', 's')
             ->join('s', 'sample_values', 'sv_bugs', 's.version = sv_bugs.version && s.when = sv_bugs.when && sv_bugs.key="critical_bugs"')
             ->join('s', 'sample_values', 'sv_tasks', 's.version = sv_tasks.version && s.when = sv_tasks.when && sv_tasks.key="critical_tasks"')
-            ->where('s.version = 8')
+            ->where('s.version = "8.0"')
             ->having('value IS NOT NULL')
             ->orderBy($db->quoteIdentifier('when'), 'ASC')
             ->execute();
@@ -67,7 +67,7 @@ class Updater
             $db->quoteIdentifier('estimates'),
             array(
                 $db->quoteIdentifier('when') => $lastResult->when,
-                $db->quoteIdentifier('version') => 8,
+                $db->quoteIdentifier('version') => '8.0',
                 $db->quoteIdentifier('data') => '',
                 $db->quoteIdentifier('started') => $db->convertToDatabaseValue(new DateTime(), 'datetime'),
             )
@@ -120,7 +120,7 @@ class Updater
             $update,
             array(
                 $db->quoteIdentifier('when') => $lastResult->when,
-                $db->quoteIdentifier('version') => 8,
+                $db->quoteIdentifier('version') => '8.0',
             )
         );
     }
@@ -136,39 +136,36 @@ class Updater
     {
         $db = $this->db;
 
+        $versions = array(
+            '8.0' => '8.0.x-dev',
+            '8.1' => '8.1.x-dev',
+            '9.0' => '9.x', // 9.x has not been updated to semantic versioning yet
+        );
+
         $queryDataDefaults = array(
             $db->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
         );
 
         $counter = new \DrupalReleaseDate\DrupalIssueCount($httpClient);
 
-        $d8CommonParameters = array(
-            'version' => array('8.x')
-        ) + $config['common'];
-        $d8results = $counter->getCounts($d8CommonParameters, $config['sets']);
-        $queryData = $queryDataDefaults + array(
-                $db->quoteIdentifier('version') => 8,
-            );
-        $db->insert($db->quoteIdentifier('samples'), $queryData);
-        foreach ($d8results as $resultKey => $resultValue) {
-            $queryData[$db->quoteIdentifier('key')] = $resultKey;
-            $queryData[$db->quoteIdentifier('value')] = $resultValue;
-            $db->insert($db->quoteIdentifier('sample_values'), $queryData);
-        }
+        foreach ($versions as $versionId => $versionKey) {
+            $commonParameters = array(
+                'version' => array($versionKey)
+            ) + $config['common'];
 
+            $countResults = $counter->getCounts($commonParameters, $config['sets']);
 
-        $d9CommonParameters = array(
-            'version' => array('9.x')
-        ) + $config['common'];
-        $d9results = $counter->getCounts($d9CommonParameters, $config['sets']);
-        $queryData = $queryDataDefaults + array(
-                $db->quoteIdentifier('version') => 9,
-            );
-        $db->insert($db->quoteIdentifier('samples'), $queryData);
-        foreach ($d9results as $resultKey => $resultValue) {
-            $queryData[$db->quoteIdentifier('key')] = $resultKey;
-            $queryData[$db->quoteIdentifier('value')] = $resultValue;
-            $db->insert($db->quoteIdentifier('sample_values'), $queryData);
+            $queryData = $queryDataDefaults + array(
+                    $db->quoteIdentifier('version') => $versionId,
+                );
+
+            $db->insert($db->quoteIdentifier('samples'), $queryData);
+
+            foreach ($countResults as $resultKey => $resultValue) {
+                $queryData[$db->quoteIdentifier('key')] = $resultKey;
+                $queryData[$db->quoteIdentifier('value')] = $resultValue;
+                $db->insert($db->quoteIdentifier('sample_values'), $queryData);
+            }
         }
     }
 }

@@ -44,7 +44,7 @@ class Data
         $lastQuery = $app['db']->createQueryBuilder()
             ->select('s.when')
             ->from('samples', 's')
-            ->where('version = 8')
+            ->where('version = "8.0"')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
         if ($from) {
@@ -95,7 +95,7 @@ class Data
                 'sv.value'
             )
             ->from('sample_values', 'sv')
-            ->where('version = 8')
+            ->where('version = "8.0"')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
         if ($from) {
             $sampleValuesQuery
@@ -144,7 +144,7 @@ class Data
         $currentSample = $app['db']->createQueryBuilder()
             ->select('s.when')
             ->from('samples', 's')
-            ->where('version = 8')
+            ->where('version = "8.0"')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1)
             ->execute()
@@ -184,7 +184,7 @@ class Data
                 $pastSampleQuery = $app['db']->createQueryBuilder()
                     ->select('s.version', 's.when')
                     ->from('samples', 's')
-                    ->where('version = 8')
+                    ->where('version = "8.0"')
                     ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
                     ->setMaxResults(1);
                 if ($periodInterval) {
@@ -262,7 +262,7 @@ class Data
         $lastQuery = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate')
             ->from('estimates', 'e')
-            ->where('version = 8')
+            ->where('version = "8.0"')
             ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
@@ -310,7 +310,7 @@ class Data
         $queryBuilder = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate')
             ->from('estimates', 'e')
-            ->where('version = 8')
+            ->where('version = "8.0"')
             ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
         if ($from) {
@@ -378,7 +378,7 @@ class Data
         $query = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate', 'e.data')
             ->from('estimates', 'e')
-            ->where('version = 8')
+            ->where('version = "8.0"')
             ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
@@ -388,7 +388,6 @@ class Data
                 ->andWhere('e.when = :when')
                 ->setParameter('when', $app['db']->convertToDatabaseValue($date, 'datetime'), \PDO::PARAM_STR);
         }
-
         $results = $query->execute();
 
         if ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
