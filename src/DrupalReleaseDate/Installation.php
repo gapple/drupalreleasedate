@@ -95,20 +95,20 @@ class Installation
         $schema = new \Doctrine\DBAL\Schema\Schema();
 
         $samples = $schema->createTable('samples');
-        $samples->addColumn('version', 'smallint');
+        $samples->addColumn('version', 'string', array('length' => 32));
         $samples->addColumn('when', 'datetime');
         $samples->addColumn('notes', 'string', array('default' => ''));
         $samples->setPrimaryKey(array('version', 'when'));
 
         $sample_values = $schema->createTable('sample_values');
-        $sample_values->addColumn('version', 'smallint');
+        $sample_values->addColumn('version', 'string', array('length' => 32));
         $sample_values->addColumn('when', 'datetime');
         $sample_values->addColumn('key', 'string', array('length' => 64));
         $sample_values->addColumn('value', 'smallint', array('notnull' => false));
         $sample_values->setPrimaryKey(array('version', 'when', 'key'));
 
         $estimates = $schema->createTable('estimates');
-        $estimates->addColumn('version', 'smallint');
+        $estimates->addColumn('version', 'string', array('length' => 32));
         $estimates->addColumn('when', 'datetime');
         $estimates->addColumn('started', 'datetime');
         $estimates->addColumn('completed', 'datetime', array('notnull' => false));
