@@ -11,9 +11,41 @@ use Symfony\Component\HttpFoundation\Response;
 class Data
 {
 
+    /**
+     * Parse a version string from the request's GET parameters.
+     *
+     * Accepts either a string containing only a major version number, or major
+     * and minor version numbers separated by a period.  If only a major version
+     * is provided, the return value is normalized to include '0' as the minor
+     * version.
+     *
+     * @param  Request $request
+     * @return string
+     */
+    private static function getVersionFromRequest(Request $request)
+    {
+        $versionString = $request->query->get('version', '8.0');
+        if (!preg_match('/^([0-9]+)(\\.[0-9]+)?$/', $versionString)) {
+            throw new \Exception();
+        }
+        $segments = explode('.', $versionString);
+        $major = $segments[0];
+        $minor = empty($segments[1])? '0' : $segments[1];
+
+        return $major . '.' . $minor;
+    }
+
     public function samples(Application $app, Request $request)
     {
         $responseData = array();
+
+        try {
+            $versionString = self::getVersionFromRequest($request);
+        }
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "version" parameter');
+        }
+        $responseData['version'] = $versionString;
 
         $from = null;
         if ($request->query->has('from')) {
@@ -44,7 +76,8 @@ class Data
         $lastQuery = $app['db']->createQueryBuilder()
             ->select('s.when')
             ->from('samples', 's')
-            ->where('version = "8.0"')
+            ->where('s.version = :version')
+            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
         if ($from) {
@@ -60,6 +93,7 @@ class Data
 
         $lastResults = $lastQuery->execute();
         $lastDate = null;
+        $cacheMaxAge = 3600;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
             $lastDate = new DateTime($lastResultRow['when']);
             $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
@@ -95,7 +129,8 @@ class Data
                 'sv.value'
             )
             ->from('sample_values', 'sv')
-            ->where('version = "8.0"')
+            ->where('sv.version = :version')
+            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
         if ($from) {
             $sampleValuesQuery
@@ -138,20 +173,33 @@ class Data
      */
     public function historical(Application $app, Request $request)
     {
-        $data = array();
+        $responseData = array();
+
+        try {
+            $versionString = self::getVersionFromRequest($request);
+        }
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "version" parameter');
+        }
+        $responseData['version'] = $versionString;
+
 
         $currentDate = null;
         $currentSample = $app['db']->createQueryBuilder()
             ->select('s.when')
             ->from('samples', 's')
-            ->where('version = "8.0"')
+            ->where('s.version = :version')
+            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1)
             ->execute()
             ->fetch(\PDO::FETCH_ASSOC);
 
+        $data = array();
+        $cacheMaxAge = 3600;
         if ($currentSample) {
             $currentDate = new DateTime($currentSample['when']);
+            $responseData['modified'] = $currentDate->format(DateTime::ISO8601);
 
             // Calculate cache max age based on the time to the next sample.
             $nextSampleDate = clone $currentDate;
@@ -184,7 +232,8 @@ class Data
                 $pastSampleQuery = $app['db']->createQueryBuilder()
                     ->select('s.version', 's.when')
                     ->from('samples', 's')
-                    ->where('version = "8.0"')
+                    ->where('s.version = :version')
+                    ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
                     ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
                     ->setMaxResults(1);
                 if ($periodInterval) {
@@ -211,14 +260,10 @@ class Data
                     }
                 }
             }
+            $responseData['data'] = $data;
         }
 
-        $response = $app->json(
-            array(
-                'modified' => $currentDate->format(DateTime::ISO8601),
-                'data' => $data,
-            )
-        );
+        $response = $app->json($responseData);
 
         if ($currentDate) {
             $response->setLastModified($currentDate);
@@ -232,6 +277,15 @@ class Data
     public function estimates(Application $app, Request $request)
     {
         $responseData = array();
+
+        try {
+            $versionString = self::getVersionFromRequest($request);
+        }
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "version" parameter');
+        }
+        $responseData['version'] = $versionString;
+
 
         $from = null;
         if ($request->query->has('from')) {
@@ -262,7 +316,8 @@ class Data
         $lastQuery = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate')
             ->from('estimates', 'e')
-            ->where('version = "8.0"')
+            ->where('e.version = :version')
+            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
             ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
@@ -279,6 +334,7 @@ class Data
 
         $lastResults = $lastQuery->execute();
         $lastDate = null;
+        $cacheMaxAge = 3600;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
             $lastDate = new DateTime($lastResultRow['when']);
             $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
@@ -310,7 +366,8 @@ class Data
         $queryBuilder = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate')
             ->from('estimates', 'e')
-            ->where('version = "8.0"')
+            ->where('e.version = :version')
+            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
             ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
         if ($from) {
@@ -364,6 +421,15 @@ class Data
     {
         $responseData = array();
 
+        try {
+            $versionString = self::getVersionFromRequest($request);
+        }
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "version" parameter');
+        }
+        $responseData['version'] = $versionString;
+
+
         $date = null;
         if ($request->query->has('date')) {
             try {
@@ -378,7 +444,8 @@ class Data
         $query = $app['db']->createQueryBuilder()
             ->select('e.when', 'e.estimate', 'e.data')
             ->from('estimates', 'e')
-            ->where('version = "8.0"')
+            ->where('e.version = :version')
+            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
             ->andWhere('completed IS NOT NULL')
             ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
@@ -397,6 +464,7 @@ class Data
 
 
             $nowDate = new DateTime();
+            $cacheMaxAge = 3600;
             if ($date){
                 // If the request limits to data in the past, we can set a very long expiry since the results will never change.
                 $cacheMaxAge = 31536000;
@@ -446,9 +514,9 @@ class Data
 
             return $response;
         }
-        else if ($date) {
+        else {
             // A specific date was requested, but no result was available.
-            $app->abort(404, 'No data for requested date');
+            $app->abort(404, 'No data for requested parameters');
         }
 
         // TODO return failure response.

@@ -14,9 +14,13 @@ Access the site at http://drupalreleasedate.com/
 
 Public JSON feeds are provided for access to all of the site's data.
 
+Version parameters can be specified as a major version (e.g. `8`), or a major
+and minor version (e.g. `8.0` or `8.1`).
+
 Date parameters can be specified in any valid [PHP DateTime format](http://php.net/manual/en/datetime.formats.php)
 
-Dates are returned in ISO8601 format.
+The response object contains the normalized values of any parameters to the
+request, including default values. For example, dates are returned in ISO8601 format.
 
 *__Note__: This project is still in active development, and so the data response
 format is subject to change at any time, though backwards compatibility will be
@@ -32,6 +36,7 @@ time the sample was taken. A value may be `null` if an attempt to fetch the valu
 was made but failed.
 
 Optional Parameters:
+- __version__ *(string)*
 - __from__ *(date)*
   Restrict the results to values on or after the specified date
 - __to__ *(date)*
@@ -39,6 +44,7 @@ Optional Parameters:
 
 ```
 {
+    "version": "8.0",
     "modified": "2014-05-31T18:17:01-0700",
     "data": [
         {
@@ -54,8 +60,13 @@ Optional Parameters:
 
 __/data/historical-samples.json__
 
+Optional Parameters:
+- __version__ *(string)*
+
+
 ```
 {
+    "version": "8.0",
     "modified": "2014-05-31T18:17:01-0700",
     "data": {
         "current": {
@@ -113,6 +124,7 @@ __/data/historical-samples.json__
 __/data/estimates.json__
 
 Optional Parameters:
+- __version__ *(string)*
 - __from__ *(date)*
   Restrict the results to values on or after the specified date
 - __to__ *(date)*
@@ -122,6 +134,7 @@ Optional Parameters:
 
 ```
 {
+    "version": "8.0",
     "modified": "2014-05-31T02:42:59-0700",
     "data": [
         {
@@ -138,11 +151,13 @@ Retrieve the distribution used to calculate an estimate.  If a specific date
 isn't provided, the latest estimate is used.
 
 Optional Parameters:
+- __version__ *(string)*
 - __date__ *(date)*
-  The estimate date to return the distribution for.
 
 ```
 {
+    "version": "8.0",
+    "date": "2014-05-31T18:17:01-0700",
     "modified": "2014-05-31T18:17:01-0700",
     "data": {
         "3715200": {
