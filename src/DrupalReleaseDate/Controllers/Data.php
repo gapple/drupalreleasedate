@@ -35,6 +35,21 @@ class Data
         return $major . '.' . $minor;
     }
 
+    /**
+     * Parse a date from the request's GET parameter of the specified key.
+     *
+     * @param  Request $request
+     * @param  string  $key
+     * @return \DateTime
+     */
+    private static function parseDateFromRequest(Request $request, $key) {
+        $value = null;
+        if ($request->query->has($key)) {
+            $value = new DateTime($request->query->get($key));
+        }
+        return $value;
+    }
+
     public function samples(Application $app, Request $request)
     {
         $responseData = array();
@@ -47,25 +62,22 @@ class Data
         }
         $responseData['version'] = $versionString;
 
-        $from = null;
-        if ($request->query->has('from')) {
-            try {
-                $from = new DateTime($request->query->get('from'));
+
+        try {
+            if ($from = self::parseDateFromRequest($request, 'from')) {
                 $responseData['from'] = $from->format(DateTime::ISO8601);
             }
-            catch (\Exception $e) {
-                $app->abort(400, 'Invalid "from" parameter');
-            }
         }
-        $to = null;
-        if ($request->query->has('to')) {
-            try {
-                $to = new DateTime($request->query->get('to'));
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "from" parameter');
+        }
+        try {
+            if($to = self::parseDateFromRequest($request, 'to')) {
                 $responseData['to'] = $to->format(DateTime::ISO8601);
             }
-            catch (\Exception $e) {
-                $app->abort(400, 'Invalid "to" parameter');
-            }
+        }
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "to" parameter');
         }
 
         if ($from && $to && $from->diff($to)->invert) {
@@ -287,25 +299,21 @@ class Data
         $responseData['version'] = $versionString;
 
 
-        $from = null;
-        if ($request->query->has('from')) {
-            try {
-                $from = new DateTime($request->query->get('from'));
+        try {
+            if ($from = self::parseDateFromRequest($request, 'from')) {
                 $responseData['from'] = $from->format(DateTime::ISO8601);
             }
-            catch (\Exception $e) {
-                $app->abort(400, 'Invalid "from" parameter');
-            }
         }
-        $to = null;
-        if ($request->query->has('to')) {
-            try {
-                $to = new DateTime($request->query->get('to'));
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "from" parameter');
+        }
+        try {
+            if($to = self::parseDateFromRequest($request, 'to')) {
                 $responseData['to'] = $to->format(DateTime::ISO8601);
             }
-            catch (\Exception $e) {
-                $app->abort(400, 'Invalid "to" parameter');
-            }
+        }
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "to" parameter');
         }
 
         if ($from && $to && $from->diff($to)->invert) {
@@ -430,15 +438,11 @@ class Data
         $responseData['version'] = $versionString;
 
 
-        $date = null;
-        if ($request->query->has('date')) {
-            try {
-                $date = new DateTime($request->query->get('date'));
-                $responseData['date'] = $date->format(DateTime::ISO8601);
-            }
-            catch (\Exception $e) {
-                $app->abort(400, 'Invalid "date" parameter');
-            }
+        try {
+            $date = self::parseDateFromRequest($request, 'date');
+        }
+        catch (\Exception $e) {
+            $app->abort(400, 'Invalid "date" parameter');
         }
 
         $query = $app['db']->createQueryBuilder()
@@ -460,7 +464,7 @@ class Data
         if ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
 
             $estimateDate = new DateTime($row['when']);
-            $responseData['modified'] = $estimateDate->format(DateTime::ISO8601);
+            $responseData['modified'] = $responseData['date'] = $estimateDate->format(DateTime::ISO8601);
 
 
             $nowDate = new DateTime();
