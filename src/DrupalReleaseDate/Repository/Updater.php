@@ -5,7 +5,7 @@ use DateTime;
 use DateInterval;
 use Doctrine\DBAL\Connection as DbConnection;
 
-use DrupalReleaseDate\Random\GeometricWeightedRandom;
+use DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted;
 use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\TimeGroupedSampleSetCollection;
@@ -76,7 +76,7 @@ class Updater
         $db->close();
 
         // Give samples twice the weight of those from six months before.
-        $geometricRandom = new GeometricWeightedRandom(0, $samples->length() - 1, pow(2, 1/26));
+        $geometricRandom = new GeometricWeighted(0, $samples->length() - 1, pow(2, 1/26));
         $sampleSelector = new TimeGroupedRandomSampleSelector($samples, $geometricRandom);
 
         $monteCarlo = new MonteCarlo($sampleSelector);

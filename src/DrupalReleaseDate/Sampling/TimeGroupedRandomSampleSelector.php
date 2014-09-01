@@ -1,7 +1,7 @@
 <?php
 namespace DrupalReleaseDate\Sampling;
 
-use DrupalReleaseDate\Random\RandomInterface;
+use DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
 
 class TimeGroupedRandomSampleSelector implements RandomSampleSelectorInterface
 {
@@ -9,7 +9,7 @@ class TimeGroupedRandomSampleSelector implements RandomSampleSelectorInterface
     protected $collectionRandomGenerator;
 
     /**
-     * A collection of RandomInterface objects for their respective SampleSet.
+     * A collection of NumberGeneratorInterface objects for their respective SampleSet.
      *
      * TODO pass this in the constructor instead of generating internally.
      */
@@ -17,12 +17,12 @@ class TimeGroupedRandomSampleSelector implements RandomSampleSelectorInterface
 
     public function __construct(
         TimeGroupedSampleSetCollection $sampleSetCollection,
-        RandomInterface $collectionRandomGenerator = null
+        NumberGeneratorInterface $collectionRandomGenerator = null
     ) {
         $this->sampleSetCollection = $sampleSetCollection;
 
         if (!$collectionRandomGenerator) {
-            $collectionRandomGenerator = new \DrupalReleaseDate\Random\Random(0, $sampleSetCollection->length() - 1);
+            $collectionRandomGenerator = new \DrupalReleaseDate\NumberGenerator\Random\Basic(0, $sampleSetCollection->length() - 1);
         }
         $this->collectionRandomGenerator = $collectionRandomGenerator;
     }
@@ -45,7 +45,7 @@ class TimeGroupedRandomSampleSelector implements RandomSampleSelectorInterface
             $baseWeight = $this->collectionRandomGenerator->calculateWeight($sampleSetIndex);
             $upperWeight = $this->collectionRandomGenerator->calculateWeight($sampleSetIndex + 1);
 
-            $this->sampleSetRandomGenerators[$sampleSetIndex] = new \DrupalReleaseDate\Random\LinearWeightedRandom(
+            $this->sampleSetRandomGenerators[$sampleSetIndex] = new \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted(
                 0,
                 $sampleSet->length() - 1,
                 ($upperWeight - $baseWeight) / $sampleSet->length(),

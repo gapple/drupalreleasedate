@@ -1,11 +1,15 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator;
+
+use DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
 
 /**
- * Basic random generator with a flat distribution.
+ *
+ * @package DrupalReleaseDate\NumberGenerator
  */
-class Random implements RandomInterface
+abstract class AbstractGenerator implements NumberGeneratorInterface
 {
+
     protected $min;
     protected $max;
 
@@ -24,16 +28,17 @@ class Random implements RandomInterface
 
     public function setMin($min)
     {
+        if (!is_int($min) || $min < 0 || $min > $this->max) {
+            throw new \InvalidArgumentException("Minimum value must be a positive integer, less than the maximum value");
+        }
         $this->min = $min;
     }
 
     public function setMax($max)
     {
+        if (!is_int($max) || $max < $this->min) {
+            throw new \InvalidArgumentException("Maximum value must be a positive integer greater than minimum value");
+        }
         $this->max = $max;
-    }
-
-    public function generate()
-    {
-        return mt_rand($this->min, $this->max);
     }
 }

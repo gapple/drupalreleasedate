@@ -1,8 +1,8 @@
 <?php
 namespace DrupalReleaseDate\Sampling;
 
-use \DrupalReleaseDate\Random\RandomInterface;
-use \DrupalReleaseDate\Random\Random;
+use \DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
+use \DrupalReleaseDate\NumberGenerator\Random\Basic;
 
 class SampleSet implements SampleSetInterface
 {

@@ -1,7 +1,7 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator;
 
-interface RandomInterface
+interface NumberGeneratorInterface
 {
 
     /**

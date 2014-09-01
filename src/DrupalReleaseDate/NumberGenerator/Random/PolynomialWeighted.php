@@ -1,7 +1,7 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator\Random;
 
-class PolynomialWeightedRandom extends WeightedRandom
+class PolynomialWeighted extends Weighted
 {
 
     /**

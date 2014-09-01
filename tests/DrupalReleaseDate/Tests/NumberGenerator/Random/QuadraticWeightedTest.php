@@ -1,21 +1,21 @@
 <?php
 namespace DrupalReleaseDate\Tests\Random;
 
-use DrupalReleaseDate\Random\QuadraticWeightedRandom;
+use DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted;
 
-class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase
+class QuadraticWeightedTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
      * Test that the generator only returns results in the specified range.
      *
-     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted<extended>
      */
     function testRange()
     {
         $min = 2;
         $max = 15;
-        $generator = new QuadraticWeightedRandom($min, $max);
+        $generator = new QuadraticWeighted($min, $max);
 
         for ($i = 0; $i < RANDOM_BASE_ITERATIONS; $i++) {
             $rand = $generator->generate();
@@ -26,13 +26,13 @@ class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase
 
     /**
      *
-     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted<extended>
      */
     function testSimpleWeights()
     {
         $min = 1;
         $max = 10;
-        $generator = new QuadraticWeightedRandom($min, $max);
+        $generator = new QuadraticWeighted($min, $max);
 
         $weight = 0;
         $range = $min - $max + 1;
@@ -44,13 +44,13 @@ class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase
 
     /**
      *
-     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted<extended>
      */
     function testShiftedWeights()
     {
         $min = 3;
         $max = 12;
-        $generator = new QuadraticWeightedRandom($min, $max);
+        $generator = new QuadraticWeighted($min, $max);
 
         $weight = 0;
         $range = $min - $max + 1;
@@ -69,13 +69,13 @@ class QuadraticWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * addtional iterations need to be performed to get sufficient precision for
      * the least likely items.
      *
-     * @covers \DrupalReleaseDate\Random\QuadraticWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted<extended>
      */
     function testDistribution()
     {
         $min = 3;
         $max = 8;
-        $generator = new QuadraticWeightedRandom($min, $max);
+        $generator = new QuadraticWeighted($min, $max);
 
         $range = $max - $min + 1;
         // TODO use formula to calculate sum of quadratic values instead.

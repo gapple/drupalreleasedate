@@ -1,7 +1,7 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator\Random;
 
-class QuadraticWeightedRandom extends PolynomialWeightedRandom
+class QuadraticWeighted extends PolynomialWeighted
 {
     public function __construct($min, $max, $a = 1, $b = 0, $c = 1)
     {

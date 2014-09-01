@@ -1,7 +1,7 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator\Random;
 
-abstract class WeightedRandom extends Random
+abstract class Weighted extends Basic
 {
 
     /**
@@ -68,7 +68,7 @@ abstract class WeightedRandom extends Random
     /**
      * Set a new minimum value for the generator.
      *
-     * @see \DrupalReleaseDate\Random\Random::setMin()
+     * @see \DrupalReleaseDate\NumberGenerator\Random\Basic::setMin()
      */
     public function setMin($min)
     {
@@ -80,7 +80,7 @@ abstract class WeightedRandom extends Random
     /**
      * Set a new maximum value for the generator.
      *
-     * @see \DrupalReleaseDate\Random\Random::setMax()
+     * @see \DrupalReleaseDate\NumberGenerator\Random\Basic::setMax()
      */
     public function setMax($max)
     {

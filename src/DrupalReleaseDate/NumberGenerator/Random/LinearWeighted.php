@@ -1,7 +1,7 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator\Random;
 
-class LinearWeightedRandom extends PolynomialWeightedRandom
+class LinearWeighted extends PolynomialWeighted
 {
     public function __construct($min, $max, $slope = 1, $base = 1)
     {

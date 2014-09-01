@@ -1,9 +1,9 @@
 <?php
 namespace DrupalReleaseDate\Tests\Random;
 
-use DrupalReleaseDate\Random\GeometricWeightedRandom;
+use DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted;
 
-class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
+class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
@@ -15,11 +15,11 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Rate must be greater than 0
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testZeroRate()
     {
-        new GeometricWeightedRandom(1, 10, 0);
+        new GeometricWeighted(1, 10, 0);
     }
 
     /**
@@ -31,24 +31,24 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Rate must be greater than 0
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testNegativeRate()
     {
-        new GeometricWeightedRandom(1, 10, -2);
+        new GeometricWeighted(1, 10, -2);
     }
 
     /**
      * Test that the generator only returns results in the specified range.
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testRange()
     {
         $min = 2;
         $max = 15;
         $rate = 2;
-        $generator = new GeometricWeightedRandom($min, $max, $rate);
+        $generator = new GeometricWeighted($min, $max, $rate);
 
         for ($i = 0; $i < RANDOM_BASE_ITERATIONS; $i++) {
             $rand = $generator->generate();
@@ -61,14 +61,14 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that the generator produces accurate weights with values starting
      * at one.
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testSimpleWeights()
     {
         $min = 1;
         $max = 10;
         $rate = 2;
-        $generator = new GeometricWeightedRandom($min, $max, $rate);
+        $generator = new GeometricWeighted($min, $max, $rate);
 
         $weight = 1;
         for ($i = $min; $i <= $max; $i++) {
@@ -81,14 +81,14 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that the generator produces accurate weights when the minimum value
      * is greater than one.
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testShiftedWeights()
     {
         $min = 3;
         $max = 12;
         $rate = 2;
-        $generator = new GeometricWeightedRandom($min, $max, $rate);
+        $generator = new GeometricWeighted($min, $max, $rate);
 
         $weight = 1;
         for ($i = $min; $i <= $max; $i++) {
@@ -105,12 +105,12 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * addtional iterations need to be performed to get sufficient precision for
      * the least likely items.
      *
-     * @param WeightedRandom $generator
+     * @param Weighted $generator
      * @param int $min
      * @param int $max
      * @param int|float $rate
      */
-    protected function checkDistribution(\DrupalReleaseDate\Random\WeightedRandom $generator, $min, $max, $rate)
+    protected function checkDistribution(\DrupalReleaseDate\NumberGenerator\Random\Weighted $generator, $min, $max, $rate)
     {
         $range = $max - $min + 1;
         $probabilitySum = (1 - pow($rate, $range)) / (1 - $rate);
@@ -134,14 +134,14 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that the generator produces a Geometricaly increasing distribution
      * of results when an integer rate is provided.
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testIntegerRateDistribution()
     {
         $min = 3;
         $max = 8;
         $rate = 2;
-        $generator = new GeometricWeightedRandom($min, $max, $rate);
+        $generator = new GeometricWeighted($min, $max, $rate);
         $this->checkDistribution($generator, $min, $max, $rate);
     }
 
@@ -149,14 +149,14 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that the generator produces a Geometricaly increasing distribution
      * of results when a float value (greater than one) is provided.
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testFloatRateDistribution()
     {
         $min = 3;
         $max = 8;
         $rate = 1.5;
-        $generator = new GeometricWeightedRandom($min, $max, $rate);
+        $generator = new GeometricWeighted($min, $max, $rate);
         $this->checkDistribution($generator, $min, $max, $rate);
     }
 
@@ -164,14 +164,14 @@ class GeometricWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that the generator produces a Geometricaly increasing distribution
      * of results when a float value (less than one) is provided.
      *
-     * @covers \DrupalReleaseDate\Random\GeometricWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testSmallFloatRateDistribution()
     {
         $min = 3;
         $max = 8;
         $rate = 0.75;
-        $generator = new GeometricWeightedRandom($min, $max, $rate);
+        $generator = new GeometricWeighted($min, $max, $rate);
         $this->checkDistribution($generator, $min, $max, $rate);
     }
 }

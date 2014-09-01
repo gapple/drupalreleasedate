@@ -1,21 +1,21 @@
 <?php
 namespace DrupalReleaseDate\Tests\Random;
 
-use DrupalReleaseDate\Random\LinearWeightedRandom;
+use DrupalReleaseDate\NumberGenerator\Random\LinearWeighted;
 
-class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
+class LinearWeightedTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
      * Test that the generator only returns results in the specified range.
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testRange()
     {
         $min = 2;
         $max = 15;
-        $generator = new LinearWeightedRandom($min, $max);
+        $generator = new LinearWeighted($min, $max);
 
         for ($i = 0; $i < RANDOM_BASE_ITERATIONS; $i++) {
             $rand = $generator->generate();
@@ -27,13 +27,13 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the calculated weights for the generator are correct.
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testSimpleWeights()
     {
         $min = 1;
         $max = 10;
-        $generator = new LinearWeightedRandom($min, $max);
+        $generator = new LinearWeighted($min, $max);
 
         $weight = 1;
         for ($i = $min; $i <= $max; $i++) {
@@ -45,13 +45,13 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the calculated weights for the generator are correct.
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testShiftedWeights()
     {
         $min = 3;
         $max = 12;
-        $generator = new LinearWeightedRandom($min, $max);
+        $generator = new LinearWeighted($min, $max);
 
         $weight = 1;
         for ($i = $min; $i <= $max; $i++) {
@@ -67,11 +67,11 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * @expectedException RangeException
      * @expectedExceptionMessage The value 7 was given a weight of -1
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testConstructNegativeWeight()
     {
-        $generator = new LinearWeightedRandom(1, 10, -1, 5);
+        $generator = new LinearWeighted(1, 10, -1, 5);
     }
 
     /**
@@ -81,11 +81,11 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * @expectedException RangeException
      * @expectedExceptionMessage The value 7 was given a weight of -1
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testSetMinNegativeWeight()
     {
-        $generator = new LinearWeightedRandom(6, 10, -1, 5);
+        $generator = new LinearWeighted(6, 10, -1, 5);
         $generator->setMin(1);
     }
 
@@ -96,11 +96,11 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * @expectedException RangeException
      * @expectedExceptionMessage The value 7 was given a weight of -1
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testSetMaxNegativeWeight()
     {
-        $generator = new LinearWeightedRandom(1, 5, -1, 5);
+        $generator = new LinearWeighted(1, 5, -1, 5);
         $generator->setMax(10);
     }
 
@@ -109,15 +109,16 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * within its range.
      *
      * Since the sum of probabilities is greater than in a flat distribution,
-     * addtional iterations need to be performed to get sufficient precision for
+     * additional iterations need to be performed to get sufficient precision for
      * the least likely items.
      *
-     * @param WeightedRandom $generator
+     * @param \DrupalReleaseDate\NumberGenerator\Random\Weighted $generator
      * @param int $min
      * @param int $max
-     * @param
+     * @param int|float $slope
+     * @param int|float $base
      */
-    protected function checkDistribution(\DrupalReleaseDate\Random\WeightedRandom $generator, $min, $max, $slope = 1, $base = 1)
+    protected function checkDistribution(\DrupalReleaseDate\NumberGenerator\Random\Weighted $generator, $min, $max, $slope = 1, $base = 1)
     {
 
         $range = $max - $min + 1;
@@ -143,11 +144,11 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * (e.g. the second item should be twice as likely as the first, the third item
      *  three times as likely, etc)
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistribution()
     {
-        $generator = new LinearWeightedRandom(3, 8);
+        $generator = new LinearWeighted(3, 8);
 
         $this->checkDistribution($generator, 3, 8);
     }
@@ -156,11 +157,11 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that a generator produces a correct distribution if the min value is
      * changed.
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistributionChangeMin()
     {
-        $generator = new LinearWeightedRandom(4, 8);
+        $generator = new LinearWeighted(4, 8);
 
         $generator->setMin(3);
         $this->checkDistribution($generator, 3, 8);
@@ -173,12 +174,12 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that a generator produces a correct distribution if the max value is
      * changed.
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistributionChangeMax()
     {
 
-        $generator = new LinearWeightedRandom(4, 7);
+        $generator = new LinearWeighted(4, 7);
 
         $generator->setMax(9);
         $this->checkDistribution($generator, 4, 9);
@@ -191,15 +192,15 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that generator produces a correct distribution when the weight of
      * the initial value is changed.
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistributionChangeBase()
     {
 
-        $generator = new LinearWeightedRandom(1, 5, 1, 2);
+        $generator = new LinearWeighted(1, 5, 1, 2);
         $this->checkDistribution($generator, 1, 5, 1 ,2);
 
-        $generator = new LinearWeightedRandom(1, 5, 1, 10);
+        $generator = new LinearWeighted(1, 5, 1, 10);
         $this->checkDistribution($generator, 1, 5, 1, 10);
     }
 
@@ -207,15 +208,15 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that generator produces a correct distribution when the slope of
      * weights is changed.
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistributionChangeSlope()
     {
 
-        $generator = new LinearWeightedRandom(2, 7, 2.5);
+        $generator = new LinearWeighted(2, 7, 2.5);
         $this->checkDistribution($generator, 2, 7, 2.5);
 
-        $generator = new LinearWeightedRandom(2, 7, 0.5);
+        $generator = new LinearWeighted(2, 7, 0.5);
         $this->checkDistribution($generator, 2, 7, 0.5);
     }
 
@@ -223,15 +224,15 @@ class LinearWeightedRandomTest extends \PHPUnit_Framework_TestCase
      * Test that generator produces a correct distribution when both the weight
      * of the initial value is changed, and the slope of weights is changed
      *
-     * @covers \DrupalReleaseDate\Random\LinearWeightedRandom<extended>
+     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistributionChangeBaseAndSlope()
     {
 
-        $generator = new LinearWeightedRandom(2, 7, 2.5, 5);
+        $generator = new LinearWeighted(2, 7, 2.5, 5);
         $this->checkDistribution($generator, 2, 7, 2.5, 5);
 
-        $generator = new LinearWeightedRandom(2, 7, 0.5, 2);
+        $generator = new LinearWeighted(2, 7, 0.5, 2);
         $this->checkDistribution($generator, 2, 7, 0.5, 2);
     }
 }

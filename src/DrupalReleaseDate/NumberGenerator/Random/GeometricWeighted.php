@@ -1,10 +1,10 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator\Random;
 
 /**
  * Weight values in a geometric series changing by the given rate.
  */
-class GeometricWeightedRandom extends WeightedRandom
+class GeometricWeighted extends Weighted
 {
     /**
      * Rate of change of weights for each value.
