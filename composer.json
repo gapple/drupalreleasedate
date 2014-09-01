@@ -10,6 +10,9 @@
     "autoload": {
         "psr-4": {"DrupalReleaseDate\\": "src/DrupalReleaseDate/"}
     },
+    "autoload-dev": {
+        "psr-4": {"DrupalReleaseDate\\Tests\\": "src/tests/DrupalReleaseDate/Tests/"}
+    },
     "require": {
         "cilex/console-service-provider": "~1.0",
         "doctrine/dbal": "~2.2",
