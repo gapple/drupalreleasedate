@@ -22,11 +22,11 @@ class Data
      * @param  Request $request
      * @return string
      */
-    private static function getVersionFromRequest(Request $request)
+    public static function parseVersionFromRequest(Request $request)
     {
         $versionString = $request->query->get('version', '8.0');
         if (!preg_match('/^([0-9]+)(\\.[0-9]+)?$/', $versionString)) {
-            throw new \Exception();
+            throw new \Exception("Invalid version parameter");
         }
         $segments = explode('.', $versionString);
         $major = $segments[0];
@@ -42,7 +42,7 @@ class Data
      * @param  string  $key
      * @return \DateTime
      */
-    private static function parseDateFromRequest(Request $request, $key) {
+    public static function parseDateFromRequest(Request $request, $key) {
         $value = null;
         if ($request->query->has($key)) {
             $value = new DateTime($request->query->get($key));
@@ -53,9 +53,8 @@ class Data
     public function samples(Application $app, Request $request)
     {
         $responseData = array();
-
         try {
-            $versionString = self::getVersionFromRequest($request);
+            $versionString = self::parseVersionFromRequest($request);
         }
         catch (\Exception $e) {
             $app->abort(400, 'Invalid "version" parameter');
@@ -188,7 +187,7 @@ class Data
         $responseData = array();
 
         try {
-            $versionString = self::getVersionFromRequest($request);
+            $versionString = self::parseVersionFromRequest($request);
         }
         catch (\Exception $e) {
             $app->abort(400, 'Invalid "version" parameter');
@@ -291,7 +290,7 @@ class Data
         $responseData = array();
 
         try {
-            $versionString = self::getVersionFromRequest($request);
+            $versionString = self::parseVersionFromRequest($request);
         }
         catch (\Exception $e) {
             $app->abort(400, 'Invalid "version" parameter');
@@ -430,7 +429,7 @@ class Data
         $responseData = array();
 
         try {
-            $versionString = self::getVersionFromRequest($request);
+            $versionString = self::parseVersionFromRequest($request);
         }
         catch (\Exception $e) {
             $app->abort(400, 'Invalid "version" parameter');
