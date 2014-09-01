@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
 {
+    public static function setUpBeforeClass() {
+        date_default_timezone_set('America/Vancouver');
+    }
+
     /**
      * Test the version if no value is provided in the request.
      */
