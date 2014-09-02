@@ -1,9 +1,8 @@
 <?php
-namespace DrupalReleaseDate\NumberGenerator\Random;
+namespace DrupalReleaseDate\NumberGenerator;
 
-abstract class Weighted extends Basic
+abstract class AbstractWeighted extends AbstractGenerator
 {
-
     /**
      * An array of cumulative weights for each possible outcome of the
      * generator.
@@ -98,24 +97,20 @@ abstract class Weighted extends Basic
     abstract public function calculateWeight($value);
 
     /**
-     * Generate a random value, according to the evaluated weights.
+     * Generate a value in the appropriate range of weights.
      *
-     * @return int
+     * @return int|float
      */
+    abstract protected function generateWeight();
+
     public function generate()
     {
-        $maxWeight = $this->weightsArray[$this->max];
+        $weight = $this->generateWeight();
 
-        if ($this->integerWeights) {
-            $rand = mt_rand(1, $maxWeight);
-        } else {
-            $rand = (mt_rand() / mt_getrandmax()) * $maxWeight;
-        }
-
-        // Find the first weight that the random number fits in to.
+        // Find the first weight that the number fits in to.
         $value = $this->min;
-        foreach ($this->weightsArray as $value => $weight) {
-            if ($rand <= $weight) {
+        foreach ($this->weightsArray as $value => $weightBound) {
+            if ($weight <= $weightBound) {
                 break;
             }
         }

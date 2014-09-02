@@ -102,15 +102,15 @@ class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
      * within its range.
      *
      * Since the sum of probabilities is greater than in a flat distribution,
-     * addtional iterations need to be performed to get sufficient precision for
-     * the least likely items.
+     * additional iterations need to be performed to get sufficient precision
+     * for the least likely items.
      *
-     * @param Weighted $generator
+     * @param \DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface $generator
      * @param int $min
      * @param int $max
      * @param int|float $rate
      */
-    protected function checkDistribution(\DrupalReleaseDate\NumberGenerator\Random\Weighted $generator, $min, $max, $rate)
+    protected function checkDistribution(\DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface $generator, $min, $max, $rate)
     {
         $range = $max - $min + 1;
         $probabilitySum = (1 - pow($rate, $range)) / (1 - $rate);

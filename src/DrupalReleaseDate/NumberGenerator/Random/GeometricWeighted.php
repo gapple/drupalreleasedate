@@ -4,7 +4,7 @@ namespace DrupalReleaseDate\NumberGenerator\Random;
 /**
  * Weight values in a geometric series changing by the given rate.
  */
-class GeometricWeighted extends Weighted
+class GeometricWeighted extends AbstractWeighted
 {
     /**
      * Rate of change of weights for each value.

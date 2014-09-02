@@ -112,13 +112,13 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      * additional iterations need to be performed to get sufficient precision for
      * the least likely items.
      *
-     * @param \DrupalReleaseDate\NumberGenerator\Random\Weighted $generator
+     * @param \DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface $generator
      * @param int $min
      * @param int $max
      * @param int|float $slope
      * @param int|float $base
      */
-    protected function checkDistribution(\DrupalReleaseDate\NumberGenerator\Random\Weighted $generator, $min, $max, $slope = 1, $base = 1)
+    protected function checkDistribution(\DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface $generator, $min, $max, $slope = 1, $base = 1)
     {
 
         $range = $max - $min + 1;
