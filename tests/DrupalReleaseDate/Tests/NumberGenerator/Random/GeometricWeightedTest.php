@@ -41,6 +41,8 @@ class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the generator only returns results in the specified range.
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testRange()
@@ -131,8 +133,10 @@ class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the generator produces a Geometricaly increasing distribution
+     * Test that the generator produces a Geometrically increasing distribution
      * of results when an integer rate is provided.
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
@@ -149,6 +153,8 @@ class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
      * Test that the generator produces a Geometricaly increasing distribution
      * of results when a float value (greater than one) is provided.
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
     public function testFloatRateDistribution()
@@ -161,8 +167,10 @@ class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the generator produces a Geometricaly increasing distribution
+     * Test that the generator produces a Geometrically increasing distribution
      * of results when a float value (less than one) is provided.
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */

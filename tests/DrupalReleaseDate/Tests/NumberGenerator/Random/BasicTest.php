@@ -12,6 +12,8 @@ class BasicTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the generator only returns results in the specified range.
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\Basic
      */
     function testResultsWithinRange()
@@ -30,6 +32,8 @@ class BasicTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Test that the generator produces a relatively flat distribution of results.
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\Basic
      */

@@ -61,13 +61,15 @@ class QuadraticWeightedTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the generator produces a quadraticly increasing distribution of results.
-     * (e.g. the four item should be twice as likely as the first, the third item
-     *  nine times as likely, etc)
+     * Test that the generator produces a quadratically increasing distribution
+     * of results. (e.g. the four item should be twice as likely as the first,
+     * the third item nine times as likely, etc)
      *
      * Since the sum of probabilities is greater than in a flat distribution,
-     * addtional iterations need to be performed to get sufficient precision for
-     * the least likely items.
+     * additional iterations need to be performed to get sufficient precision
+     * for the least likely items.
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted<extended>
      */

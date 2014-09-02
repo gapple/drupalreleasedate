@@ -9,6 +9,8 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the generator only returns results in the specified range.
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testRange()
@@ -144,6 +146,8 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      * (e.g. the second item should be twice as likely as the first, the third item
      *  three times as likely, etc)
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistribution()
@@ -156,6 +160,8 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that a generator produces a correct distribution if the min value is
      * changed.
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
@@ -173,6 +179,8 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that a generator produces a correct distribution if the max value is
      * changed.
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
@@ -192,6 +200,8 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      * Test that generator produces a correct distribution when the weight of
      * the initial value is changed.
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistributionChangeBase()
@@ -208,6 +218,8 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      * Test that generator produces a correct distribution when the slope of
      * weights is changed.
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
     public function testDistributionChangeSlope()
@@ -223,6 +235,8 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that generator produces a correct distribution when both the weight
      * of the initial value is changed, and the slope of weights is changed
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */

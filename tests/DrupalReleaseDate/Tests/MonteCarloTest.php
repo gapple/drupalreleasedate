@@ -49,6 +49,8 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * for a single run, but should converge on the same value after many
      * iterations.
      *
+     * @group random
+     *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\NumberGenerator\Random\Basic
@@ -116,6 +118,8 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * With varying time periods between samples, the result is not predictable
      * for a single run, but should converge on the same value after many
      * iterations.
+     *
+     * @group random
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
