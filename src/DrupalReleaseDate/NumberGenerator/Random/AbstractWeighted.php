@@ -7,7 +7,7 @@ abstract class AbstractWeighted extends ParentAbstractWeighted
 {
     protected function generateWeight()
     {
-        $maxWeight = $this->weightsArray[$this->max];
+        $maxWeight = $this->weightsArray[$this->max - $this->min];
 
         if ($this->integerWeights) {
             $rand = mt_rand(1, $maxWeight);

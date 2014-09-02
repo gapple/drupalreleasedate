@@ -32,14 +32,14 @@ class PolynomialWeighted extends AbstractWeighted
         parent::__construct($min, $max);
     }
 
-    public function calculateWeight($value)
+    public function calculateWeight($index)
     {
         $weight = 0;
         foreach ($this->coefficients as $exponent => $coefficient) {
             if (empty($coefficient)) {
                 continue;
             }
-            $weight += $coefficient * pow($value - $this->min, $exponent);
+            $weight += $coefficient * pow($index, $exponent);
         }
 
         return $weight;

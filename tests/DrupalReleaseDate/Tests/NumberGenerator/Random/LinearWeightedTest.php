@@ -31,32 +31,12 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
-    public function testSimpleWeights()
+    public function testWeights()
     {
-        $min = 1;
-        $max = 10;
-        $generator = new LinearWeighted($min, $max);
+        $generator = new LinearWeighted(2, 11);
 
         $weight = 1;
-        for ($i = $min; $i <= $max; $i++) {
-            $this->assertEquals($weight, $generator->calculateWeight($i));
-            $weight++;
-        }
-    }
-
-    /**
-     * Test that the calculated weights for the generator are correct.
-     *
-     * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
-     */
-    public function testShiftedWeights()
-    {
-        $min = 3;
-        $max = 12;
-        $generator = new LinearWeighted($min, $max);
-
-        $weight = 1;
-        for ($i = $min; $i <= $max; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $this->assertEquals($weight, $generator->calculateWeight($i));
             $weight++;
         }
@@ -67,7 +47,7 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      * a negative number.
      *
      * @expectedException RangeException
-     * @expectedExceptionMessage The value 7 was given a weight of -1
+     * @expectedExceptionMessage The value at index 6 was given a weight of -1
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
@@ -81,7 +61,7 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      * in a negative calculated weight.
      *
      * @expectedException RangeException
-     * @expectedExceptionMessage The value 7 was given a weight of -1
+     * @expectedExceptionMessage The value at index 6 was given a weight of -1
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */
@@ -96,7 +76,7 @@ class LinearWeightedTest extends \PHPUnit_Framework_TestCase
      * in a negative calculated weight.
      *
      * @expectedException RangeException
-     * @expectedExceptionMessage The value 7 was given a weight of -1
+     * @expectedExceptionMessage The value at index 6 was given a weight of -1
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted<extended>
      */

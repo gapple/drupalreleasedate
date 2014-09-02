@@ -39,19 +39,20 @@ abstract class AbstractWeighted extends AbstractGenerator
 
     /**
      * Evaluate and store weights for the range currently set.
-     *
-     * @todo It is only necessary to calculate weights for higher values if
-     * the minimum value has not changed.
      */
     protected function evaluateWeights() {
 
-        $this->weightsArray = array();
-
         $cumulativeWeight = 0;
-        for ($i = $this->min; $i <= $this->max; $i++) {
+        if (!empty($this->weightsArray)) {
+            $cumulativeWeight = end($this->weightsArray);
+        }
+
+        $weightsNeeded = $this->max - $this->min + 1;
+
+        for ($i = count($this->weightsArray); $i < $weightsNeeded; $i++) {
             $weight = $this->calculateWeight($i);
             if ($weight < 0) {
-                throw new \RangeException('The value ' . $i . ' was given a weight of ' . $weight);
+                throw new \RangeException('The value at index ' . $i . ' was given a weight of ' . $weight);
             }
             $cumulativeWeight += $weight;
             $this->weightsArray[$i] = $cumulativeWeight;
@@ -91,10 +92,10 @@ abstract class AbstractWeighted extends AbstractGenerator
     /**
      * Calculate the weight of a value provided by the generator.
      *
-     * @param int $value
+     * @param int $index
      * @return int
      */
-    abstract public function calculateWeight($value);
+    abstract public function calculateWeight($index);
 
     /**
      * Generate a value in the appropriate range of weights.
@@ -108,12 +109,12 @@ abstract class AbstractWeighted extends AbstractGenerator
         $weight = $this->generateWeight();
 
         // Find the first weight that the number fits in to.
-        $value = $this->min;
-        foreach ($this->weightsArray as $value => $weightBound) {
+        $index = 0;
+        foreach ($this->weightsArray as $index => $weightBound) {
             if ($weight <= $weightBound) {
                 break;
             }
         }
-        return $value;
+        return $index + $this->min;
     }
 }

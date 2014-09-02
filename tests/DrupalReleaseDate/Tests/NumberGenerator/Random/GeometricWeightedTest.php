@@ -60,40 +60,17 @@ class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the generator produces accurate weights with values starting
-     * at one.
+     * Test that the generator produces accurate weights.
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
      */
-    public function testSimpleWeights()
+    public function testWeights()
     {
-        $min = 1;
-        $max = 10;
         $rate = 2;
-        $generator = new GeometricWeighted($min, $max, $rate);
+        $generator = new GeometricWeighted(2, 11, $rate);
 
         $weight = 1;
-        for ($i = $min; $i <= $max; $i++) {
-            $this->assertEquals($weight, $generator->calculateWeight($i));
-            $weight *= $rate;
-        }
-    }
-
-    /**
-     * Test that the generator produces accurate weights when the minimum value
-     * is greater than one.
-     *
-     * @covers \DrupalReleaseDate\NumberGenerator\Random\GeometricWeighted<extended>
-     */
-    public function testShiftedWeights()
-    {
-        $min = 3;
-        $max = 12;
-        $rate = 2;
-        $generator = new GeometricWeighted($min, $max, $rate);
-
-        $weight = 1;
-        for ($i = $min; $i <= $max; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $this->assertEquals($weight, $generator->calculateWeight($i));
             $weight *= $rate;
         }
@@ -150,7 +127,7 @@ class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the generator produces a Geometricaly increasing distribution
+     * Test that the generator produces a Geometrically increasing distribution
      * of results when a float value (greater than one) is provided.
      *
      * @group random

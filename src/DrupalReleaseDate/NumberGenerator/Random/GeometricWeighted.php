@@ -30,8 +30,8 @@ class GeometricWeighted extends AbstractWeighted
         parent::__construct($min, $max);
     }
 
-    public function calculateWeight($value)
+    public function calculateWeight($index)
     {
-        return pow($this->rate, $value - $this->min);
+        return pow($this->rate, $index);
     }
 }

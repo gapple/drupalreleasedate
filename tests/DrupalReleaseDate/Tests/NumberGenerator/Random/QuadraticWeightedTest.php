@@ -28,33 +28,12 @@ class QuadraticWeightedTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted<extended>
      */
-    function testSimpleWeights()
+    function testWeights()
     {
-        $min = 1;
-        $max = 10;
-        $generator = new QuadraticWeighted($min, $max);
+        $generator = new QuadraticWeighted(2, 11);
 
         $weight = 0;
-        $range = $min - $max + 1;
-        for ($i = $min; $i <= $max; $i++) {
-            $this->assertEquals(pow($weight, 2) + 1, $generator->calculateWeight($i));
-            $weight++;
-        }
-    }
-
-    /**
-     *
-     * @covers \DrupalReleaseDate\NumberGenerator\Random\QuadraticWeighted<extended>
-     */
-    function testShiftedWeights()
-    {
-        $min = 3;
-        $max = 12;
-        $generator = new QuadraticWeighted($min, $max);
-
-        $weight = 0;
-        $range = $min - $max + 1;
-        for ($i = $min; $i <= $max; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $this->assertEquals(pow($weight, 2) + 1, $generator->calculateWeight($i));
             $weight++;
         }
