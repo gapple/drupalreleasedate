@@ -1,7 +1,9 @@
 <?php
 namespace DrupalReleaseDate\Sampling;
 
+use DrupalReleaseDate\NumberGenerator\LinearWeighted;
 use DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
+use DrupalReleaseDate\NumberGenerator\Random;
 
 class TimeGroupedRandomSampleSelector implements RandomSampleSelectorInterface
 {
@@ -22,7 +24,7 @@ class TimeGroupedRandomSampleSelector implements RandomSampleSelectorInterface
         $this->sampleSetCollection = $sampleSetCollection;
 
         if (!$collectionRandomGenerator) {
-            $collectionRandomGenerator = new \DrupalReleaseDate\NumberGenerator\Random\Basic(0, $sampleSetCollection->length() - 1);
+            $collectionRandomGenerator = new Random(0, $sampleSetCollection->length() - 1);
         }
         $this->collectionRandomGenerator = $collectionRandomGenerator;
     }
@@ -45,7 +47,8 @@ class TimeGroupedRandomSampleSelector implements RandomSampleSelectorInterface
             $baseWeight = $this->collectionRandomGenerator->calculateWeight($sampleSetIndex);
             $upperWeight = $this->collectionRandomGenerator->calculateWeight($sampleSetIndex + 1);
 
-            $this->sampleSetRandomGenerators[$sampleSetIndex] = new \DrupalReleaseDate\NumberGenerator\Random\LinearWeighted(
+            $this->sampleSetRandomGenerators[$sampleSetIndex] = new LinearWeighted(
+                new Random(),
                 0,
                 $sampleSet->length() - 1,
                 ($upperWeight - $baseWeight) / $sampleSet->length(),

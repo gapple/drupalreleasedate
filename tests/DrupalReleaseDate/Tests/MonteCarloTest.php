@@ -18,7 +18,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -52,7 +52,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -85,7 +85,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -120,7 +120,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -159,7 +159,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\MonteCarlo\IncreasingException<extended>
-     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -195,7 +195,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\MonteCarlo\IncreasingException<extended>
-     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -228,7 +228,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\MonteCarlo\TimeoutException<extended>
-     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector

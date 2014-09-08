@@ -20,19 +20,15 @@ abstract class AbstractWeighted extends AbstractGenerator
     protected $weightsArray = array();
 
     /**
-     * Specify if the generator will only use integer values for weights.
-     *
-     * If set to false, the generator will use a float value internally to
-     * determine the value to be returned so that results are not biased by
-     * integer rounding.
-     *
-     * @var boolean
+     * @var NumberGeneratorInterface
      */
-    protected $integerWeights = true;
+    protected $weightGenerator = null;
 
-    public function __construct($min, $max)
+    public function __construct(NumberGeneratorInterface $weightGenerator, $min, $max)
     {
         parent::__construct($min, $max);
+
+        $this->weightGenerator = $weightGenerator;
 
         $this->evaluateWeights();
     }
@@ -47,6 +43,8 @@ abstract class AbstractWeighted extends AbstractGenerator
             $cumulativeWeight = end($this->weightsArray);
         }
 
+        $weightType = NumberGeneratorInterface::TYPE_INT;
+
         $weightsNeeded = $this->max - $this->min + 1;
 
         for ($i = count($this->weightsArray); $i < $weightsNeeded; $i++) {
@@ -56,19 +54,28 @@ abstract class AbstractWeighted extends AbstractGenerator
             }
             $cumulativeWeight += $weight;
             $this->weightsArray[$i] = $cumulativeWeight;
+
+            if (!is_int($cumulativeWeight)) {
+                $weightType = NumberGeneratorInterface::TYPE_FLOAT;
+            }
         }
 
-        // Check that the cumulative weight has not grown over PHP_INT_MAX,
-        // and been converted to a float.
-        if (!is_int($cumulativeWeight)) {
-            $this->integerWeights = false;
+        $this->weightGenerator->setType($weightType);
+
+        $this->weightGenerator->setMax($this->weightsArray[$this->max - $this->min]);
+
+        if ($weightType == NumberGeneratorInterface::TYPE_FLOAT) {
+            $this->weightGenerator->setMin(0);
+        }
+        else {
+            $this->weightGenerator->setMin(1);
         }
     }
 
     /**
      * Set a new minimum value for the generator.
      *
-     * @see \DrupalReleaseDate\NumberGenerator\Random\Basic::setMin()
+     * @see \DrupalReleaseDate\NumberGenerator\AbstractGenerator::setMin()
      */
     public function setMin($min)
     {
@@ -80,7 +87,7 @@ abstract class AbstractWeighted extends AbstractGenerator
     /**
      * Set a new maximum value for the generator.
      *
-     * @see \DrupalReleaseDate\NumberGenerator\Random\Basic::setMax()
+     * @see \DrupalReleaseDate\NumberGenerator\AbstractGenerator::setMax()
      */
     public function setMax($max)
     {
@@ -97,16 +104,9 @@ abstract class AbstractWeighted extends AbstractGenerator
      */
     abstract public function calculateWeight($index);
 
-    /**
-     * Generate a value in the appropriate range of weights.
-     *
-     * @return int|float
-     */
-    abstract protected function generateWeight();
-
     public function generate()
     {
-        $weight = $this->generateWeight();
+        $weight = $this->weightGenerator->generate();
 
         // Find the first weight that the number fits in to.
         $index = 0;

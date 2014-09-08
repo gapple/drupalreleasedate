@@ -11,16 +11,6 @@
          syntaxCheck="false"
          bootstrap="tests/bootstrap.php"
 >
-    <php>
-        <!--
-            When running tests that repeat random results to achieve an
-            average, set the base number of iterations required.
-            Larger values will result in fewer false failures, but will take
-            longer to run.
-            Default: 1000
-        -->
-        <const name="RANDOM_BASE_ITERATIONS" value="4000"/>
-    </php>
     <testsuites>
         <testsuite name="DrupalReleaseDate Test Suite">
             <directory>./tests/DrupalReleaseDate/</directory>

@@ -1,9 +1,6 @@
 <?php
 namespace DrupalReleaseDate\Sampling;
 
-use \DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
-use \DrupalReleaseDate\NumberGenerator\Random\Basic;
-
 class SampleSet implements SampleSetInterface
 {
     protected $samples = array();

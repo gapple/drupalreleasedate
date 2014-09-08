@@ -32,28 +32,6 @@ class CyclicTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that non-integer values are not accepted as a minimum value.
-     *
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Minimum value must be a positive integer
-     */
-    function testNonIntegerMin()
-    {
-        new Cyclic(1.5, 2);
-    }
-
-    /**
-     * Test that non-integer values are not accepted as a maximum value.
-     *
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Maximum value must be a positive integer greater than minimum value
-     */
-    function testNonIntegerMax()
-    {
-        new Cyclic(1, 2.5);
-    }
-
-    /**
      * Test that changing the minimum value to a negative value is not accepted.
      *
      * @expectedException InvalidArgumentException
@@ -87,19 +65,43 @@ class CyclicTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the generator only returns results in the specified range.
+     * Test that the generator increments and wraps correctly.
      */
-    function testResultsWithinRange()
+    function testIntegerSteps()
     {
-        $min = 1;
-        $max = 10;
+        $generator = new Cyclic(1,5);
 
-        $generator = new Cyclic($min, $max);
+        $this->assertEquals(1, $generator->generate());
+        $this->assertEquals(2, $generator->generate());
+        $this->assertEquals(3, $generator->generate());
+        $this->assertEquals(4, $generator->generate());
+        $this->assertEquals(5, $generator->generate());
+        $this->assertEquals(1, $generator->generate());
+    }
 
-        for ($i = 0; $i < 11; $i++) {
-            $rand = $generator->generate();
-            $this->assertGreaterThanOrEqual($min, $rand);
-            $this->assertLessThanOrEqual($max, $rand);
+
+    /**
+     * Test that the generator increments correctly with steps that are a float value.
+     */
+    function testFloatSteps()
+    {
+        $generator = new Cyclic(1,5, 0.1);
+
+        // Must accommodate for float precision, but error should not accumulate with successive values.
+        $this->assertEquals(0.1, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.2, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.3, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.4, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.5, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.6, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.7, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.8, $generator->generate(), '', 0.00001);
+        $this->assertEquals(0.9, $generator->generate(), '', 0.00001);
+        $this->assertEquals(1.0, $generator->generate(), '', 0.00001);
+        $this->assertEquals(1.1, $generator->generate(), '', 0.00001);
+        for ($i = 0; $i < 35; $i++) {
+            $generator->generate();
         }
+        $this->assertEquals(4.7, $generator->generate(), '', 0.00001);
     }
 }

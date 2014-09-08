@@ -1,5 +1,5 @@
 <?php
-namespace DrupalReleaseDate\NumberGenerator\Random;
+namespace DrupalReleaseDate\NumberGenerator;
 
 class PolynomialWeighted extends AbstractWeighted
 {
@@ -18,18 +18,11 @@ class PolynomialWeighted extends AbstractWeighted
      */
     protected $coefficients;
 
-    public function __construct($min, $max, $coefficients = array())
+    public function __construct(NumberGeneratorInterface $weightGenerator, $min, $max, $coefficients = array())
     {
         $this->coefficients = $coefficients;
 
-        foreach ($coefficients as $coefficient) {
-            if (!is_int($coefficient)) {
-                $this->integerWeights = false;
-                break;
-            }
-        }
-
-        parent::__construct($min, $max);
+        parent::__construct($weightGenerator, $min, $max);
     }
 
     public function calculateWeight($index)
