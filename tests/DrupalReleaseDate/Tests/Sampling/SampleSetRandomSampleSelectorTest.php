@@ -15,7 +15,7 @@ class SampleSetRandomSampleSelectorTest extends \PHPUnit_Framework_TestCase
     protected function setUp() {
         $this->sampleSetStub = $this->getMock('\DrupalReleaseDate\Sampling\SampleSet');
 
-        $this->randomStub = $this->getMockBuilder('\DrupalReleaseDate\Random\Random')
+        $this->randomStub = $this->getMockBuilder('\DrupalReleaseDate\NumberGenerator\Random')
             ->disableOriginalConstructor()
             ->getMock();
 

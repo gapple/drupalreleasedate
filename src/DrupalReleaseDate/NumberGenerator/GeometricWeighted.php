@@ -1,10 +1,10 @@
 <?php
-namespace DrupalReleaseDate\Random;
+namespace DrupalReleaseDate\NumberGenerator;
 
 /**
  * Weight values in a geometric series changing by the given rate.
  */
-class GeometricWeightedRandom extends WeightedRandom
+class GeometricWeighted extends AbstractWeighted
 {
     /**
      * Rate of change of weights for each value.
@@ -16,22 +16,18 @@ class GeometricWeightedRandom extends WeightedRandom
      */
     protected $rate;
 
-    public function __construct($min, $max, $rate = 1)
+    public function __construct(NumberGeneratorInterface $weightGenerator, $min, $max, $rate = 1)
     {
         if ($rate <= 0) {
             throw new \InvalidArgumentException("Rate must be greater than 0");
         }
         $this->rate = $rate;
 
-        if (!is_int($rate)) {
-            $this->integerWeights = false;
-        }
-
-        parent::__construct($min, $max);
+        parent::__construct($weightGenerator, $min, $max);
     }
 
-    public function calculateWeight($value)
+    public function calculateWeight($index)
     {
-        return pow($this->rate, $value - $this->min);
+        return pow($this->rate, $index);
     }
 }

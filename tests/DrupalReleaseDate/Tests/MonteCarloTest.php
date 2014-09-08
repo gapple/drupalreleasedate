@@ -1,6 +1,7 @@
 <?php
 namespace DrupalReleaseDate\Tests;
 
+use DrupalReleaseDate\NumberGenerator\Cyclic as CyclicGenerator;
 use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
@@ -17,7 +18,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -31,7 +32,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30,  8));
         $sampleset->insert(new Sample(40,  7));
 
-        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+        $randomGenerator = new CyclicGenerator(1, $sampleset->length() - 1);
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
@@ -51,7 +52,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -65,13 +66,13 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(40,  8));
         $sampleset->insert(new Sample(80,  7));
 
-        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+        $randomGenerator = new CyclicGenerator(1, $sampleset->length() - 1);
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
-        $result = $montecarlo->runAverage(RANDOM_BASE_ITERATIONS, 10);
+        $result = $montecarlo->runAverage(10, 10);
 
         $this->assertEquals(163.0, $result, '', 1);
     }
@@ -84,7 +85,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -98,7 +99,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30,  8));
         $sampleset->insert(new Sample(40,  7));
 
-        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+        $randomGenerator = new CyclicGenerator(1, $sampleset->length() - 1);
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
@@ -119,7 +120,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      *
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
-     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -133,14 +134,14 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(40,  8));
         $sampleset->insert(new Sample(80,  7));
 
-        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+        $randomGenerator = new CyclicGenerator(1, $sampleset->length() - 1);
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
         $montecarlo = new MonteCarlo($sampleSelector);
 
         // Run multiple iterations, grouping into buckets of size 10.
-        $result = $montecarlo->runMedian(RANDOM_BASE_ITERATIONS, 10);
+        $result = $montecarlo->runMedian(10, 10);
 
         $this->assertEquals(160, $result);
     }
@@ -158,7 +159,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\MonteCarlo\IncreasingException<extended>
-     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -172,7 +173,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30, 12));
         $sampleset->insert(new Sample(40, 13));
 
-        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+        $randomGenerator = new CyclicGenerator(1, $sampleset->length() - 1);
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
@@ -194,7 +195,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\MonteCarlo\IncreasingException<extended>
-     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -208,7 +209,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(30, 12));
         $sampleset->insert(new Sample(40, 13));
 
-        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+        $randomGenerator = new CyclicGenerator(1, $sampleset->length() - 1);
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 
@@ -227,7 +228,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
      * @covers \DrupalReleaseDate\MonteCarlo
      * @uses \DrupalReleaseDate\EstimateDistribution
      * @uses \DrupalReleaseDate\MonteCarlo\TimeoutException<extended>
-     * @uses \DrupalReleaseDate\Random\Random
+     * @uses \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
      * @uses \DrupalReleaseDate\Sampling\Sample
      * @uses \DrupalReleaseDate\Sampling\SampleSet
      * @uses \DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector
@@ -239,7 +240,7 @@ class MonteCarloTest extends \PHPUnit_Framework_TestCase
         $sampleset->insert(new Sample(10, 10));
         $sampleset->insert(new Sample(20, 10));
 
-        $randomGenerator = new \DrupalReleaseDate\Random\Random(1, $sampleset->length() - 1);
+        $randomGenerator = new CyclicGenerator(1, $sampleset->length() - 1);
 
         $sampleSelector = new SampleSetRandomSampleSelector($sampleset, $randomGenerator);
 

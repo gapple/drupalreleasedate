@@ -1,9 +1,6 @@
 <?php
 namespace DrupalReleaseDate\Sampling;
 
-use \DrupalReleaseDate\Random\RandomInterface;
-use \DrupalReleaseDate\Random\Random;
-
 class SampleSet implements SampleSetInterface
 {
     protected $samples = array();
