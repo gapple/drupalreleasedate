@@ -41,12 +41,12 @@ class MonteCarlo
      * The maximum proportion of iterations that can fail before the entire run
      * returns as a failure.
      *
-     * e.g. If 10% of iterations have failed, the run will be aborted.
+     * e.g. If 50% of iterations have failed, the run will be aborted.
      *
      * @var float
      *   A value between 0 and 1
      */
-    public $increasingFailureRatio = 0.1;
+    public $increasingFailureRatio = 0.5;
 
     public function __construct(RandomSampleSelectorInterface $sampleSelector)
     {
@@ -103,8 +103,6 @@ class MonteCarlo
     {
         $estimates = new EstimateDistribution();
 
-        $increasingFailures = 0;
-
         $abortTime = time() + $timeLimit;
 
         for ($run = 1; $run <= $iterations; $run++) {
@@ -127,6 +125,8 @@ class MonteCarlo
                     throw $runException;
                 }
             } catch (TimeoutException $e) {
+                $estimates->failure();
+
                 $runException = new TimeoutException('Run aborted during iteration ' . $run, 0, $e);
                 $runException->setDistribution($estimates);
                 throw $runException;

@@ -86,26 +86,38 @@ class Updater
         try {
             set_time_limit($config['timeout'] + 30);
             $estimateDistribution = $monteCarlo->runDistribution($config['iterations'], MonteCarlo::DEFAULT_BUCKET_SIZE, $config['timeout']);
-            $estimateInterval = $estimateDistribution->getMedian();
+
+            $update += array(
+                $db->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
+
+            );
+        } catch (IncreasingException $e) {
+            $estimateDistribution = $e->getDistribution();
+
+            $update += array(
+                $db->quoteIdentifier('note') => 'Run terminated early due to increasing issue count',
+            );
+        } catch (TimeoutException $e) {
+            $estimateDistribution = $e->getDistribution();
+
+            $update += array(
+                $db->quoteIdentifier('note') => 'Run terminated due to timeout',
+            );
+        }
+
+        try {
+            $estimateInterval = $estimateDistribution->getMedian(true);
 
             $estimateDate = new DateTime('@' . $_SERVER['REQUEST_TIME']);
             $estimateDate->add(DateInterval::createFromDateString($estimateInterval . ' seconds'));
 
             $update += array(
                 $db->quoteIdentifier('estimate') => $db->convertToDatabaseValue($estimateDate, 'date'),
-                $db->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
-
             );
-        } catch (IncreasingException $e) {
-            $estimateDistribution = $e->getDistribution();
+        }
+        catch (\RuntimeException $e) {
             $update += array(
-                $db->quoteIdentifier('estimate') => '0000-00-00',
-                $db->quoteIdentifier('note') => 'Run failed due to increasing issue count',
-            );
-        } catch (TimeoutException $e) {
-            $estimateDistribution = $e->getDistribution();
-            $update += array(
-                $db->quoteIdentifier('note') => 'Run failed due to timeout',
+                $db->quoteIdentifier('estimate') => null,
             );
         }
 
