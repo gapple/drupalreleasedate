@@ -126,4 +126,53 @@ class EstimateDistributionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(3, $estimates->getMedian());
     }
+
+    /**
+     * Test a median when failures are included in the calculation
+     *
+     * @covers \DrupalReleaseDate\EstimateDistribution::getMedian
+     * @uses \DrupalReleaseDate\EstimateDistribution::__construct
+     * @uses \DrupalReleaseDate\EstimateDistribution::success
+     */
+    public function testMedianWithFailures()
+    {
+        $estimates = new EstimateDistribution();
+
+        $estimates->success(1);
+        $estimates->success(2);
+        $estimates->success(3);
+        $estimates->success(4);
+        $estimates->success(5);
+
+        $estimates->failure();
+        $estimates->failure();
+
+        $this->assertEquals(3, $estimates->getMedian());
+        $this->assertEquals(4, $estimates->getMedian(true));
+    }
+
+    /**
+     * Test a median when failures are included in the calculation
+     *
+     * @expectedException \RuntimeException
+     *
+     * @covers \DrupalReleaseDate\EstimateDistribution::getMedian
+     * @uses \DrupalReleaseDate\EstimateDistribution::__construct
+     * @uses \DrupalReleaseDate\EstimateDistribution::success
+     */
+    public function testMedianWithTooManyFailures()
+    {
+        $estimates = new EstimateDistribution();
+
+        $estimates->success(1);
+        $estimates->success(2);
+        $estimates->success(3);
+
+        $estimates->failure();
+        $estimates->failure();
+        $estimates->failure();
+        $estimates->failure();
+
+        $estimates->getMedian(true);
+    }
 }

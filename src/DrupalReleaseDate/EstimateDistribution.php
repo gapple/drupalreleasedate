@@ -12,6 +12,12 @@ class EstimateDistribution implements \IteratorAggregate
         $this->failures = 0;
     }
 
+    /**
+     * Build an object from an array in the internal format.
+     *
+     * @param array $array
+     * @return \DrupalReleaseDate\EstimateDistribution
+     */
     public static function fromArray(array $array) {
         $new = new static();
         $new->data = $array;
@@ -24,6 +30,11 @@ class EstimateDistribution implements \IteratorAggregate
         return new \ArrayIterator($this->data);
     }
 
+    /**
+     * Record a success for the provided estimate value.
+     *
+     * @param integer $bucket
+     */
     public function success($bucket)
     {
         if (!isset($this->data[$bucket])) {
@@ -32,18 +43,25 @@ class EstimateDistribution implements \IteratorAggregate
         $this->data[$bucket]++;
     }
 
+    /**
+     * Record a failure.
+     */
     public function failure()
     {
         $this->failures++;
     }
 
+    /**
+     * Get the current number of recorded failures.
+     * @return int
+     */
     public function getFailures()
     {
         return $this->failures;
     }
 
     /**
-     * Return the average of all values.
+     * Calculate the average of all values.
      *
      * @return int
      */
@@ -60,15 +78,30 @@ class EstimateDistribution implements \IteratorAggregate
     }
 
     /**
-     * Return the bucket which contains the median value.
+     * Calculate the median value.
      *
+     * If a median cannot be calculated due to there being insufficient
+     * successful results, an exception is thrown.
+     *
+     * @throws \RuntimeException
+     *
+     * @param bool $includeFailures
      * @return int
      */
-    public function getMedian()
+    public function getMedian($includeFailures = false)
     {
         ksort($this->data);
 
-        $medianCount = array_sum($this->data) / 2;
+        $successCount = array_sum($this->data);
+        $medianCount = $successCount / 2;
+
+        if ($includeFailures) {
+            $medianCount += $this->failures / 2;
+
+            if ($medianCount > $successCount) {
+                throw new \RuntimeException();
+            }
+        }
 
         $countSum = 0;
         foreach ($this->data as $bucket => $count) {
