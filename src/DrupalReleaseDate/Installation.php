@@ -297,4 +297,41 @@ class Installation
             ->set('sv.version', 'CONCAT(sv.version, ".0")')
             ->execute();
     }
+
+    /**
+     * Get median value from past incomplete runs.
+     */
+    protected function update_6() {
+        $estimates = $this->app['db']->createQueryBuilder()
+          ->select('e.*')
+          ->from('estimates', 'e')
+          ->where('e.data != ""')
+          ->execute();
+
+
+        while ($estimate = $estimates->fetch(\PDO::FETCH_OBJ)) {
+
+            $distribution = unserialize($estimate->data);
+
+            try {
+                $estimateInterval = $distribution->getMedian(true);
+
+                $estimateDate = new \DateTime('@' . $_SERVER['REQUEST_TIME']);
+                $estimateDate->add(\DateInterval::createFromDateString($estimateInterval . ' seconds'));
+            }
+            catch (\RuntimeException $e) {
+                $estimateDate = null;
+            }
+
+            $this->app['db']->createQueryBuilder()
+              ->update('estimates', 'e')
+              ->set('e.estimate', ':estimate')
+              ->where('e.version = :version')
+              ->andWhere('e.when = :when')
+              ->setParameter('estimate', $this->app['db']->convertToDatabaseValue($estimateDate, 'date'))
+              ->setParameter('version', $estimate->version)
+              ->setParameter('when', $estimate->when)
+              ->execute();
+        }
+    }
 }
