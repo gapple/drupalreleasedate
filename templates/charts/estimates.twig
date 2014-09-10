@@ -58,34 +58,25 @@
                     chartData = new google.visualization.DataTable();
 
                     chartData.addColumn('datetime', 'Time');
-                    chartData.addColumn('number', 'Estimates');
-                    chartData.addColumn('number', 'Failed Estimates');
+                    chartData.addColumn('datetime', 'Estimates');
 
                     var data = response.data;
 
                     for (var i in data) {
-                        var when = new Date(data[i].when.replace(' ', 'T'));
-                        var estimate = null;
-                        var error = null;
-                        if (data[i].estimate === null || data[i].estimate === '0000-00-00') {
-                            error = {
-                                v: 0,
-                                f: 'N/A'
-                            };
-                        }
-                        else {
-                            var estimateDate = new Date(data[i].estimate.replace(' ', 'T'));
-                            estimate = {
-                                v: (estimateDate.getTime() - when.getTime()) / 1000,
-                                f: estimateDate.toDateString()
-                            }
-                        }
 
-                        chartData.addRow([
-                            when,
-                            estimate,
-                            error
-                        ]);
+                        if (data[i].estimate !== null && data[i].estimate !== '0000-00-00') {
+
+                            var when = new Date(data[i].when);
+                            var estimateDate = new Date(data[i].estimate);
+
+                            chartData.addRow([
+                                when,
+                                {
+                                    v: estimateDate,
+                                    f: estimateDate.toDateString()
+                                }
+                            ]);
+                        }
                     }
                     Timing.stop('chart.processData');
 
@@ -119,7 +110,6 @@
                     chartData,
                     {
                         title: 'Estimate',
-                        hAxis: {},
                         legend: 'none'
                     }
                 );
