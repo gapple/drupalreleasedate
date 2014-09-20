@@ -76,7 +76,7 @@ class Updater
         $db->close();
 
         // Give samples twice the weight of those from six months before.
-        $geometricRandom = new GeometricWeighted(new Random(), 0, $samples->length() - 1, pow(2, 1/26));
+        $geometricRandom = new GeometricWeighted(new Random(), 0, $samples->length() - 1, pow(2, 1/24));
         $sampleSelector = new TimeGroupedRandomSampleSelector($samples, $geometricRandom);
 
         $monteCarlo = new MonteCarlo($sampleSelector);
