@@ -98,14 +98,19 @@
                             };
                         }
                         else {
-                            var estimateDate = new Date(response.data[0].estimate);
+
+                            var when = new Date(response.data[0].when);
+                            var timezoneOffsetHours = (when.getTimezoneOffset() / -60).toString().replace(/^(-?)(\d)$/, '$10$2');
+                            var timezoneOffsetMins = (when.getTimezoneOffset() % 60).toString().replace(/^(\d)$/, '0$1');
+                            var timezoneOffsetString = (when.getTimezoneOffset()?'':'+' ) + timezoneOffsetHours + timezoneOffsetMins;
+                            var estimateDateString = response.data[0].estimate.replace(/^(\d{4}-\d{2}-\d{2})$/, '$1T00:00:00' + timezoneOffsetString);
+                            var estimateDate = new Date(estimateDateString);
                             var estimateString = '';
 
                             if (window.Intl && typeof window.Intl === "object") {
                                 estimateString = estimateDate.toLocaleDateString(
                                     'en-US',
                                     {
-                                        timeZone: 'UTC',
                                         month: 'long',
                                         day: 'numeric',
                                         year: 'numeric'
@@ -113,7 +118,7 @@
                                 );
                             }
                             else {
-                                switch (estimateDate.getUTCMonth()) {
+                                switch (estimateDate.getMonth()) {
                                     case 0:
                                         estimateString = 'January';
                                         break;
@@ -151,7 +156,7 @@
                                         estimateString = 'December';
                                         break;
                                 }
-                                estimateString += ' ' + estimateDate.getUTCDate() + ', ' + estimateDate.getUTCFullYear();
+                                estimateString += ' ' + estimateDate.getDate() + ', ' + estimateDate.getFullYear();
                             }
 
                             estimate = {
