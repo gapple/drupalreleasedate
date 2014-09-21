@@ -47,11 +47,21 @@
                     chartData.addColumn('number', 'Count');
 
                     var data = response.data;
+                    var totalCount = 0;
+                    for (var i in data) {
+                        totalCount += data[i].count;
+                    }
+                    var countLimit = totalCount * 0.90;
+                    var currentCount = 0;
                     for (var i in data) {
                         chartData.addRow([
                             new Date(data[i].when.replace(' ', 'T')),
                             data[i].count
                         ]);
+                        currentCount += data[i].count;
+                        if (currentCount > countLimit) {
+                            break;
+                        }
                     }
                     Timing.stop('chart.processData');
 
