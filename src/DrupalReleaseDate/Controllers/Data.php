@@ -371,7 +371,7 @@ class Data
         }
 
         $queryBuilder = $app['db']->createQueryBuilder()
-            ->select('e.when', 'e.estimate')
+            ->select('e.when', 'e.estimate', 'e.data')
             ->from('estimates', 'e')
             ->where('e.version = :version')
             ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
@@ -402,11 +402,34 @@ class Data
         $results = $queryBuilder->execute();
 
         $responseData['data'] = array();
-        while ($resultRow = $results->fetch(\PDO::FETCH_ASSOC)) {
-            $responseData['data'][] = array(
-                'when' => $app['db']->convertToPhpValue($resultRow['when'], 'datetime')->format(DateTime::ISO8601),
-                'estimate' => $resultRow['estimate'],
+        while ($resultRow = $results->fetch(\PDO::FETCH_OBJ)) {
+            /** @var \DateTime $whenDateTime */
+            $whenDateTime = $app['db']->convertToPhpValue($resultRow->when, 'datetime');
+            $dataRow = array(
+                'when' => $whenDateTime->format(DateTime::ISO8601),
+                'estimate' => $resultRow->estimate,
             );
+            /** @var \DrupalReleaseDate\EstimateDistribution $estimateDistribution */
+            $estimateDistribution = unserialize($resultRow->data);
+            if (!empty($resultRow->estimate) && !empty($estimateDistribution)) {
+                $estimateDateTime = new DateTime($resultRow->estimate);
+                $estimateDuration = $estimateDateTime->getTimestamp() - $whenDateTime->getTimestamp();
+                $stdDev = $estimateDistribution->getGeometricStandardDeviation();
+
+                $lowerDateInterval = DateInterval::createFromDateString(floor(exp(log($estimateDuration) - log($stdDev))) . ' seconds');
+                $lowerDateTime = clone $whenDateTime;
+                $lowerDateTime->add($lowerDateInterval);
+                $upperDateInterval = DateInterval::createFromDateString(floor(exp(log($estimateDuration) + log($stdDev))) . ' seconds');
+                $upperDateTime = clone $whenDateTime;
+                $upperDateTime->add($upperDateInterval);
+
+                $dataRow['geometricStandardDeviationBounds'] = array(
+                    'lower' => $lowerDateTime->format(DateTime::ISO8601),
+                    'upper' => $upperDateTime->format(DateTime::ISO8601),
+                );
+
+            }
+            $responseData['data'][] = $dataRow;
         }
 
         if (isset($limit)) {

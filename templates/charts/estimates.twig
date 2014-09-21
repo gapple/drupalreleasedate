@@ -59,6 +59,8 @@
 
                     chartData.addColumn('datetime', 'Time');
                     chartData.addColumn('datetime', 'Estimates');
+                    chartData.addColumn({type:'datetime', role:'interval'});
+                    chartData.addColumn({type:'datetime', role:'interval'});
 
                     var data = response.data;
 
@@ -78,7 +80,15 @@
                                 {
                                     v: estimateDate,
                                     f: estimateDate.toDateString()
-                                }
+                                },
+                                data[i].geometricStandardDeviationBounds? {
+                                    v: new Date(data[i].geometricStandardDeviationBounds.lower),
+                                    f: new Date(data[i].geometricStandardDeviationBounds.lower).toDateString()
+                                } : null,
+                                data[i].geometricStandardDeviationBounds? {
+                                    v: new Date(data[i].geometricStandardDeviationBounds.upper),
+                                    f: new Date(data[i].geometricStandardDeviationBounds.upper).toDateString()
+                                } : null
                             ]);
                         }
                     }
@@ -105,7 +115,7 @@
                     $chart.css('height', '');
                 }
                 else {
-                    chart = new google.visualization.ScatterChart($chart.get(0));
+                    chart = new google.visualization.LineChart($chart.get(0));
                 }
 
                 $chart.css('height', ($(document).height() * 0.8));
@@ -114,7 +124,15 @@
                     chartData,
                     {
                         title: 'Estimate',
-                        legend: 'none'
+                        legend: 'none',
+                        lineWidth: 0,
+                        pointSize: 6,
+                        intervals: {
+                            'style':'boxes',
+                            'lineWidth': 0,
+                            'boxWidth': 0.15,
+                            fillOpacity: 0.075
+                        }
                     }
                 );
             }
