@@ -18,7 +18,8 @@ class EstimateDistribution implements \IteratorAggregate
      * @param array $array
      * @return \DrupalReleaseDate\EstimateDistribution
      */
-    public static function fromArray(array $array) {
+    public static function fromArray(array $array)
+    {
         $new = new static();
         $new->data = $array;
         return $new;
@@ -61,23 +62,6 @@ class EstimateDistribution implements \IteratorAggregate
     }
 
     /**
-     * Calculate the average of all values.
-     *
-     * @return int
-     */
-    public function getAverage()
-    {
-        $totalCount = array_sum($this->data);
-        $sum = 0;
-
-        foreach ($this->data as $bucket => $count) {
-            $sum += $bucket * $count;
-        }
-
-        return $sum / $totalCount;
-    }
-
-    /**
      * Calculate the median value.
      *
      * If a median cannot be calculated due to there being insufficient
@@ -112,5 +96,86 @@ class EstimateDistribution implements \IteratorAggregate
         }
 
         return $bucket;
+    }
+
+    /**
+     * Calculate the average of all values.
+     *
+     * @return int
+     */
+    public function getAverage()
+    {
+        return $this->getArithmeticMean();
+    }
+
+    /**
+     * @return int|float
+     */
+    public function getArithmeticMean()
+    {
+        $totalCount = array_sum($this->data);
+
+        $sum = 0;
+        foreach ($this->data as $bucket => $count) {
+            $sum += $bucket * $count;
+        }
+
+        return $sum / $totalCount;
+    }
+
+    /**
+     * @return int|float
+     */
+    public function getArithmeticStandardDeviation()
+    {
+        $totalCount = array_sum($this->data);
+        $mean = $this->getArithmeticMean();
+
+        $sum = 0;
+        foreach ($this->data as $bucket => $count) {
+            $sum += pow(abs($bucket - $mean), 2) * $count;
+        }
+
+        return sqrt($sum / $totalCount);
+    }
+
+    /**
+     * @return int|float
+     */
+    public function getGeometricMean()
+    {
+        $totalCount = array_sum($this->data);
+
+        $sum = 0;
+        foreach ($this->data as $bucket => $count) {
+            if ($bucket == 0) {
+                continue;
+            }
+            $sum += log($bucket) * $count;
+        }
+
+        return exp($sum / $totalCount);
+    }
+
+    /**
+     * @return int|float|null
+     */
+    public function getGeometricStandardDeviation()
+    {
+        $totalCount = array_sum($this->data);
+        $mean = $this->getGeometricMean();
+        if (empty($mean)) {
+            return null;
+        }
+
+        $sum = 0;
+        foreach ($this->data as $bucket => $count) {
+            if ($bucket == 0) {
+                continue;
+            }
+            $sum += pow(log($bucket / $mean), 2) * $count;
+        }
+
+        return exp(sqrt($sum / $totalCount));
     }
 }
