@@ -21,6 +21,8 @@ class Data
      *
      * @param  Request $request
      * @return string
+     *
+     * @throws \Exception
      */
     public static function parseVersionFromRequest(Request $request)
     {
@@ -46,6 +48,7 @@ class Data
         $value = null;
         if ($request->query->has($key)) {
             $value = new DateTime($request->query->get($key));
+            $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
         }
         return $value;
     }
