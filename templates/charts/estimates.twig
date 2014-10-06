@@ -116,6 +116,18 @@
                 }
                 else {
                     chart = new google.visualization.LineChart($chart.get(0));
+
+
+                    google.visualization.events.addListener(chart, 'select', function() {
+                        if (!Date.prototype.toISOString) {
+                            return;
+                        }
+                        var selected = chart.getSelection();
+                        if (selected.length && selected[0].row && selected[0].column) {
+                            var selectedDate = chartData.getValue(selected[0].row, 0);
+                            window.location = '/chart/distribution#date=' + encodeURIComponent(selectedDate.toISOString());
+                        }
+                    });
                 }
 
                 chart.draw(
