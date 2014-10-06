@@ -450,7 +450,7 @@ class Data
         return $response;
     }
 
-    public function distribution(Application $app, Request $request)
+    public function estimate(Application $app, Request $request)
     {
         $responseData = array();
 
@@ -471,7 +471,7 @@ class Data
         }
 
         $query = $app['db']->createQueryBuilder()
-            ->select('e.when', 'e.estimate', 'e.data')
+            ->select('e.*')
             ->from('estimates', 'e')
             ->where('e.version = :version')
             ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
@@ -486,9 +486,9 @@ class Data
         }
         $results = $query->execute();
 
-        if ($row = $results->fetch(\PDO::FETCH_ASSOC)) {
+        if ($row = $results->fetch(\PDO::FETCH_OBJ)) {
 
-            $estimateDate = new DateTime($row['when']);
+            $estimateDate = new DateTime($row->when);
             $responseData['modified'] = $responseData['date'] = $estimateDate->format(DateTime::ISO8601);
 
 
@@ -515,23 +515,27 @@ class Data
                 $response->setMaxAge($cacheMaxAge);
                 return $response;
             }
-            $data = array();
 
-            if (!empty($row['data'])) {
-                $estimateDistribution = unserialize($row['data']);
+            $responseData['data']['when'] = $app['db']->convertToPhpValue($row->when, 'datetime')->format(DateTime::ISO8601);
+            $responseData['data']['estimate'] = $row->estimate;
+
+            if (!empty($row->data)) {
+                $distribution = array();
+                $estimateDistribution = unserialize($row->data);
 
                 foreach ($estimateDistribution as $key => $count) {
                     $dataDate = clone $estimateDate;
                     $dataDate->add(DateInterval::createFromDateString($key . ' seconds'));
-                    $data[$key] = array(
+                    $distribution[] = array(
+                        'duration' => $key,
                         'when' => $dataDate->format('Y-m-d'),
                         'count' => $count,
                     );
                 }
             } else {
-                $data = null;
+                $distribution = null;
             }
-            $responseData['data'] = $data;
+            $responseData['data']['distribution'] = $distribution;
 
             $response = $app->json($responseData);
 

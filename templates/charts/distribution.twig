@@ -5,7 +5,7 @@
 {% block content %}
     <div id="chart"></div>
     <div class="chart-caption">
-        <a id='chart-data' href="/data/distribution.json">JSON</a>
+        <a id='chart-data' href="/data/estimate.json">JSON</a>
     </div>
 {% endblock %}
 
@@ -37,7 +37,7 @@
             function loadChart() {
 
                 // TODO get date parameter from URL, and pass on to data request.
-                $.get('/data/distribution.json', function (response, textStatus, jqXHR) {
+                $.get('/data/estimate.json', function (response, textStatus, jqXHR) {
                     Timing.stop('chart.loadData');
                     Timing.start('chart.processData');
 
@@ -48,17 +48,17 @@
 
                     var data = response.data;
                     var totalCount = 0;
-                    for (var i in data) {
-                        totalCount += data[i].count;
+                    for (var i in data.distribution) {
+                        totalCount += data.distribution[i].count;
                     }
                     var countLimit = totalCount * 0.90;
                     var currentCount = 0;
-                    for (var i in data) {
+                    for (var i in data.distribution) {
                         chartData.addRow([
-                            new Date(data[i].when.replace(' ', 'T')),
-                            data[i].count
+                            new Date(data.distribution[i].when.replace(' ', 'T')),
+                            data.distribution[i].count
                         ]);
-                        currentCount += data[i].count;
+                        currentCount += data.distribution[i].count;
                         if (currentCount > countLimit) {
                             break;
                         }

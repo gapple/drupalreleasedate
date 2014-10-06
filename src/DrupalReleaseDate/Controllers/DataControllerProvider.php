@@ -3,6 +3,7 @@ namespace DrupalReleaseDate\Controllers;
 
 use Silex\Application;
 use Silex\ControllerProviderInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -15,7 +16,7 @@ class DataControllerProvider implements ControllerProviderInterface
         $controllers->get('/samples.json', 'DrupalReleaseDate\Controllers\Data::samples');
         $controllers->get('/historical-samples.json', 'DrupalReleaseDate\Controllers\Data::historical');
         $controllers->get('/estimates.json', 'DrupalReleaseDate\Controllers\Data::estimates');
-        $controllers->get('/distribution.json', 'DrupalReleaseDate\Controllers\Data::distribution');
+        $controllers->get('/estimate.json', 'DrupalReleaseDate\Controllers\Data::estimate');
 
         $controllers
             ->after(function (Request $request, Response $response) {
