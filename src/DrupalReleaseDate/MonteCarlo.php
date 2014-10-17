@@ -73,10 +73,11 @@ class MonteCarlo
             $duration += $sample->getDuration();
             $issues -= $sample->getResolved();
 
-            $highestIssues = max($highestIssues, $sample->getCount());
+
+            $highestIssues = max($highestIssues, $sample->getCount(), $sample->getResolved());
 
             // Failsafe for if simulation goes in the wrong direction too far.
-            if ($issues > $highestIssues * 10) {
+            if ($issues > $highestIssues * 3) {
                 throw new IncreasingException("Iteration failed due to increasing issue count");
             }
             if ($abortTime && time() >= $abortTime) {
