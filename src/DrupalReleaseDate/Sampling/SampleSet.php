@@ -11,7 +11,7 @@ class SampleSet implements SampleSetInterface
         return $this->length;
     }
 
-    public function insert($sample)
+    public function insert(Sample $sample)
     {
         if ($this->length) {
             $sample->setDiff($this->samples[$this->length - 1]);

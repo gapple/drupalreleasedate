@@ -311,6 +311,7 @@ class Installation
 
         while ($estimate = $estimates->fetch(\PDO::FETCH_OBJ)) {
 
+            /** @var \DrupalReleaseDate\EstimateDistribution $distribution */
             $distribution = unserialize($estimate->data);
 
             try {
