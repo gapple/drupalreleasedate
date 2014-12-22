@@ -102,7 +102,7 @@
                             var when = new Date(response.data[0].when);
                             var timezoneOffsetHours = (when.getTimezoneOffset() / -60).toString().replace(/^(-?)(\d)$/, '$10$2');
                             var timezoneOffsetMins = (when.getTimezoneOffset() % 60).toString().replace(/^(\d)$/, '0$1');
-                            var timezoneOffsetString = (when.getTimezoneOffset()?'':'+' ) + timezoneOffsetHours + timezoneOffsetMins;
+                            var timezoneOffsetString = (when.getTimezoneOffset()?'':'+' ) + timezoneOffsetHours + ":" + timezoneOffsetMins;
                             var estimateDateString = response.data[0].estimate.replace(/^(\d{4}-\d{2}-\d{2})$/, '$1T00:00:00' + timezoneOffsetString);
                             var estimateDate = new Date(estimateDateString);
                             var estimateString = '';

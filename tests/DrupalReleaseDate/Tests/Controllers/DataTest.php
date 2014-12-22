@@ -121,7 +121,7 @@ class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
 
         $date = Data::parseDateFromRequest($request, 'from');
         $this->assertNotNull($date);
-        $this->assertEquals('2014-06-01T00:00:00-0700', $date->format(\DateTime::ISO8601));
+        $this->assertEquals('2014-06-01T00:00:00-07:00', $date->format(\DateTime::ATOM));
     }
 
     /**
@@ -134,7 +134,7 @@ class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
 
         $date = Data::parseDateFromRequest($request, 'from');
         $this->assertNotNull($date);
-        $this->assertEquals('2014-06-01T08:25:10-0700', $date->format(\DateTime::ISO8601));
+        $this->assertEquals('2014-06-01T08:25:10-07:00', $date->format(\DateTime::ATOM));
 
 
         $request = new Request();
@@ -142,7 +142,7 @@ class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
 
         $date = Data::parseDateFromRequest($request, 'from');
         $this->assertNotNull($date);
-        $this->assertEquals('2014-06-01T08:25:10-0700', $date->format(\DateTime::ISO8601));
+        $this->assertEquals('2014-06-01T08:25:10-07:00', $date->format(\DateTime::ATOM));
     }
 
     /**

@@ -67,7 +67,7 @@ class Data
 
         try {
             if ($from = self::parseDateFromRequest($request, 'from')) {
-                $responseData['from'] = $from->format(DateTime::ISO8601);
+                $responseData['from'] = $from->format(DateTime::ATOM);
             }
         }
         catch (\Exception $e) {
@@ -75,7 +75,7 @@ class Data
         }
         try {
             if($to = self::parseDateFromRequest($request, 'to')) {
-                $responseData['to'] = $to->format(DateTime::ISO8601);
+                $responseData['to'] = $to->format(DateTime::ATOM);
             }
         }
         catch (\Exception $e) {
@@ -110,7 +110,7 @@ class Data
         $cacheMaxAge = 3600;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
             $lastDate = new DateTime($lastResultRow['when']);
-            $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
+            $responseData['modified'] = $lastDate->format(DateTime::ATOM);
 
             $nowDate = new DateTime();
             if ($to && $to < $nowDate){
@@ -164,7 +164,7 @@ class Data
             $valueWhenTimestamp = $valueWhen->getTimestamp();
             if (!isset($data[$valueWhenTimestamp])) {
                 $data[$valueWhenTimestamp] = array(
-                    'when' => $valueWhen->format(DateTime::ISO8601),
+                    'when' => $valueWhen->format(DateTime::ATOM),
                 );
             }
             $data[$valueWhenTimestamp][$sampleValueRow['key']] = $app['db']->convertToPhpValue($sampleValueRow['value'], 'smallint');
@@ -213,7 +213,7 @@ class Data
         $cacheMaxAge = 3600;
         if ($currentSample) {
             $currentDate = new DateTime($currentSample['when']);
-            $responseData['modified'] = $currentDate->format(DateTime::ISO8601);
+            $responseData['modified'] = $currentDate->format(DateTime::ATOM);
 
             // Calculate cache max age based on the time to the next sample.
             $nextSampleDate = clone $currentDate;
@@ -303,7 +303,7 @@ class Data
 
         try {
             if ($from = self::parseDateFromRequest($request, 'from')) {
-                $responseData['from'] = $from->format(DateTime::ISO8601);
+                $responseData['from'] = $from->format(DateTime::ATOM);
             }
         }
         catch (\Exception $e) {
@@ -311,7 +311,7 @@ class Data
         }
         try {
             if($to = self::parseDateFromRequest($request, 'to')) {
-                $responseData['to'] = $to->format(DateTime::ISO8601);
+                $responseData['to'] = $to->format(DateTime::ATOM);
             }
         }
         catch (\Exception $e) {
@@ -347,7 +347,7 @@ class Data
         $cacheMaxAge = 3600;
         if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
             $lastDate = new DateTime($lastResultRow['when']);
-            $responseData['modified'] = $lastDate->format(DateTime::ISO8601);
+            $responseData['modified'] = $lastDate->format(DateTime::ATOM);
 
             $nowDate = new DateTime();
             if ($to && $to < $nowDate){
@@ -409,7 +409,7 @@ class Data
             /** @var \DateTime $whenDateTime */
             $whenDateTime = $app['db']->convertToPhpValue($resultRow->when, 'datetime');
             $dataRow = array(
-                'when' => $whenDateTime->format(DateTime::ISO8601),
+                'when' => $whenDateTime->format(DateTime::ATOM),
                 'estimate' => $resultRow->estimate,
             );
             /** @var \DrupalReleaseDate\EstimateDistribution $estimateDistribution */
@@ -427,8 +427,8 @@ class Data
                 $upperDateTime->add($upperDateInterval);
 
                 $dataRow['geometricStandardDeviationBounds'] = array(
-                    'lower' => $lowerDateTime->format(DateTime::ISO8601),
-                    'upper' => $upperDateTime->format(DateTime::ISO8601),
+                    'lower' => $lowerDateTime->format(DateTime::ATOM),
+                    'upper' => $upperDateTime->format(DateTime::ATOM),
                 );
 
             }
@@ -489,7 +489,7 @@ class Data
         if ($row = $results->fetch(\PDO::FETCH_OBJ)) {
 
             $estimateDate = new DateTime($row->when);
-            $responseData['modified'] = $responseData['date'] = $estimateDate->format(DateTime::ISO8601);
+            $responseData['modified'] = $responseData['date'] = $estimateDate->format(DateTime::ATOM);
 
 
             $nowDate = new DateTime();
@@ -516,7 +516,7 @@ class Data
                 return $response;
             }
 
-            $responseData['data']['when'] = $app['db']->convertToPhpValue($row->when, 'datetime')->format(DateTime::ISO8601);
+            $responseData['data']['when'] = $app['db']->convertToPhpValue($row->when, 'datetime')->format(DateTime::ATOM);
             $responseData['data']['estimate'] = $row->estimate;
 
             if (!empty($row->data)) {
