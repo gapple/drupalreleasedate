@@ -13,7 +13,6 @@ class Charts
             'charts/samples.twig',
             array(
                 'scripts' => array(
-                    '//code.jquery.com/jquery-2.0.2.min.js',
                     'https://www.google.com/jsapi',
                 ),
             )
@@ -26,7 +25,6 @@ class Charts
             'charts/estimates.twig',
             array(
                 'scripts' => array(
-                    '//code.jquery.com/jquery-2.0.2.min.js',
                     'https://www.google.com/jsapi',
                 ),
             )
@@ -39,7 +37,6 @@ class Charts
             'charts/distribution.twig',
             array(
                 'scripts' => array(
-                    '//code.jquery.com/jquery-2.0.2.min.js',
                     'https://www.google.com/jsapi',
                 ),
             )
