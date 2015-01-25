@@ -62,7 +62,7 @@
                     for (var i in data.distribution) {
                         totalCount += data.distribution[i].count;
                     }
-                    var countLimit = totalCount * 0.90;
+                    var countLimit = totalCount * 0.95;
                     var currentCount = 0;
                     for (var i in data.distribution) {
                         chartData.addRow([
