@@ -57,7 +57,7 @@
                     color: 'blue',
                     disabledColor: '#D9D9FF',
                     trendline: true,
-                    visible: true,
+                    visible: false,
                     value: function(row) {
                         if (
                             typeof row.major_bugs === 'undefined' ||
@@ -101,7 +101,7 @@
                     color: 'orange',
                     disabledColor: '#F2E5CE',
                     trendline: false,
-                    visible: true,
+                    visible: false,
                     value: function(row) {
                         if (typeof row.beta_blockers === 'undefined') {
                             return null;
