@@ -108,6 +108,22 @@
                         }
                         return row.beta_blockers;
                     }
+                },
+                {
+                    index: 5,
+                    key: 'rtbc',
+                    type: 'number',
+                    label: 'RTBC',
+                    color: '#795892',
+                    disabledColor: '#AE9ABE',
+                    trendline: false,
+                    visible: false,
+                    value: function(row) {
+                        if (typeof row.rtbc === 'undefined') {
+                            return null;
+                        }
+                        return row.rtbc;
+                    }
                 }
             ];
 
