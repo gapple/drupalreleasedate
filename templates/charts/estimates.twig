@@ -3,10 +3,13 @@
 {% block title %}{{ parent() }} - Estimates Chart{% endblock %}
 
 {% block content %}
-    <div id="chart"></div>
-    <div class="chart-caption">
-        <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
-        <a id='chart-data' href="/data/estimates.json">JSON</a>
+    <div id="chart-wrapper">
+        <div id="chart"></div>
+        <div id="chart-control"></div>
+        <div class="chart-caption">
+            <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
+            <a id='chart-data' href="/data/estimates.json">JSON</a>
+        </div>
     </div>
 {% endblock %}
 
@@ -15,10 +18,12 @@
     <script type="text/javascript">
 
         $(function () {
-            var chart, chartData;
-            var $chart = $('#chart');
+                var dashboard,
+                    chartWrapper,
+                    chartData,
+                    controlWrapper;
 
-            google.setOnLoadCallback(loadChart);
+            google.setOnLoadCallback(initializeChart);
 
             var resizeTimeout = null;
             var resizeFunction = function () {
@@ -47,6 +52,82 @@
                 $link.addClass('disabled');
                 $('#chart').fadeTo('fast', 0.2, loadChart);
             });
+
+            function initializeChart() {
+
+                dashboard = new google.visualization.Dashboard($('#chart-wrapper').get(0));
+
+                var controlStart = new Date();
+                controlStart.setFullYear(controlStart.getFullYear()-1);
+                var controlEnd = new Date();
+                controlEnd.setFullYear(controlEnd.getFullYear()+1);
+
+                controlWrapper = new google.visualization.ControlWrapper({
+                    controlType: 'ChartRangeFilter',
+                    containerId: 'chart-control',
+                    options: {
+                        filterColumnIndex: 0,
+                        ui: {
+                            chartType: 'LineChart',
+                            chartOptions: {
+                                chartArea: {
+                                    width: '75%',
+                                    height: '100%'
+                                },
+                                lineWidth: 0,
+                                pointSize: 1
+                            },
+                            'chartView': {
+                                'columns': [0, 1]
+                            },
+                            // 1 week in milliseconds = 7 * 24 * 60 * 60 * 1000 = 604,800,000
+                            minRangeSize: 604800000
+                        }
+                    },
+                    state: {
+                        range: {
+                            start: controlStart,
+                            end: controlEnd
+                        }
+                    }
+                });
+
+                chartWrapper = new google.visualization.ChartWrapper({
+                    chartType: 'LineChart',
+                    containerId: 'chart',
+                    options: {
+                        title: 'Estimate',
+                        chartArea: {
+                            width: '75%',
+                            height: '90%',
+                            top: '6%'
+                        },
+                        legend: 'none',
+                        lineWidth: 0,
+                        pointSize: 6,
+                        intervals: {
+                            'style':'boxes',
+                            'lineWidth': 0,
+                            'boxWidth': 0.15,
+                            fillOpacity: 0.075
+                        }
+                    }
+                });
+
+                dashboard.bind(controlWrapper, chartWrapper);
+
+                if (Date.prototype.toISOString) {
+                    google.visualization.events.addListener(chartWrapper, 'select', function() {
+                        var selected = chartWrapper.getChart().getSelection();
+                        if (selected.length && selected[0].row) {
+                            var selectedDate = chartWrapper.getDataTable().getValue(selected[0].row, 0);
+                            window.location = '/chart/distribution#date=' + encodeURIComponent(selectedDate.toISOString());
+                        }
+                    });
+                }
+
+                loadChart();
+            }
 
             function loadChart() {
                 Timing.start('chart.loadData');
@@ -110,41 +191,7 @@
             }
 
             function drawChart() {
-                if (chart) {
-                    chart.clearChart();
-                    $chart.css('height', '');
-                }
-                else {
-                    chart = new google.visualization.LineChart($chart.get(0));
-
-
-                    google.visualization.events.addListener(chart, 'select', function() {
-                        if (!Date.prototype.toISOString) {
-                            return;
-                        }
-                        var selected = chart.getSelection();
-                        if (selected.length && selected[0].row && selected[0].column) {
-                            var selectedDate = chartData.getValue(selected[0].row, 0);
-                            window.location = '/chart/distribution#date=' + encodeURIComponent(selectedDate.toISOString());
-                        }
-                    });
-                }
-
-                chart.draw(
-                    chartData,
-                    {
-                        title: 'Estimate',
-                        legend: 'none',
-                        lineWidth: 0,
-                        pointSize: 6,
-                        intervals: {
-                            'style':'boxes',
-                            'lineWidth': 0,
-                            'boxWidth': 0.15,
-                            fillOpacity: 0.075
-                        }
-                    }
-                );
+                dashboard.draw(chartData);
             }
         });
     </script>
