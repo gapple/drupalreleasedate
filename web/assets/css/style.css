@@ -80,10 +80,24 @@ footer .credits {
 }
 
 #chart {
-  width: 100%;
-  min-height: 80vh;
+  min-height: 200px;
+  height: 80vh;
 }
 .chart-caption {
   font-size: 80%;
   text-align: center;
+}
+
+#chart-wrapper {
+  margin: 2vh 0 0;
+}
+#chart-wrapper #chart {
+  height: 68vh;
+}
+#chart-wrapper #chart-control {
+  min-height: 50px;
+  height: 10vh;
+}
+#chart-wrapper .chart-caption {
+  margin-top: 0.5em;
 }
