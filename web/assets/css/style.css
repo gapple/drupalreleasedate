@@ -86,6 +86,7 @@ footer .credits {
 .chart-caption {
   font-size: 80%;
   text-align: center;
+  margin-top: 0.5em;
 }
 
 #chart-wrapper {
@@ -97,7 +98,4 @@ footer .credits {
 #chart-wrapper #chart-control {
   min-height: 50px;
   height: 10vh;
-}
-#chart-wrapper .chart-caption {
-  margin-top: 0.5em;
 }
