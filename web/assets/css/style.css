@@ -72,8 +72,11 @@ footer .nav li {
 }
 footer .credits {
   color: #555;
-  font-size: 85%;
+  font-size: 90%;
   margin-bottom: 5px;
+}
+.credits .support {
+  font-size: 80%;
 }
 
 #chart {
