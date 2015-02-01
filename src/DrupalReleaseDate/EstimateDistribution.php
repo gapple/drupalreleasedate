@@ -45,6 +45,16 @@ class EstimateDistribution implements \IteratorAggregate
     }
 
     /**
+     * Get the total number of successes.
+     *
+     * @return int
+     */
+    public function getSuccessCount()
+    {
+        return array_sum($this->data);
+    }
+
+    /**
      * Record a failure.
      */
     public function failure()
@@ -56,7 +66,7 @@ class EstimateDistribution implements \IteratorAggregate
      * Get the current number of recorded failures.
      * @return int
      */
-    public function getFailures()
+    public function getFailureCount()
     {
         return $this->failures;
     }
@@ -101,6 +111,8 @@ class EstimateDistribution implements \IteratorAggregate
     /**
      * Calculate the average of all values.
      *
+     * @deprecated
+     *
      * @return int
      */
     public function getAverage()
@@ -113,8 +125,7 @@ class EstimateDistribution implements \IteratorAggregate
      */
     public function getArithmeticMean()
     {
-        $totalCount = array_sum($this->data);
-
+        $totalCount = $this->getSuccessCount();
         $sum = 0;
         foreach ($this->data as $bucket => $count) {
             $sum += $bucket * $count;
@@ -128,7 +139,7 @@ class EstimateDistribution implements \IteratorAggregate
      */
     public function getArithmeticStandardDeviation()
     {
-        $totalCount = array_sum($this->data);
+        $totalCount = $this->getSuccessCount();
         $mean = $this->getArithmeticMean();
 
         $sum = 0;
@@ -144,7 +155,7 @@ class EstimateDistribution implements \IteratorAggregate
      */
     public function getGeometricMean()
     {
-        $totalCount = array_sum($this->data);
+        $totalCount = $this->getSuccessCount();
 
         $sum = 0;
         foreach ($this->data as $bucket => $count) {
@@ -162,7 +173,7 @@ class EstimateDistribution implements \IteratorAggregate
      */
     public function getGeometricStandardDeviation()
     {
-        $totalCount = array_sum($this->data);
+        $totalCount = $this->getSuccessCount();
         $mean = $this->getGeometricMean();
         if (empty($mean)) {
             return null;

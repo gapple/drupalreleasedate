@@ -88,20 +88,23 @@ class Updater
             $estimateDistribution = $monteCarlo->runDistribution($config['iterations'], MonteCarlo::DEFAULT_BUCKET_SIZE, $config['timeout']);
 
             $update += array(
-                $db->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds',
+                $db->quoteIdentifier('note') => 'Run completed in ' . (time() - $_SERVER['REQUEST_TIME']) . ' seconds'
+                  . ' after ' . ($estimateDistribution->getSuccessCount() + $estimateDistribution->getFailureCount()) . ' iterations',
 
             );
         } catch (IncreasingException $e) {
             $estimateDistribution = $e->getDistribution();
 
             $update += array(
-                $db->quoteIdentifier('note') => 'Run terminated early due to increasing issue count',
+                $db->quoteIdentifier('note') => 'Run terminated due to increasing issue count'
+                  . ' after ' . ($estimateDistribution->getSuccessCount() + $estimateDistribution->getFailureCount()) . ' iterations',
             );
         } catch (TimeoutException $e) {
             $estimateDistribution = $e->getDistribution();
 
             $update += array(
-                $db->quoteIdentifier('note') => 'Run terminated due to timeout',
+                $db->quoteIdentifier('note') => 'Run terminated due to timeout'
+                    . ' after ' . ($estimateDistribution->getSuccessCount() + $estimateDistribution->getFailureCount()) . ' iterations',
             );
         }
 

@@ -5,26 +5,44 @@ use DrupalReleaseDate\EstimateDistribution;
 
 class EstimateDistributionTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * Test Success Counting.
+     *
+     * @covers \DrupalReleaseDate\EstimateDistribution::__construct
+     * @covers \DrupalReleaseDate\EstimateDistribution::success
+     * @covers \DrupalReleaseDate\EstimateDistribution::getSuccessCount
+     */
+    public function testSuccessCount()
+    {
+        $estimates = new EstimateDistribution();
+        $this->assertEquals(0, $estimates->getSuccessCount());
 
+        $estimates->success(1);
+        $this->assertEquals(1, $estimates->getSuccessCount());
+
+        $estimates->success(1);
+        $estimates->success(2);
+        $this->assertEquals(3, $estimates->getSuccessCount());
+    }
 
     /**
      * Test Failure Counting.
      *
      * @covers \DrupalReleaseDate\EstimateDistribution::__construct
      * @covers \DrupalReleaseDate\EstimateDistribution::failure
-     * @covers \DrupalReleaseDate\EstimateDistribution::getFailures
+     * @covers \DrupalReleaseDate\EstimateDistribution::getFailureCount
      */
     public function testFailureCount()
     {
         $estimates = new EstimateDistribution();
-        $this->assertEquals(0, $estimates->getFailures());
+        $this->assertEquals(0, $estimates->getFailureCount());
 
         $estimates->failure();
-        $this->assertEquals(1, $estimates->getFailures());
+        $this->assertEquals(1, $estimates->getFailureCount());
 
         $estimates->failure();
         $estimates->failure();
-        $this->assertEquals(3, $estimates->getFailures());
+        $this->assertEquals(3, $estimates->getFailureCount());
     }
 
     /**

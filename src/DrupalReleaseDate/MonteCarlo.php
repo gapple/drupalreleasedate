@@ -119,7 +119,7 @@ class MonteCarlo
 
                 if (
                     $run > ($iterations * $this->increasingFailureThresholdRatio)
-                    && ($estimates->getFailures() / $run) > $this->increasingFailureRatio
+                    && ($estimates->getFailureCount() / $run) > $this->increasingFailureRatio
                 ) {
                     $runException = new IncreasingException('Run aborted after iteration ' . $run, 0, $e);
                     $runException->setDistribution($estimates);
