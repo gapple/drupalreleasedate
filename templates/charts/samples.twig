@@ -3,10 +3,13 @@
 {% block title %}{{ parent() }} - Samples Chart{% endblock %}
 
 {% block content %}
-    <div id="chart"></div>
-    <div class="chart-caption">
-        <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
-        <a id='chart-data' href="/data/samples.json">JSON</a>
+    <div id="chart-wrapper">
+        <div id="chart"></div>
+        <div id="chart-control"></div>
+        <div class="chart-caption">
+            <a id='chart-refresh' href='#' class="disabled">Refresh</a> |
+            <a id='chart-data' href="/data/samples.json">JSON</a>
+        </div>
     </div>
 {% endblock %}
 
@@ -14,118 +17,121 @@
     {{ parent() }}
     <script type="text/javascript">
         $(function () {
-            var chart, chartData, dataView, userVisibleColumns;
-            var $chart = $('#chart');
+            var dashboard,
+                chartWrapper,
+                chartData,
+                dataView,
+                controlWrapper,
+                userVisibleColumns,
+                columns = [
+                    {
+                        index: 0,
+                        key: 'date',
+                        type: 'datetime',
+                        label: 'Date',
+                        value: function(row) {
+                            return new Date(row.when);
+                        }
+                    },
+                    {
+                        index: 1,
+                        key: 'critical',
+                        type: 'number',
+                        label: 'Critical',
+                        color: '#DB4437',
+                        disabledColor: '#FFD9D9',
+                        trendline: true,
+                        visible: true,
+                        value: function(row) {
+                            if (
+                                typeof row.critical_bugs === 'undefined' ||
+                                row.critical_bugs === null ||
+                                typeof row.critical_tasks === 'undefined' ||
+                                row.critical_tasks === null
+                            ) {
+                                return null;
+                            }
 
-            var columns = [
-                {
-                    index: 0,
-                    key: 'date',
-                    type: 'datetime',
-                    label: 'Date',
-                    value: function(row) {
-                        return new Date(row.when);
-                    }
-                },
-                {
-                    index: 1,
-                    key: 'critical',
-                    type: 'number',
-                    label: 'Critical',
-                    color: '#DB4437',
-                    disabledColor: '#FFD9D9',
-                    trendline: true,
-                    visible: true,
-                    value: function(row) {
-                        if (
-                            typeof row.critical_bugs === 'undefined' ||
-                            row.critical_bugs === null ||
-                            typeof row.critical_tasks === 'undefined' ||
-                            row.critical_tasks === null
-                        ) {
-                            return null;
+                            return row.critical_bugs + row.critical_tasks;
                         }
+                    },
+                    {
+                        index: 2,
+                        key: 'major',
+                        type: 'number',
+                        label: 'Major',
+                        color: '#4285F4',
+                        disabledColor: '#D9D9FF',
+                        trendline: true,
+                        visible: false,
+                        value: function(row) {
+                            if (
+                                typeof row.major_bugs === 'undefined' ||
+                                row.major_bugs === null ||
+                                typeof row.major_tasks === 'undefined' ||
+                                row.major_tasks === null
+                            ) {
+                                return null;
+                            }
 
-                        return row.critical_bugs + row.critical_tasks;
-                    }
-                },
-                {
-                    index: 2,
-                    key: 'major',
-                    type: 'number',
-                    label: 'Major',
-                    color: '#4285F4',
-                    disabledColor: '#D9D9FF',
-                    trendline: true,
-                    visible: false,
-                    value: function(row) {
-                        if (
-                            typeof row.major_bugs === 'undefined' ||
-                            row.major_bugs === null ||
-                            typeof row.major_tasks === 'undefined' ||
-                            row.major_tasks === null
-                        ) {
-                            return null;
+                            return row.major_bugs + row.major_tasks;
                         }
+                    },
+                    {
+                        index: 3,
+                        key: 'normal',
+                        type: 'number',
+                        label: 'Normal',
+                        color: '#008000',
+                        disabledColor: '#C3E6C3',
+                        trendline: true,
+                        visible: false,
+                        value: function(row) {
+                            if (
+                                typeof row.normal_bugs === 'undefined' ||
+                                row.normal_bugs === null ||
+                                typeof row.normal_tasks === 'undefined' ||
+                                row.normal_tasks === null
+                            ) {
+                                return null;
+                            }
 
-                        return row.major_bugs + row.major_tasks;
-                    }
-                },
-                {
-                    index: 3,
-                    key: 'normal',
-                    type: 'number',
-                    label: 'Normal',
-                    color: '#008000',
-                    disabledColor: '#C3E6C3',
-                    trendline: true,
-                    visible: false,
-                    value: function(row) {
-                        if (
-                            typeof row.normal_bugs === 'undefined' ||
-                            row.normal_bugs === null ||
-                            typeof row.normal_tasks === 'undefined' ||
-                            row.normal_tasks === null
-                        ) {
-                            return null;
+                            return row.normal_bugs + row.normal_tasks;
                         }
-
-                        return row.normal_bugs + row.normal_tasks;
-                    }
-                },
-                {
-                    index: 4,
-                    key: 'beta_blockers',
-                    type: 'number',
-                    label: 'Beta Blockers',
-                    color: '#F4B400',
-                    disabledColor: '#F2E5CE',
-                    trendline: false,
-                    visible: false,
-                    value: function(row) {
-                        if (typeof row.beta_blockers === 'undefined') {
-                            return null;
+                    },
+                    {
+                        index: 4,
+                        key: 'beta_blockers',
+                        type: 'number',
+                        label: 'Beta Blockers',
+                        color: '#F4B400',
+                        disabledColor: '#F2E5CE',
+                        trendline: false,
+                        visible: false,
+                        value: function(row) {
+                            if (typeof row.beta_blockers === 'undefined') {
+                                return null;
+                            }
+                            return row.beta_blockers;
                         }
-                        return row.beta_blockers;
-                    }
-                },
-                {
-                    index: 5,
-                    key: 'rtbc',
-                    type: 'number',
-                    label: 'RTBC',
-                    color: '#795892',
-                    disabledColor: '#AE9ABE',
-                    trendline: false,
-                    visible: false,
-                    value: function(row) {
-                        if (typeof row.rtbc === 'undefined') {
-                            return null;
+                    },
+                    {
+                        index: 5,
+                        key: 'rtbc',
+                        type: 'number',
+                        label: 'RTBC',
+                        color: '#795892',
+                        disabledColor: '#AE9ABE',
+                        trendline: false,
+                        visible: false,
+                        value: function(row) {
+                            if (typeof row.rtbc === 'undefined') {
+                                return null;
+                            }
+                            return row.rtbc;
                         }
-                        return row.rtbc;
                     }
-                }
-            ];
+                ];
 
             // Load user's last column visibility state if available.
             if (window.localStorage) {
@@ -139,9 +145,7 @@
                 }
             }
 
-            var nullFunc = function() {return null;};
-
-            google.setOnLoadCallback(loadChart);
+            google.setOnLoadCallback(initializeChart);
 
             var resizeTimeout = null;
             var redrawChart = function () {
@@ -168,10 +172,102 @@
                 }
 
                 $link.addClass('disabled');
-                $('#chart').fadeTo('fast', 0.2, loadChart);
+                $('#chart-wrapper').fadeTo('fast', 0.2, loadData);
             });
 
-            function loadChart() {
+            function initializeChart() {
+                dashboard = new google.visualization.Dashboard($('#chart-wrapper').get(0));
+
+                var colors = [];
+                for (var i = 1; i < columns.length; i++) {
+                    colors.push(columns[i].color);
+                }
+
+                var controlStart = new Date();
+                controlStart.setFullYear(controlStart.getFullYear()-1);
+                var controlEnd = new Date();
+                controlEnd.setFullYear(controlEnd.getFullYear()+1);
+
+                controlWrapper = new google.visualization.ControlWrapper({
+                    controlType: 'ChartRangeFilter',
+                    containerId: 'chart-control',
+                    options: {
+                        filterColumnIndex: 0,
+                        ui: {
+                            chartType: 'LineChart',
+                            chartOptions: {
+                                chartArea: {
+                                    width: '75%',
+                                    height: '100%'
+                                },
+                                vAxis: {
+                                    minValue: 0,
+                                    maxValue: 1
+                                },
+                                colors: colors
+                            },
+                            // 1 week in milliseconds = 7 * 24 * 60 * 60 * 1000 = 604,800,000
+                            minRangeSize: 604800000
+                        }
+                    },
+                    state: {
+                        range: {
+                            start: controlStart,
+                            end: controlEnd
+                        }
+                    }
+                });
+
+                chartWrapper = new google.visualization.ChartWrapper({
+                    chartType: 'LineChart',
+                    containerId: 'chart',
+                    options: {
+                        title: 'Issue Count',
+                        // Use the same chart area width as the control for axis alignment.
+                        chartArea: {
+                            width: '75%',
+                            height: '90%',
+                            top: '6%'
+                        },
+                        hAxis: {},
+                        vAxis: {
+                            minValue: 0,
+                            maxValue: 1
+                        }
+                    }
+                });
+
+                dashboard.bind(controlWrapper, chartWrapper);
+
+                var readyListenerHandler =  google.visualization.events.addListener(chartWrapper, 'ready', function () {
+                    var chart = chartWrapper.getChart();
+
+                    // Toggle visibility of data series on click of legend.
+                    google.visualization.events.addListener(chart, 'click', function (target) {
+                        if (target.targetID.match(/^legendentry#\d+$/)) {
+
+                            // Disable selection of entire data series.
+                            setTimeout(function () {chart.setSelection(null)}, 0);
+
+                            var index = parseInt(target.targetID.slice(12)) + 1;
+                            columns[index].visible = !columns[index].visible;
+
+                            if (window.localStorage) {
+                                userVisibleColumns[columns[index].key] = columns[index].visible;
+                                window.localStorage.setItem('chart.samples.visible-columns', JSON.stringify(userVisibleColumns));
+                            }
+
+                            redrawChart();
+                        }
+                    });
+
+                    google.visualization.events.removeListener(readyListenerHandler);
+                });
+
+                loadData();
+            }
+
+            function loadData() {
                 Timing.start('chart.loadData');
 
                 $.get('/data/samples.json', function (response, textStatus, jqXHR) {
@@ -207,39 +303,11 @@
                     }
 
                     $('#chart-refresh').removeClass('disabled');
-                    $('#chart').fadeTo('fast', 1);
+                    $('#chart-wrapper').fadeTo('fast', 1);
                 });
-            };
+            }
 
             function drawChart() {
-
-                if (chart) {
-                    chart.clearChart();
-                    $chart.css('height', '');
-                }
-                else {
-                    chart = new google.visualization.LineChart($chart.get(0));
-
-                    // Toggle visibility of data series on click of legend.
-                    google.visualization.events.addListener(chart, 'click', function (target) {
-                        if (target.targetID.match(/^legendentry#\d+$/)) {
-
-                            // Disable selection of entire data series.
-                            setTimeout(function () {chart.setSelection(null)}, 0);
-
-                            var index = parseInt(target.targetID.slice(12)) + 1;
-                            columns[index].visible = !columns[index].visible;
-
-                            if (window.localStorage) {
-                                userVisibleColumns[columns[index].key] = columns[index].visible;
-                                window.localStorage.setItem('chart.samples.visible-columns', JSON.stringify(userVisibleColumns));
-                            }
-
-                            redrawChart();
-                        }
-                    });
-                }
-
                 var visibleColumnCount = 0;
                 var visibleColumnIndexes = [0];
                 var trendlines = {};
@@ -248,7 +316,7 @@
                 for (var i = 1; i < columns.length; i++) {
                     if (columns[i].visible) {
                         if (columns[i].trendline) {
-                            trendlines[visibleColumnIndexes.length - 1] = {
+                            trendlines[i - 1] = {
                                 visibleInLegend: false,
                                 opacity: 0.2
                             };
@@ -262,27 +330,18 @@
                       colors.push(columns[i].disabledColor);
 
                       visibleColumnIndexes.push({
-                        calc: nullFunc,
+                        calc: $.noop,
                         type: columns[i].type,
-                        label: columns[i].label,
+                        label: columns[i].label
                       });
                     }
-                };
+                }
                 dataView.setColumns(visibleColumnIndexes);
+                chartWrapper.setOption('colors', colors);
+                chartWrapper.setOption('trendlines', trendlines);
 
-                chart.draw(
-                    dataView,
-                    {
-                        title: 'Issue Count',
-                        colors: colors,
-                        hAxis: {},
-                        vAxis: {
-                            minValue: 0
-                        },
-                        trendlines: trendlines
-                    }
-                );
-            };
+                dashboard.draw(dataView);
+            }
         });
     </script>
 {% endblock %}
