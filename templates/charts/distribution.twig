@@ -39,12 +39,7 @@
                 // Get date parameter from URL hash, and pass on to data request.
                 var uri = '/data/estimate.json';
                 if (window.location.hash) {
-                    var hashParams = window.location.hash.replace(/^#/, '').split('&');
-                    for (var i in hashParams) {
-                        var hashParam = hashParams[i].split('=');
-                        hashParams[i] = encodeURIComponent(hashParam[0]) + '=' + encodeURIComponent(hashParam[1]);
-                    }
-                    uri += '?' + hashParams.join('&');
+                    uri += '?' + window.location.hash.replace(/^#/, '');
                     $('#chart-data').attr('href', uri);
                 }
 
