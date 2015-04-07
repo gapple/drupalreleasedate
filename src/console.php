@@ -11,7 +11,8 @@ $app->register(new ConsoleServiceProvider(), array(
 
 $console = $app['console'];
 
-$console->add(new Console\CronCommand());
+$console->add(new Console\SampleCommand());
+$console->add(new Console\EstimateCommand());
 $console->add(new Console\InstallCommand());
 $console->add(new Console\UpdateCommand());
 
