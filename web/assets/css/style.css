@@ -76,7 +76,15 @@ footer .credits {
   margin-bottom: 5px;
 }
 .credits .support {
-  font-size: 80%;
+  text-align: center;
+}
+@media (max-width: 460px) {
+  .credits .support a {
+      display: block;
+  }
+  .credits .support .item-separator {
+    display: none;
+  }
 }
 
 #chart {
