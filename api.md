@@ -41,6 +41,8 @@ Optional Parameters:
   Restrict the results to values on or after the specified date
 - __to__ *(date)*
   Restrict the results to values on or before the specified date
+- __limit__ *(integer)*
+  Restrict the results to the requested number of newest values
 
 ```
 {

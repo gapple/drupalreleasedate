@@ -156,6 +156,54 @@ class Data
                 ->andWhere('sv.when <= :to')
                 ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
         }
+
+        if ($request->query->has('limit')) {
+            $limit = $request->query->getInt('limit');
+            if ($limit <= 0) {
+                $app->abort(400, 'Invalid "limit" parameter');
+            }
+            $responseData['limit'] = $limit;
+
+            $dateLimitQuery = $app['db']->createQueryBuilder()
+              ->select('s.when')
+              ->from('samples', 's')
+              ->where('s.version = :version')
+              ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
+              ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+              ->setMaxResults($limit);
+            if ($from) {
+                $dateLimitQuery
+                  ->andWhere('s.when >= :from')
+                  ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+            }
+            if ($to) {
+                $dateLimitQuery
+                  ->andWhere('s.when <= :to')
+                  ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+            }
+
+            $dateLimitResults = $dateLimitQuery
+              ->execute()
+              ->fetchAll(\PDO::FETCH_ASSOC);
+
+            $dateLimitResultMin = end($dateLimitResults);
+            $dateLimitResultMin = $dateLimitResultMin['when'];
+            $dateLimitResultMax = reset($dateLimitResults);
+            $dateLimitResultMax = $dateLimitResultMax['when'];
+
+            if (!$from) {
+                $sampleValuesQuery
+                  ->andWhere('sv.when >= :from');
+            }
+            if (!$to) {
+                $sampleValuesQuery
+                  ->andWhere('sv.when <= :to');
+            }
+            $sampleValuesQuery
+                ->setParameter('from', $dateLimitResultMin, \PDO::PARAM_STR)
+                ->setParameter('to', $dateLimitResultMax, \PDO::PARAM_STR);
+        }
+
         $sampleValuesResult = $sampleValuesQuery->execute();
 
         $data = array();
