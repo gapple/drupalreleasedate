@@ -43,6 +43,7 @@
                         trendline: true,
                         visible: true,
                         value: function(row) {
+                            // Bugs and tasks must exist and have a value
                             if (
                                 typeof row.critical_bugs === 'undefined' ||
                                 row.critical_bugs === null ||
@@ -51,8 +52,17 @@
                             ) {
                                 return null;
                             }
+                            var value = row.critical_bugs + row.critical_tasks;
 
-                            return row.critical_bugs + row.critical_tasks;
+                            // Plans might not exist, but must have a value if present
+                            if (typeof row.critical_plans !== 'undefined') {
+                                if (typeof row.critical_plans === null) {
+                                    return null;
+                                }
+                                value += row.critical_plans;
+                            }
+
+                            return value;
                         }
                     },
                     {
@@ -65,16 +75,26 @@
                         trendline: true,
                         visible: false,
                         value: function(row) {
+                            // Bugs and tasks must exist and have a value
                             if (
-                                typeof row.major_bugs === 'undefined' ||
-                                row.major_bugs === null ||
-                                typeof row.major_tasks === 'undefined' ||
-                                row.major_tasks === null
+                                    typeof row.major_bugs === 'undefined' ||
+                                    row.major_bugs === null ||
+                                    typeof row.major_tasks === 'undefined' ||
+                                    row.major_tasks === null
                             ) {
                                 return null;
                             }
+                            var value = row.major_bugs + row.major_tasks;
 
-                            return row.major_bugs + row.major_tasks;
+                            // Plans might not exist, but must have a value if present
+                            if (typeof row.major_plans !== 'undefined') {
+                                if (typeof row.major_plans === null) {
+                                    return null;
+                                }
+                                value += row.major_plans;
+                            }
+
+                            return value;
                         }
                     },
                     {
@@ -87,16 +107,26 @@
                         trendline: true,
                         visible: false,
                         value: function(row) {
+                            // Bugs and tasks must exist and have a value
                             if (
-                                typeof row.normal_bugs === 'undefined' ||
-                                row.normal_bugs === null ||
-                                typeof row.normal_tasks === 'undefined' ||
-                                row.normal_tasks === null
+                                    typeof row.normal_bugs === 'undefined' ||
+                                    row.normal_bugs === null ||
+                                    typeof row.normal_tasks === 'undefined' ||
+                                    row.normal_tasks === null
                             ) {
                                 return null;
                             }
+                            var value = row.normal_bugs + row.normal_tasks;
 
-                            return row.normal_bugs + row.normal_tasks;
+                            // Plans might not exist, but must have a value if present
+                            if (typeof row.normal_plans !== 'undefined') {
+                                if (typeof row.normal_plans === null) {
+                                    return null;
+                                }
+                                value += row.normal_plans;
+                            }
+
+                            return value;
                         }
                     },
                     {
