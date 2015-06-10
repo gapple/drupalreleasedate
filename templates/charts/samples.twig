@@ -284,7 +284,10 @@
 
                             if (window.localStorage) {
                                 userVisibleColumns[columns[index].key] = columns[index].visible;
-                                window.localStorage.setItem('chart.samples.visible-columns', JSON.stringify(userVisibleColumns));
+                                try {
+                                    window.localStorage.setItem('chart.samples.visible-columns', JSON.stringify(userVisibleColumns));
+                                }
+                                catch (e) {}
                             }
 
                             redrawChart();
