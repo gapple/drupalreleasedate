@@ -1,0 +1,47 @@
+#! /bin/bash
+
+twig_cache=0
+http_cache=0
+
+while getopts "cth?" opt; do
+  case $opt in
+    t)
+      twig_cache=1
+      ;;
+    h)
+      http_cache=1
+      ;;
+    c)
+      twig_cache=1
+      http_cache=1
+      ;;
+    \?)
+      echo "
+  -t    Clear Twig cache
+  -h    Clear HTTP cache
+  -c    Clear all caches
+      "
+      exit 0
+      ;;
+  esac
+done
+
+git fetch
+git reset --hard origin/master
+
+composer install --no-dev --optimize-autoloader
+
+echo "Running updates"
+./bin/console update
+
+if [ $twig_cache -eq 1 ]
+then
+  echo "Clearing Twig cache"
+  rm -rf cache/twig/*
+fi
+
+if [ $http_cache -eq 1 ]
+then
+  echo "Clearing HTTP cache"
+  rm -rf cache/http/*
+fi
