@@ -159,38 +159,71 @@
 
             var historicalSamplesMapping = {
                 'critical': function (data) {
+                    // Bugs and tasks must exist and have a value
                     if (
-                        typeof data.critical_tasks === 'undefined' ||
-                        data.critical_tasks === null ||
                         typeof data.critical_bugs === 'undefined' ||
-                        data.critical_bugs === null
+                        data.critical_bugs === null ||
+                        typeof data.critical_tasks === 'undefined' ||
+                        data.critical_tasks === null
                     ) {
                         return null;
                     }
-                    return data.critical_tasks + data.critical_bugs;
+                    var value = data.critical_bugs + data.critical_tasks;
+
+                    // Plans might not exist, but must have a value if present
+                    if (typeof data.critical_plans !== 'undefined') {
+                        if (typeof data.critical_plans === null) {
+                            return null;
+                        }
+                        value += data.critical_plans;
+                    }
+
+                    return value;
                 },
                 'major': function (data) {
+                    // Bugs and tasks must exist and have a value
                     if (
-                        typeof data.major_tasks === 'undefined' ||
-                        data.major_tasks === null ||
                         typeof data.major_bugs === 'undefined' ||
-                        data.major_bugs === null
+                        data.major_bugs === null ||
+                        typeof data.major_tasks === 'undefined' ||
+                        data.major_tasks === null
                     ) {
                         return null;
                     }
-                    return data.major_tasks + data.major_bugs;
+                    var value = data.major_bugs + data.major_tasks;
+
+                    // Plans might not exist, but must have a value if present
+                    if (typeof data.major_plans !== 'undefined') {
+                        if (typeof data.major_plans === null) {
+                            return null;
+                        }
+                        value += data.major_plans;
+                    }
+
+                    return value;
                 },
                 'normal': function (data) {
+                    // Bugs and tasks must exist and have a value
                     if (
-                        typeof data.normal_tasks === 'undefined' ||
-                        data.normal_tasks === null ||
                         typeof data.normal_bugs === 'undefined' ||
-                        data.normal_bugs === null
+                        data.normal_bugs === null ||
+                        typeof data.normal_tasks === 'undefined' ||
+                        data.normal_tasks === null
                     ) {
                         return null;
                     }
-                    return data.normal_tasks + data.normal_bugs;
-                },
+                    var value = data.normal_bugs + data.normal_tasks;
+
+                    // Plans might not exist, but must have a value if present
+                    if (typeof data.normal_plans !== 'undefined') {
+                        if (typeof data.normal_plans === null) {
+                            return null;
+                        }
+                        value += data.normal_plans;
+                    }
+
+                    return value;
+                }
             };
             Timing.start('index.loadHistoricalSamples');
             $.getJSON('/data/historical-samples.json').done(function (response) {
