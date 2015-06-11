@@ -45,12 +45,16 @@ class Updater
         $samples = new TimeGroupedSampleSetCollection(604800);
 
         $samplesResultSet = $db->createQueryBuilder()
-            ->select('s.when', 'sv_bugs.value + sv_tasks.value AS value')
+            ->select('s.when', 'sv_bugs.value + sv_tasks.value + IFNULL(sv_plans.value, 0) AS value')
             ->from('samples', 's')
-            ->join('s', 'sample_values', 'sv_bugs', 's.version = sv_bugs.version && s.when = sv_bugs.when && sv_bugs.key="critical_bugs"')
-            ->join('s', 'sample_values', 'sv_tasks', 's.version = sv_tasks.version && s.when = sv_tasks.when && sv_tasks.key="critical_tasks"')
+            ->innerJoin('s', 'sample_values', 'sv_bugs', 's.version = sv_bugs.version && s.when = sv_bugs.when && sv_bugs.key="critical_bugs"')
+            ->innerJoin('s', 'sample_values', 'sv_tasks', 's.version = sv_tasks.version && s.when = sv_tasks.when && sv_tasks.key="critical_tasks"')
+            ->leftJoin('s', 'sample_values', 'sv_plans', 's.version = sv_plans.version && s.when = sv_plans.when && sv_plans.key="critical_plans"')
             ->where('s.version = "8.0"')
-            ->having('value IS NOT NULL')
+            ->andWhere('sv_bugs.value IS NOT NULL')
+            ->andWhere('sv_tasks.value IS NOT NULL')
+            // Exclude samples where fetching plans failed (when, NULL), but not where no plans value was retrieved (NULL, NULL).
+            ->andWhere('NOT (sv_plans.when IS NULL XOR sv_plans.value IS NULL)')
             ->orderBy($db->quoteIdentifier('when'), 'ASC')
             ->execute();
         $lastResult = null;
