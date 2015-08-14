@@ -20,7 +20,16 @@ class Installation
 
     public function getVersion()
     {
-        if (file_exists($this->app['config.dir'] . '/InstallationVersion')) {
+        if ($this->app['db']->getSchemaManager()->tablesExist(array('state'))) {
+            $stateValue = $this->app['db']->createQueryBuilder()
+              ->select('st.value')
+              ->from('state', 'st')
+              ->where('st.key = "installationVersion"')
+              ->execute();
+            $versionValue = $stateValue->fetchColumn(0);
+            return (int) $versionValue;
+        }
+        else if (file_exists($this->app['config.dir'] . '/InstallationVersion')) {
             return (int) file_get_contents($this->app['config.dir'] . '/InstallationVersion');
         }
 
@@ -32,7 +41,12 @@ class Installation
      */
     public function setVersion($value)
     {
-        file_put_contents($this->app['config.dir'] . '/InstallationVersion', $value);
+        $this->app['db']->createQueryBuilder()
+          ->update('state', 'st')
+          ->set('st.value', ':version')
+          ->where('st.key = "installationVersion"')
+          ->setParameter('version', $value)
+          ->execute();
     }
 
     public function getUpdates()
@@ -115,9 +129,24 @@ class Installation
         $estimates->addColumn('estimate', 'datetime', array('notnull' => false));
         $estimates->addColumn('note', 'string', array('default' => ''));
         $estimates->addColumn('data', 'blob');
+        $estimates->setPrimaryKey(array('version', 'when'));
+
+        $state = $schema->createTable('state');
+        $state->addColumn('key', 'string', array('length' => 255));
+        $state->addColumn('value', 'blob');
+        $state->setPrimaryKey(array('key'));
 
         $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->createSchema($schema);
+
+        // Create the version entry in the database.  It will be updated with
+        // the correct value at the end of `install()`.
+        $this->app['db']->insert(
+          'state',
+          array(
+            $this->app['db']->quoteIdentifier('key') => 'InstallationVersion',
+            $this->app['db']->quoteIdentifier('value') => 0
+          ));
     }
 
     /**
@@ -334,5 +363,32 @@ class Installation
               ->setParameter('when', $estimate->when)
               ->execute();
         }
+    }
+
+    /**
+     * Create a state table, and move the db version value from a file to it.
+     */
+    protected function update_7() {
+
+        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $schema = clone $schema;
+
+        $state = $schema->createTable('state');
+        $state->addColumn('key', 'string', array('length' => 255));
+        $state->addColumn('value', 'blob');
+        $state->setPrimaryKey(array('key'));
+
+        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer->updateSchema($schema);
+
+
+        $this->app['db']->insert(
+            'state',
+            array(
+                $this->app['db']->quoteIdentifier('key') => 'InstallationVersion',
+                $this->app['db']->quoteIdentifier('value') => 7
+            ));
+
+        unlink($this->app['config.dir'] . '/InstallationVersion');
     }
 }
