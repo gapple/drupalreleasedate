@@ -232,7 +232,7 @@
                 $('.changes [data-current] td[data-key]').each(function () {
                     var key = $(this).data('key');
                     var value = historicalSamplesMapping[key](response.data.current)
-                    if (value) {
+                    if (value !== null) {
                         $(this).html(value);
                     }
                 });
