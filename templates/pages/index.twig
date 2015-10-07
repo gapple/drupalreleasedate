@@ -4,10 +4,9 @@
     <div class="hero-unit">
         <h1>Drupal 8 Release</h1>
         <section class="estimate">
-            <a href="https://www.drupal.org/core/dev-cycle#rc">Drupal 8 RC1</a> estimated to occur on
-            <h2 class="value">?</h2>
-
-            <div class="note"></div>
+            <h2 class="value">
+                <a href="https://www.drupal.org/drupal-8.0">Drupal 8 RC1</a> is here!
+            </h2>
         </section>
 
         <section class="changes">
@@ -117,7 +116,7 @@
                 $('.estimate .value').html(estimate.value);
                 $('.estimate .note').html(estimate.note);
             }
-
+            /*
             Timing.start('index.loadEstimate');
             $.getJSON('/data/estimates.json?limit=1')
                 .done(function (response) {
@@ -156,6 +155,7 @@
                 .fail(function () {
                     updateEstimate();
                 });
+            */
 
             var historicalSamplesMapping = {
                 'critical': function (data) {
