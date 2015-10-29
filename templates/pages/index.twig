@@ -5,9 +5,9 @@
         <h1>Drupal 8 Release</h1>
         <section class="estimate">
             <h2 class="value">
-                <a href="https://www.drupal.org/drupal-8.0">Drupal 8 RC1</a> is here!
+                ?
             </h2>
-            <div class="note">as of October 7, 2015</div>
+            <div class="note"></div>
         </section>
 
         <section class="changes">
@@ -109,54 +109,40 @@
         }
 
         $(function () {
-            function updateEstimate(estimate) {
-                var estimate = estimate || {
+            function updateRelease(release) {
+                var release = release || {
                     value: 'N/A',
-                    note: 'The latest estimate could not be retrieved'
+                    note: 'The latest release could not be retrieved'
                 };
-                $('.estimate .value').html(estimate.value);
-                $('.estimate .note').html(estimate.note);
+                $('.estimate .value').html(release.value);
+                $('.estimate .note').html(release.note);
             }
-            /*
-            Timing.start('index.loadEstimate');
-            $.getJSON('/data/estimates.json?limit=1')
+            Timing.start('index.loadReleases');
+            $.getJSON('https://www.drupal.org/api-d7/node.json?type=project_release&field_release_project=3060&field_release_version_major=8&field_release_version_minor=0&field_release_build_type=static')
                 .done(function (response) {
-                    Timing.stop('index.loadEstimate');
+                    Timing.stop('index.loadReleases');
 
-                    var estimate;
-                    if (response.data && response.data[0]) {
-                        if (response.data[0].estimate === null || response.data[0].estimate == '0000-00-00') {
-                            estimate = {
-                                value: 'N/A',
-                                note: 'An estimate could not be calculated with the current data'
-                            };
-                        }
-                        else {
+                    var release;
+                    if (response.list) {
+                        response.list.sort(function (a, b) {
+                            return a.created - b.created;
+                        });
+                        var latestRelease = response.list.pop();
 
-                            var when = new Date(response.data[0].when);
-                            // The estimate doesn't have a time component, so copy the timezone from the generation date.
-                            var timezoneOffsetHours = Math.round(when.getTimezoneOffset() / -60).toString().replace(/^(-?)(\d)$/, '$10$2');
-                            var timezoneOffsetMins = (when.getTimezoneOffset() % 60).toString().replace(/^(\d)$/, '0$1');
-                            var timezoneOffsetString = (when.getTimezoneOffset() > 0?'':'+') + timezoneOffsetHours + ":" + timezoneOffsetMins;
-                            var estimateDateString = response.data[0].estimate.replace(/^(\d{4}-\d{2}-\d{2})$/, '$1T00:00:00' + timezoneOffsetString);
-                            var estimateDate = new Date(estimateDateString);
-
-                            estimate = {
-                                value: dateToString(estimateDate),
-                                note: 'as of ' + dateToString(when)
-                            };
-                        }
+                        release = {
+                            value: '<a href="https://www.drupal.org/node/' + latestRelease.nid + '">' + latestRelease.field_release_version + '</a>',
+                            note: 'as of ' + dateToString(new Date(latestRelease.created * 1000))
+                        };
                     }
-                    updateEstimate(estimate);
+                    updateRelease(release);
 
                     if (typeof GoogleAnalyticsObject !== 'undefined') {
-                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('index.loadEstimate'), 'estimates');
+                        window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('index.loadReleases'), 'releases');
                     }
                 })
                 .fail(function () {
-                    updateEstimate();
+                    updateRelease();
                 });
-            */
 
             var historicalSamplesMapping = {
                 'critical': function (data) {
