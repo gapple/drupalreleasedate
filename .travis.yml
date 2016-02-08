@@ -1,4 +1,9 @@
 language: php
+sudo: false
+cache:
+  directories:
+  - $HOME/.composer
+
 php:
   - "5.5"
   - "5.6"
