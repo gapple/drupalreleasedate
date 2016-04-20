@@ -10,6 +10,7 @@
             <div class="note"></div>
         </section>
 
+        {#
         <section class="changes">
             <h4>Issue Changes</h4>
             <table>
@@ -67,6 +68,7 @@
                 </tbody>
             </table>
         </section>
+        #}
     </div>
 {% endblock %}
 
@@ -212,6 +214,7 @@
                     return value;
                 }
             };
+            /*
             Timing.start('index.loadHistoricalSamples');
             $.getJSON('/data/historical-samples.json').done(function (response) {
                 Timing.stop('index.loadHistoricalSamples');
@@ -263,6 +266,7 @@
                     window[GoogleAnalyticsObject]('send', 'timing', 'data', 'load', Timing.get('index.loadHistoricalSamples'), 'historical-samples');
                 }
             });
+            */
         });
     </script>
 {% endblock %}
