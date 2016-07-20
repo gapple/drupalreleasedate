@@ -120,18 +120,15 @@
                 $('.estimate .note').html(release.note);
             }
             Timing.start('index.loadReleases');
-            $.getJSON('https://www.drupal.org/api-d7/node.json?type=project_release&field_release_project=3060&field_release_version_major=8&field_release_build_type=static')
+            $.getJSON('https://www.drupal.org/api-d7/node.json?type=project_release&field_release_project=3060&field_release_version_major=8&field_release_build_type=static&sort=created&direction=DESC&limit=10')
                 .done(function (response) {
                     Timing.stop('index.loadReleases');
 
                     var release;
                     if (response.list) {
-                        response.list.sort(function (a, b) {
-                            return a.created - b.created;
-                        });
                         var latestRelease;
                         do {
-                            latestRelease = response.list.pop();
+                            latestRelease = response.list.shift();
                         } while (latestRelease.field_release_version_extra !== null);
 
                         release = {
