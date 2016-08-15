@@ -1,6 +1,7 @@
 <?php
 namespace DrupalReleaseDate;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer;
@@ -13,7 +14,11 @@ use \Silex\Application;
 class Installation
 {
 
-    protected $app;
+    /** @var Connection */
+    protected $db;
+
+    /** @var string */
+    protected $configDir;
 
     /**
      * Extract version number integer from update method name.
@@ -33,7 +38,8 @@ class Installation
      */
     public function __construct(Application $app)
     {
-        $this->app = $app;
+        $this->db = $app['db'];
+        $this->configDir = $app['config.dir'];
     }
 
     /**
@@ -43,17 +49,17 @@ class Installation
      */
     public function getVersion()
     {
-        if ($this->app['db']->getSchemaManager()->tablesExist(array('state'))) {
+        if ($this->db->getSchemaManager()->tablesExist(array('state'))) {
             /** @var ResultStatement $stateValue */
-            $stateValue = $this->app['db']->createQueryBuilder()
+            $stateValue = $this->db->createQueryBuilder()
               ->select('st.value')
               ->from('state', 'st')
               ->where('st.key = "installationVersion"')
               ->execute();
             $versionValue = $stateValue->fetchColumn(0);
             return (int) $versionValue;
-        } elseif (file_exists($this->app['config.dir'] . '/InstallationVersion')) {
-            return (int) file_get_contents($this->app['config.dir'] . '/InstallationVersion');
+        } elseif (file_exists($this->configDir . '/InstallationVersion')) {
+            return (int) file_get_contents($this->configDir . '/InstallationVersion');
         }
 
         return null;
@@ -66,7 +72,7 @@ class Installation
      */
     public function setVersion($value)
     {
-        $this->app['db']->createQueryBuilder()
+        $this->db->createQueryBuilder()
           ->update('state', 'st')
           ->set('st.value', ':version')
           ->where('st.key = "installationVersion"')
@@ -177,16 +183,16 @@ class Installation
         $state->addColumn('value', 'blob');
         $state->setPrimaryKey(array('key'));
 
-        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->db);
         $synchronizer->createSchema($schema);
 
         // Create the version entry in the database.  It will be updated with
         // the correct value at the end of `install()`.
-        $this->app['db']->insert(
+        $this->db->insert(
             'state',
             array(
-                $this->app['db']->quoteIdentifier('key') => 'InstallationVersion',
-                $this->app['db']->quoteIdentifier('value') => 0
+                $this->db->quoteIdentifier('key') => 'InstallationVersion',
+                $this->db->quoteIdentifier('value') => 0
             )
         );
     }
@@ -197,7 +203,7 @@ class Installation
     protected function update_1()
     {
         /** @var Schema $schema */
-        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $schema = $this->db->getSchemaManager()->createSchema();
 
         // Create sample_values table.
         $schema = clone $schema;
@@ -208,12 +214,12 @@ class Installation
         $sample_values->addColumn('value', 'smallint', array('notnull' => false));
         $sample_values->setPrimaryKey(array('version', 'when', 'key'));
 
-        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->db);
         $synchronizer->updateSchema($schema);
 
         // Select all samples.
         /** @var ResultStatement $samples */
-        $samples = $this->app['db']->createQueryBuilder()
+        $samples = $this->db->createQueryBuilder()
             ->select('s.*')
             ->from('samples', 's')
             ->execute();
@@ -229,13 +235,13 @@ class Installation
         // Foreach sample, insert values into `sample_values`.
         while (($sample = $samples->fetch(\PDO::FETCH_ASSOC))) {
             foreach ($keys as $key) {
-                $this->app['db']->insert(
-                    $this->app['db']->quoteIdentifier('sample_values'),
+                $this->db->insert(
+                    $this->db->quoteIdentifier('sample_values'),
                     array(
-                        $this->app['db']->quoteIdentifier('version') => $sample['version'],
-                        $this->app['db']->quoteIdentifier('when') => $sample['when'],
-                        $this->app['db']->quoteIdentifier('key') => $key,
-                        $this->app['db']->quoteIdentifier('value') => $sample[$key],
+                        $this->db->quoteIdentifier('version') => $sample['version'],
+                        $this->db->quoteIdentifier('when') => $sample['when'],
+                        $this->db->quoteIdentifier('key') => $key,
+                        $this->db->quoteIdentifier('value') => $sample[$key],
                     )
                 );
             }
@@ -261,7 +267,7 @@ class Installation
     {
 
         /** @var Schema $schema */
-        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $schema = $this->db->getSchemaManager()->createSchema();
 
         $schema = clone $schema;
         $schema
@@ -269,7 +275,7 @@ class Installation
             ->getColumn('estimate')
             ->setType(Type::getType('date'));
 
-        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->db);
         $synchronizer->updateSchema($schema);
     }
 
@@ -279,17 +285,17 @@ class Installation
     protected function update_3()
     {
         /** @var Schema $schema */
-        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $schema = $this->db->getSchemaManager()->createSchema();
 
         $schema = clone $schema;
         $estimates = $schema->getTable('estimates');
         $estimates->addColumn('started', 'datetime');
         $estimates->addColumn('completed', 'datetime', array('notnull' => false));
 
-        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->db);
         $synchronizer->updateSchema($schema);
 
-        $this->app['db']->createQueryBuilder()
+        $this->db->createQueryBuilder()
             ->update('estimates', 'e')
             ->set('e.started', 'e.when')
             ->set('e.completed', 'e.when')
@@ -302,7 +308,7 @@ class Installation
     protected function update_4()
     {
         /** @var ResultStatement $estimates */
-        $estimates = $this->app['db']->createQueryBuilder()
+        $estimates = $this->db->createQueryBuilder()
             ->select('e.*')
             ->from('estimates', 'e')
             ->where('e.data != ""')
@@ -314,7 +320,7 @@ class Installation
 
             $dataObject = EstimateDistribution::fromArray($dataArray);
 
-            $this->app['db']->createQueryBuilder()
+            $this->db->createQueryBuilder()
                 ->update('estimates', 'e')
                 ->set('e.data', ':data')
                 ->where('e.version = :version')
@@ -333,7 +339,7 @@ class Installation
     {
         // Update version field type.
         /** @var Schema $schema */
-        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $schema = $this->db->getSchemaManager()->createSchema();
         $schema = clone $schema;
 
         $estimates = $schema->getTable('estimates');
@@ -354,21 +360,21 @@ class Installation
             'length' => 32,
         ));
 
-        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->db);
         $synchronizer->updateSchema($schema);
 
         // Convert existing data.
-        $this->app['db']->createQueryBuilder()
+        $this->db->createQueryBuilder()
             ->update('estimates', 'e')
             ->set('e.version', 'CONCAT(e.version, ".0")')
             ->execute();
 
-        $this->app['db']->createQueryBuilder()
+        $this->db->createQueryBuilder()
             ->update('samples', 's')
             ->set('s.version', 'CONCAT(s.version, ".0")')
             ->execute();
 
-        $this->app['db']->createQueryBuilder()
+        $this->db->createQueryBuilder()
             ->update('sample_values', 'sv')
             ->set('sv.version', 'CONCAT(sv.version, ".0")')
             ->execute();
@@ -380,7 +386,7 @@ class Installation
     protected function update_6()
     {
         /** @var ResultStatement $estimates */
-        $estimates = $this->app['db']->createQueryBuilder()
+        $estimates = $this->db->createQueryBuilder()
           ->select('e.*')
           ->from('estimates', 'e')
           ->where('e.data != ""')
@@ -402,12 +408,12 @@ class Installation
                 $estimateDate = null;
             }
 
-            $this->app['db']->createQueryBuilder()
+            $this->db->createQueryBuilder()
               ->update('estimates', 'e')
               ->set('e.estimate', ':estimate')
               ->where('e.version = :version')
               ->andWhere('e.when = :when')
-              ->setParameter('estimate', $this->app['db']->convertToDatabaseValue($estimateDate, 'date'))
+              ->setParameter('estimate', $this->db->convertToDatabaseValue($estimateDate, 'date'))
               ->setParameter('version', $estimate->version)
               ->setParameter('when', $estimate->when)
               ->execute();
@@ -420,7 +426,7 @@ class Installation
     protected function update_7()
     {
         /** @var Schema $schema */
-        $schema = $this->app['db']->getSchemaManager()->createSchema();
+        $schema = $this->db->getSchemaManager()->createSchema();
         $schema = clone $schema;
 
         $state = $schema->createTable('state');
@@ -428,18 +434,18 @@ class Installation
         $state->addColumn('value', 'blob');
         $state->setPrimaryKey(array('key'));
 
-        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->db);
         $synchronizer->updateSchema($schema);
 
 
-        $this->app['db']->insert(
+        $this->db->insert(
             'state',
             array(
-                $this->app['db']->quoteIdentifier('key') => 'InstallationVersion',
-                $this->app['db']->quoteIdentifier('value') => 7
+                $this->db->quoteIdentifier('key') => 'InstallationVersion',
+                $this->db->quoteIdentifier('value') => 7
             )
         );
 
-        unlink($this->app['config.dir'] . '/InstallationVersion');
+        unlink($this->configDir . '/InstallationVersion');
     }
 }
