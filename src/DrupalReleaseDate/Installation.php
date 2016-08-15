@@ -1,26 +1,50 @@
 <?php
 namespace DrupalReleaseDate;
 
+use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer;
+use Doctrine\DBAL\Types\Type;
 use \Silex\Application;
 
+/**
+ * Install and update database schema.
+ */
 class Installation
 {
 
     protected $app;
 
+    /**
+     * Extract version number integer from update method name.
+     *
+     * @param $method
+     * @return int
+     */
     public static function getVersionFromUpdateMethod($method)
     {
         return (int) substr($method, 7);
     }
 
+    /**
+     * Installation constructor.
+     *
+     * @param \Silex\Application $app
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
     }
 
+    /**
+     * Get the current installed version.
+     *
+     * @return int|null
+     */
     public function getVersion()
     {
         if ($this->app['db']->getSchemaManager()->tablesExist(array('state'))) {
+            /** @var ResultStatement $stateValue */
             $stateValue = $this->app['db']->createQueryBuilder()
               ->select('st.value')
               ->from('state', 'st')
@@ -28,8 +52,7 @@ class Installation
               ->execute();
             $versionValue = $stateValue->fetchColumn(0);
             return (int) $versionValue;
-        }
-        else if (file_exists($this->app['config.dir'] . '/InstallationVersion')) {
+        } elseif (file_exists($this->app['config.dir'] . '/InstallationVersion')) {
             return (int) file_get_contents($this->app['config.dir'] . '/InstallationVersion');
         }
 
@@ -37,6 +60,8 @@ class Installation
     }
 
     /**
+     * Update the current installed version.
+     *
      * @param int $value
      */
     public function setVersion($value)
@@ -49,6 +74,11 @@ class Installation
           ->execute();
     }
 
+    /**
+     * Retrieve all available updates.
+     *
+     * @return array
+     */
     public function getUpdates()
     {
         $updates = array_filter(
@@ -62,6 +92,11 @@ class Installation
         return $updates;
     }
 
+    /**
+     * Retrieve all un-applied updates.
+     *
+     * @return array
+     */
     public function getPendingUpdates()
     {
         $self = $this;
@@ -76,6 +111,9 @@ class Installation
         return $updates;
     }
 
+    /**
+     * Initialize database to latest schema version.
+     */
     public function install()
     {
         if ($this->getVersion() !== null) {
@@ -93,6 +131,9 @@ class Installation
         $this->setVersion($version);
     }
 
+    /**
+     * Apply all pending updates.
+     */
     public function update()
     {
         foreach ($this->getPendingUpdates() as $method) {
@@ -106,7 +147,7 @@ class Installation
      */
     protected function installSchema()
     {
-        $schema = new \Doctrine\DBAL\Schema\Schema();
+        $schema = new Schema();
 
         $samples = $schema->createTable('samples');
         $samples->addColumn('version', 'string', array('length' => 32));
@@ -136,24 +177,26 @@ class Installation
         $state->addColumn('value', 'blob');
         $state->setPrimaryKey(array('key'));
 
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->createSchema($schema);
 
         // Create the version entry in the database.  It will be updated with
         // the correct value at the end of `install()`.
         $this->app['db']->insert(
-          'state',
-          array(
-            $this->app['db']->quoteIdentifier('key') => 'InstallationVersion',
-            $this->app['db']->quoteIdentifier('value') => 0
-          ));
+            'state',
+            array(
+                $this->app['db']->quoteIdentifier('key') => 'InstallationVersion',
+                $this->app['db']->quoteIdentifier('value') => 0
+            )
+        );
     }
 
     /**
      * Normalize sample storage in database.
      */
-    protected function update_1 ()
+    protected function update_1()
     {
+        /** @var Schema $schema */
         $schema = $this->app['db']->getSchemaManager()->createSchema();
 
         // Create sample_values table.
@@ -165,10 +208,11 @@ class Installation
         $sample_values->addColumn('value', 'smallint', array('notnull' => false));
         $sample_values->setPrimaryKey(array('version', 'when', 'key'));
 
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
 
         // Select all samples.
+        /** @var ResultStatement $samples */
         $samples = $this->app['db']->createQueryBuilder()
             ->select('s.*')
             ->from('samples', 's')
@@ -183,7 +227,7 @@ class Installation
         );
 
         // Foreach sample, insert values into `sample_values`.
-        while ($sample = $samples->fetch(\PDO::FETCH_ASSOC)) {
+        while (($sample = $samples->fetch(\PDO::FETCH_ASSOC))) {
             foreach ($keys as $key) {
                 $this->app['db']->insert(
                     $this->app['db']->quoteIdentifier('sample_values'),
@@ -199,13 +243,13 @@ class Installation
 
         // Update samples table structure to remove columns
         $schema = clone $schema;
-        $samples = $schema->getTable('samples');
-        $samples->dropColumn('critical_tasks');
-        $samples->dropColumn('critical_bugs');
-        $samples->dropColumn('major_tasks');
-        $samples->dropColumn('major_bugs');
-        $samples->dropColumn('normal_tasks');
-        $samples->dropColumn('normal_bugs');
+        $samplesSchema = $schema->getTable('samples');
+        $samplesSchema->dropColumn('critical_tasks');
+        $samplesSchema->dropColumn('critical_bugs');
+        $samplesSchema->dropColumn('major_tasks');
+        $samplesSchema->dropColumn('major_bugs');
+        $samplesSchema->dropColumn('normal_tasks');
+        $samplesSchema->dropColumn('normal_bugs');
 
         $synchronizer->updateSchema($schema);
     }
@@ -216,15 +260,16 @@ class Installation
     protected function update_2()
     {
 
+        /** @var Schema $schema */
         $schema = $this->app['db']->getSchemaManager()->createSchema();
 
         $schema = clone $schema;
         $schema
             ->getTable('estimates')
             ->getColumn('estimate')
-            ->setType(\Doctrine\DBAL\Types\Type::getType('date'));
+            ->setType(Type::getType('date'));
 
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
     }
 
@@ -233,7 +278,7 @@ class Installation
      */
     protected function update_3()
     {
-
+        /** @var Schema $schema */
         $schema = $this->app['db']->getSchemaManager()->createSchema();
 
         $schema = clone $schema;
@@ -241,7 +286,7 @@ class Installation
         $estimates->addColumn('started', 'datetime');
         $estimates->addColumn('completed', 'datetime', array('notnull' => false));
 
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
 
         $this->app['db']->createQueryBuilder()
@@ -256,6 +301,7 @@ class Installation
      */
     protected function update_4()
     {
+        /** @var ResultStatement $estimates */
         $estimates = $this->app['db']->createQueryBuilder()
             ->select('e.*')
             ->from('estimates', 'e')
@@ -263,10 +309,10 @@ class Installation
             ->execute();
 
 
-        while ($estimate = $estimates->fetch(\PDO::FETCH_OBJ)) {
+        while (($estimate = $estimates->fetch(\PDO::FETCH_OBJ))) {
             $dataArray = unserialize($estimate->data);
 
-            $dataObject = \DrupalReleaseDate\EstimateDistribution::fromArray($dataArray);
+            $dataObject = EstimateDistribution::fromArray($dataArray);
 
             $this->app['db']->createQueryBuilder()
                 ->update('estimates', 'e')
@@ -286,28 +332,29 @@ class Installation
     protected function update_5()
     {
         // Update version field type.
+        /** @var Schema $schema */
         $schema = $this->app['db']->getSchemaManager()->createSchema();
         $schema = clone $schema;
 
         $estimates = $schema->getTable('estimates');
         $estimates->changeColumn('version', array(
-            'type' => \Doctrine\DBAL\Types\Type::getType('string'),
+            'type' => Type::getType('string'),
             'length' => 32,
         ));
 
         $samples = $schema->getTable('samples');
         $samples->changeColumn('version', array(
-            'type' => \Doctrine\DBAL\Types\Type::getType('string'),
+            'type' => Type::getType('string'),
             'length' => 32,
         ));
 
         $sampleValues = $schema->getTable('sample_values');
         $sampleValues->changeColumn('version', array(
-            'type' => \Doctrine\DBAL\Types\Type::getType('string'),
+            'type' => Type::getType('string'),
             'length' => 32,
         ));
 
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
 
         // Convert existing data.
@@ -330,7 +377,9 @@ class Installation
     /**
      * Get median value from past incomplete runs.
      */
-    protected function update_6() {
+    protected function update_6()
+    {
+        /** @var ResultStatement $estimates */
         $estimates = $this->app['db']->createQueryBuilder()
           ->select('e.*')
           ->from('estimates', 'e')
@@ -338,9 +387,9 @@ class Installation
           ->execute();
 
 
-        while ($estimate = $estimates->fetch(\PDO::FETCH_OBJ)) {
+        while (($estimate = $estimates->fetch(\PDO::FETCH_OBJ))) {
 
-            /** @var \DrupalReleaseDate\EstimateDistribution $distribution */
+            /** @var EstimateDistribution $distribution */
             $distribution = unserialize($estimate->data);
 
             try {
@@ -368,8 +417,9 @@ class Installation
     /**
      * Create a state table, and move the db version value from a file to it.
      */
-    protected function update_7() {
-
+    protected function update_7()
+    {
+        /** @var Schema $schema */
         $schema = $this->app['db']->getSchemaManager()->createSchema();
         $schema = clone $schema;
 
@@ -378,7 +428,7 @@ class Installation
         $state->addColumn('value', 'blob');
         $state->setPrimaryKey(array('key'));
 
-        $synchronizer = new \Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer($this->app['db']);
+        $synchronizer = new SingleDatabaseSynchronizer($this->app['db']);
         $synchronizer->updateSchema($schema);
 
 
@@ -387,7 +437,8 @@ class Installation
             array(
                 $this->app['db']->quoteIdentifier('key') => 'InstallationVersion',
                 $this->app['db']->quoteIdentifier('value') => 7
-            ));
+            )
+        );
 
         unlink($this->app['config.dir'] . '/InstallationVersion');
     }
