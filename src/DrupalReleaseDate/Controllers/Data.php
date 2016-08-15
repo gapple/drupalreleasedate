@@ -15,27 +15,48 @@ class Data
     /**
      * Parse a version string from the request's GET parameters.
      *
-     * Accepts either a string containing only a major version number, or major
-     * and minor version numbers separated by a period.  If only a major version
-     * is provided, the return value is normalized to include '0' as the minor
-     * version.
+     * 'version' accepts either a string containing only a major version number,
+     * or major and minor version numbers separated by a period.  If only a
+     * major version is provided, the return value is normalized to include '0'
+     * as the minor version.
      *
      * @param  Request $request
-     * @return string
+     * @return array
      *
      * @throws \Exception
      */
     public static function parseVersionFromRequest(Request $request)
     {
-        $versionString = $request->query->get('version', '8.0');
-        if (!preg_match('/^([0-9]+)(\\.[0-9]+)?$/', $versionString)) {
-            throw new \Exception("Invalid version parameter");
-        }
-        $segments = explode('.', $versionString);
-        $major = $segments[0];
-        $minor = empty($segments[1])? '0' : $segments[1];
+        if (($versionString = $request->query->get('version', false)) !== false) {
+            if (!preg_match('/^([0-9]+)(\\.[0-9]+)?$/', $versionString)) {
+                throw new \Exception("Invalid version parameter");
+            }
+            $segments = explode('.', $versionString);
+            $major = $segments[0];
+            $minor = empty($segments[1]) ? '0' : $segments[1];
 
-        return $major . '.' . $minor;
+            return array(
+              'major' => $major,
+              'minor' => $minor,
+            );
+        } elseif (($majorVersion = $request->query->get('version_major', false)) !== false) {
+            $version = array(
+              'major' => (int) $majorVersion,
+            );
+
+            if (($minorVersion = $request->query->get('version_minor', false)) !== false) {
+                $version['minor'] = $minorVersion;
+            }
+
+            return $version;
+        } elseif (($minorVersion = $request->query->get('version_minor', false)) !== false) {
+            throw new \Exception("Major version must be specified when minor version is provided.");
+        }
+
+        return array(
+          'major' => 8,
+          'minor' => 0,
+        );
     }
 
     /**
