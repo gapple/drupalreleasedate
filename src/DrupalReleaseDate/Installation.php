@@ -2,7 +2,6 @@
 namespace DrupalReleaseDate;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer;
 use Doctrine\DBAL\Types\Type;
@@ -50,7 +49,6 @@ class Installation
     public function getVersion()
     {
         if ($this->db->getSchemaManager()->tablesExist(array('state'))) {
-            /** @var ResultStatement $stateValue */
             $stateValue = $this->db->createQueryBuilder()
               ->select('st.value')
               ->from('state', 'st')
@@ -202,7 +200,6 @@ class Installation
      */
     protected function update_1()
     {
-        /** @var Schema $schema */
         $schema = $this->db->getSchemaManager()->createSchema();
 
         // Create sample_values table.
@@ -218,7 +215,6 @@ class Installation
         $synchronizer->updateSchema($schema);
 
         // Select all samples.
-        /** @var ResultStatement $samples */
         $samples = $this->db->createQueryBuilder()
             ->select('s.*')
             ->from('samples', 's')
@@ -265,8 +261,6 @@ class Installation
      */
     protected function update_2()
     {
-
-        /** @var Schema $schema */
         $schema = $this->db->getSchemaManager()->createSchema();
 
         $schema = clone $schema;
@@ -284,7 +278,6 @@ class Installation
      */
     protected function update_3()
     {
-        /** @var Schema $schema */
         $schema = $this->db->getSchemaManager()->createSchema();
 
         $schema = clone $schema;
@@ -307,7 +300,6 @@ class Installation
      */
     protected function update_4()
     {
-        /** @var ResultStatement $estimates */
         $estimates = $this->db->createQueryBuilder()
             ->select('e.*')
             ->from('estimates', 'e')
@@ -338,7 +330,6 @@ class Installation
     protected function update_5()
     {
         // Update version field type.
-        /** @var Schema $schema */
         $schema = $this->db->getSchemaManager()->createSchema();
         $schema = clone $schema;
 
@@ -385,7 +376,6 @@ class Installation
      */
     protected function update_6()
     {
-        /** @var ResultStatement $estimates */
         $estimates = $this->db->createQueryBuilder()
           ->select('e.*')
           ->from('estimates', 'e')
@@ -425,7 +415,6 @@ class Installation
      */
     protected function update_7()
     {
-        /** @var Schema $schema */
         $schema = $this->db->getSchemaManager()->createSchema();
         $schema = clone $schema;
 
