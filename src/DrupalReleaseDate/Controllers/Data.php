@@ -4,6 +4,7 @@ namespace DrupalReleaseDate\Controllers;
 use DateTime;
 use DateInterval;
 
+use Doctrine\DBAL\Connection;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,7 +45,8 @@ class Data
      * @param  string  $key
      * @return \DateTime
      */
-    public static function parseDateFromRequest(Request $request, $key) {
+    public static function parseDateFromRequest(Request $request, $key)
+    {
         $value = null;
         if ($request->query->has($key)) {
             $value = new DateTime($request->query->get($key));
@@ -58,27 +60,24 @@ class Data
         $responseData = array();
         try {
             $versionString = self::parseVersionFromRequest($request);
-        }
-        catch (\Exception $e) {
-            $app->abort(400, 'Invalid "version" parameter');
+        } catch (\Exception $e) {
+            $app->abort(400, 'Invalid version parameters');
         }
         $responseData['version'] = $versionString;
 
 
         try {
-            if ($from = self::parseDateFromRequest($request, 'from')) {
+            if (($from = self::parseDateFromRequest($request, 'from'))) {
                 $responseData['from'] = $from->format(DateTime::ATOM);
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $app->abort(400, 'Invalid "from" parameter');
         }
         try {
-            if($to = self::parseDateFromRequest($request, 'to')) {
+            if (($to = self::parseDateFromRequest($request, 'to'))) {
                 $responseData['to'] = $to->format(DateTime::ATOM);
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $app->abort(400, 'Invalid "to" parameter');
         }
 
@@ -108,16 +107,16 @@ class Data
         $lastResults = $lastQuery->execute();
         $lastDate = null;
         $cacheMaxAge = 3600;
-        if ($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC)) {
+        if (($lastResultRow = $lastResults->fetch(\PDO::FETCH_ASSOC))) {
             $lastDate = new DateTime($lastResultRow['when']);
             $responseData['modified'] = $lastDate->format(DateTime::ATOM);
 
             $nowDate = new DateTime();
-            if ($to && $to < $nowDate){
-                // If the request limits to data in the past, we can set a very long expiry since the results will never change.
+            if ($to && $to < $nowDate) {
+                // If the request limits to data in the past, we can set a very
+                // long expiry since the results will never change.
                 $cacheMaxAge = 31536000;
-            }
-            else {
+            } else {
                 // Calculate cache max age based on the time to the next sample.
                 $nextSampleDate = clone $lastDate;
                 $nextSampleDate->add(new DateInterval('PT' . $app['config']['sample.interval'] . 'S'));
