@@ -78,13 +78,19 @@ class Data
 
     public function samples(Application $app, Request $request)
     {
+        /** @var Connection $db */
+        $db = $app['db'];
+
         $responseData = array();
         try {
-            $versionString = self::parseVersionFromRequest($request);
+            $version = self::parseVersionFromRequest($request);
         } catch (\Exception $e) {
             $app->abort(400, 'Invalid version parameters');
         }
-        $responseData['version'] = $versionString;
+        $responseData['version_major'] = $version['major'];
+        if (isset($version['minor'])) {
+            $responseData['version_minor'] = $version['minor'];
+        }
 
 
         try {
@@ -107,22 +113,28 @@ class Data
         }
 
         // Check against Last-Modified header.
-        $lastQuery = $app['db']->createQueryBuilder()
+        $lastQuery = $db->createQueryBuilder()
             ->select('s.when')
             ->from('samples', 's')
-            ->where('s.version = :version')
-            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
-            ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+            ->where('s.version_major = :version_major')
+            ->setParameter('version_major', $version['major'], \PDO::PARAM_INT)
+            ->orderBy($db->quoteIdentifier('when'), 'DESC')
             ->setMaxResults(1);
+
+        if (isset($version['minor'])) {
+            $lastQuery
+                ->andWhere('s.version_minor = :version_minor')
+                ->setParameter('version_minor', $version['minor'], \PDO::PARAM_INT);
+        }
         if ($from) {
             $lastQuery
                 ->andWhere('s.when >= :from')
-                ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+                ->setParameter('from', $db->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
         }
         if ($to) {
             $lastQuery
                 ->andWhere('s.when <= :to')
-                ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+                ->setParameter('to', $db->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
         }
 
         $lastResults = $lastQuery->execute();
@@ -156,25 +168,33 @@ class Data
             }
         }
 
-        $sampleValuesQuery = $app['db']->createQueryBuilder()
+        $sampleValuesQuery = $db->createQueryBuilder()
             ->select(
+                'sv.version_major',
+                'sv.version_minor',
                 'sv.when',
                 'sv.key',
                 'sv.value'
             )
             ->from('sample_values', 'sv')
-            ->where('sv.version = :version')
-            ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
-            ->orderBy($app['db']->quoteIdentifier('when'), 'ASC');
+            ->where('sv.version_major = :version_major')
+            ->setParameter('version_major', $version['major'], \PDO::PARAM_INT)
+            ->orderBy($db->quoteIdentifier('when'), 'ASC');
+
+        if (isset($version['minor'])) {
+            $sampleValuesQuery
+                ->andWhere('sv.version_minor = :version_minor')
+                ->setParameter('version_minor', $version['minor'], \PDO::PARAM_INT);
+        }
         if ($from) {
             $sampleValuesQuery
                 ->andWhere('sv.when >= :from')
-                ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+                ->setParameter('from', $db->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
         }
         if ($to) {
             $sampleValuesQuery
                 ->andWhere('sv.when <= :to')
-                ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+                ->setParameter('to', $db->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
         }
 
         if ($request->query->has('limit')) {
@@ -184,22 +204,28 @@ class Data
             }
             $responseData['limit'] = $limit;
 
-            $dateLimitQuery = $app['db']->createQueryBuilder()
+            $dateLimitQuery = $db->createQueryBuilder()
               ->select('s.when')
               ->from('samples', 's')
-              ->where('s.version = :version')
-              ->setParameter('version', $app['db']->convertToDatabaseValue($versionString, 'string'), \PDO::PARAM_STR)
-              ->orderBy($app['db']->quoteIdentifier('when'), 'DESC')
+                ->where('s.version_major = :version_major')
+                ->setParameter('version_major', $version['major'], \PDO::PARAM_INT)
+              ->orderBy($db->quoteIdentifier('when'), 'DESC')
               ->setMaxResults($limit);
+
+            if (isset($version['minor'])) {
+                $dateLimitQuery
+                    ->andWhere('s.version_minor = :version_minor')
+                    ->setParameter('version_minor', $version['minor'], \PDO::PARAM_INT);
+            }
             if ($from) {
                 $dateLimitQuery
                   ->andWhere('s.when >= :from')
-                  ->setParameter('from', $app['db']->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
+                  ->setParameter('from', $db->convertToDatabaseValue($from, 'datetime'), \PDO::PARAM_STR);
             }
             if ($to) {
                 $dateLimitQuery
                   ->andWhere('s.when <= :to')
-                  ->setParameter('to', $app['db']->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
+                  ->setParameter('to', $db->convertToDatabaseValue($to, 'datetime'), \PDO::PARAM_STR);
             }
 
             $dateLimitResults = $dateLimitQuery
@@ -227,15 +253,21 @@ class Data
         $sampleValuesResult = $sampleValuesQuery->execute();
 
         $data = array();
-        while ($sampleValueRow = $sampleValuesResult->fetch(\PDO::FETCH_ASSOC)) {
-            $valueWhen = $app['db']->convertToPhpValue($sampleValueRow['when'], 'datetime');
-            $valueWhenTimestamp = $valueWhen->getTimestamp();
-            if (!isset($data[$valueWhenTimestamp])) {
-                $data[$valueWhenTimestamp] = array(
+        while (($sampleValueRow = $sampleValuesResult->fetch(\PDO::FETCH_ASSOC))) {
+            $valueWhen = $db->convertToPhpValue($sampleValueRow['when'], 'datetime');
+            $sampleKey = implode(array(
+                $sampleValueRow['version_major'],
+                $sampleValueRow['version_minor'],
+                $valueWhen->getTimestamp(),
+            ));
+            if (!isset($data[$sampleKey])) {
+                $data[$sampleKey] = array(
+                    'version_major' => $sampleValueRow['version_major'],
+                    'version_minor' => $sampleValueRow['version_minor'],
                     'when' => $valueWhen->format(DateTime::ATOM),
                 );
             }
-            $data[$valueWhenTimestamp][$sampleValueRow['key']] = $app['db']->convertToPhpValue($sampleValueRow['value'], 'smallint');
+            $data[$sampleKey][$sampleValueRow['key']] = $db->convertToPhpValue($sampleValueRow['value'], 'smallint');
         }
         $responseData['data'] = array_values($data);
 
