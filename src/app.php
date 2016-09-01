@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -13,6 +14,18 @@ $app->mount('/cron', new \DrupalReleaseDate\Controllers\CronControllerProvider()
 $app->after(function (Request $request, Response $response) {
     $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
     $response->headers->set('X-Xss-Protection', '1; mode=block');
+
+    if (stripos($response->headers->get('Content-Type'), 'text/html') !== false) {
+        $response->headers->set(
+            'Content-Security-Policy-Report-Only',
+            "default-src 'self'; " .
+                "script-src 'self' 'unsafe-inline' code.jquery.com www.google.com www.google-analytics.com; " .
+                "style-src 'self' 'unsafe-inline' netdna.bootstrapcdn.com www.google.com ajax.googleapis.com; " .
+                "img-src 'self' s3.amazonaws.com www.google-analytics.com stats.g.doubleclick.net; " .
+                "connect-src 'self' www.drupal.org www.google-analytics.com;" .
+                "report-uri https://gapple.report-uri.io/r/default/csp/reportOnly;"
+        );
+    }
 });
 
 // If the Symfony2 Reverse Proxy service was enabled and loaded, use it instead.
