@@ -17,6 +17,7 @@
         "php": "^5.5||^7.0",
         "cilex/console-service-provider": "~1.0",
         "doctrine/dbal": "~2.2",
+        "doctrine/annotations": "~1.2.0",
         "guzzlehttp/guzzle": "^6.0",
         "paragonie/random_compat": "^2.0",
         "silex/silex": "~1.0",
