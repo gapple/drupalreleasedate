@@ -9,9 +9,9 @@ class Random extends AbstractGenerator
     public function generate()
     {
         if ($this->type == NumberGeneratorInterface::TYPE_INT) {
-            $rand = mt_rand($this->min, $this->max);
+            $rand = random_int($this->min, $this->max);
         } else {
-            $rand = (mt_rand() / mt_getrandmax()) * ($this->max - $this->min) + $this->min;
+            $rand = (random_int(0, PHP_INT_MAX) / PHP_INT_MAX) * ($this->max - $this->min) + $this->min;
         }
         return $rand;
     }
