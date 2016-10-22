@@ -14,6 +14,7 @@
         "psr-4": {"DrupalReleaseDate\\Tests\\": "src/tests/DrupalReleaseDate/Tests/"}
     },
     "require": {
+        "php": "^5.5||^7.0",
         "cilex/console-service-provider": "~1.0",
         "doctrine/dbal": "~2.2",
         "guzzle/guzzle": "~3.7",

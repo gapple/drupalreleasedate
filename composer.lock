@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d1d92cd426298ccc4f9b180619bb2b73",
-    "content-hash": "cba82b29a722e300a0817b6a2304e6fe",
+    "hash": "278adac50e2a14158e941d9b4f4146d7",
+    "content-hash": "5c650dad0ccc7a72ef4ae35bed31c0b9",
     "packages": [
         {
             "name": "cilex/console-service-provider",
@@ -625,6 +625,7 @@
                 "rest",
                 "web service"
             ],
+            "abandoned": "guzzlehttp/guzzle",
             "time": "2014-05-07 17:04:22"
         },
         {
@@ -686,7 +687,7 @@
             "dist": {
                 "type": "zip",
                 "url": "https://api.github.com/repos/php-fig/log/zipball/fe0936ee26643249e916849d48e3a51d5f5e278b",
-                "reference": "1.0.0",
+                "reference": "fe0936ee26643249e916849d48e3a51d5f5e278b",
                 "shasum": ""
             },
             "type": "library",
@@ -1214,12 +1215,12 @@
             "target-dir": "Symfony/Component/Routing",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Routing.git",
+                "url": "https://github.com/symfony/routing.git",
                 "reference": "24d5f003a794894513d67c888181ba8c3b8e0693"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Routing/zipball/24d5f003a794894513d67c888181ba8c3b8e0693",
+                "url": "https://api.github.com/repos/symfony/routing/zipball/24d5f003a794894513d67c888181ba8c3b8e0693",
                 "reference": "24d5f003a794894513d67c888181ba8c3b8e0693",
                 "shasum": ""
             },
@@ -2262,6 +2263,8 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": "^5.5||^7.0"
+    },
     "platform-dev": []
 }
