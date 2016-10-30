@@ -1,12 +1,16 @@
 <?php
 namespace DrupalReleaseDate\Console;
 
+use GuzzleHttp\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use DrupalReleaseDate\Repository\Updater;
 
+/**
+ * Command to retrieve samples from Drupal.org
+ */
 class SampleCommand extends Command
 {
     protected function configure()
@@ -22,14 +26,14 @@ class SampleCommand extends Command
 
         $repositoryUpdater = new Updater($app['db']);
 
-        $guzzleClient = new \Guzzle\Http\Client();
+        $guzzleClientConfig = [];
         if (!empty($app['config']['guzzle']['userAgent'])) {
-            $guzzleClient->setUserAgent($app['config']['guzzle']['userAgent'], true);
+            $guzzleClientConfig['headers']['User-Agent'] = $app['config']['guzzle']['userAgent'];
         }
+        $guzzleClient = new Client($guzzleClientConfig);
 
         $repositoryUpdater->samples($guzzleClient, $app['config']['drupal_issues']);
 
         // TODO output success message.
-
     }
 }

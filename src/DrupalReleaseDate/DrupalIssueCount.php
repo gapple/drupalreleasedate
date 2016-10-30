@@ -1,24 +1,34 @@
 <?php
 namespace DrupalReleaseDate;
 
-use Symfony\Component\DomCrawler;
+use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Psr7\Uri;
+use Psr\Http\Message\UriInterface;
+use Symfony\Component\DomCrawler\Crawler;
 
+/**
+ * Class to retrieve issue counts from Drupal.org.
+ */
 class DrupalIssueCount
 {
     /**
      * Guzzle client used for requests.
-     * @var \Guzzle\Http\ClientInterface
+     * @var \GuzzleHttp\ClientInterface
      */
     protected $client;
 
-    public function __construct(\Guzzle\Http\ClientInterface $client = null)
+    /**
+     * DrupalIssueCount constructor.
+     *
+     * @param \GuzzleHttp\ClientInterface|null $client
+     */
+    public function __construct(ClientInterface $client = null)
     {
         if (empty($client)) {
-            $client = new \Guzzle\Http\Client();
+            $client = new Client();
         }
-
         $this->client = $client;
-        $this->client->setBaseUrl('https://drupal.org/');
     }
 
     /**
@@ -32,19 +42,19 @@ class DrupalIssueCount
      *     'setKey' => array(
      *       'parameterKey' => 'parameterValue',
      *     )
+     * @return array
      */
     public function getCounts($commonParameters, $fetchSet)
     {
         $results = array();
         foreach ($fetchSet as $fetchKey => $fetchParameters) {
-            $request = $this->client->get('/project/issues/search/drupal');
-
-            $request->getQuery()
-                ->overwriteWith($commonParameters)
-                ->overwriteWith($fetchParameters);
+            $uri = (new Uri('https://drupal.org/project/issues/search/drupal'))
+                ->withQuery($this->buildQuery(
+                    array_merge($commonParameters, $fetchParameters)
+                ));
 
             try {
-                $results[$fetchKey] = $this->getCount($request);
+                $results[$fetchKey] = $this->getCount($uri);
             } catch (\Exception $e) {
                 $results[$fetchKey] = null;
             }
@@ -54,28 +64,43 @@ class DrupalIssueCount
     }
 
     /**
+     * Convert parameters array to format required for query.
+     *
+     * @param $parameters
+     * @return array
+     */
+    protected function buildQuery($parameters)
+    {
+        foreach ($parameters as $key => $values) {
+            if (is_array($values)) {
+                $parameters[$key . '[]'] = $values;
+                unset($parameters[$key]);
+            }
+        }
+
+        return \GuzzleHttp\Psr7\build_query($parameters);
+    }
+
+    /**
      * Get the issue count from the provided request.
      *
      *
-     * @param array $request
-     *   Guzzle request for the first page of results.
+     * @param UriInterface $uri
      * @return number
      *   The total number of issues for the search paramaters of the request.
      */
-    public function getCount(\Guzzle\Http\Message\RequestInterface $request)
+    public function getCount(UriInterface $uri)
     {
-        // Make sure page isn't set from a previous call on the same request object.
-        $request->getQuery()->remove('page');
-
         $issueRowCount = 0;
 
-        while(true) {
-            $document = new DomCrawler\Crawler((string) $request->send()->getBody());
+        while (true) {
+            $response = $this->client->get($uri);
+            $document = new Crawler($response->getBody()->getContents());
             $issueView = $document->filter('.view-project-issue-search-project-searchapi');
 
             $issueRowCount += $issueView
                 ->filter('table.views-table tbody tr')
-                ->reduce(function (DomCrawler\Crawler $element) {
+                ->reduce(function (Crawler $element) {
                     // Drupal.org is returning rows where all cells are empty,
                     // which bumps up the count incorrectly.
                     return $element->filter('td')->first()->filter('a')->count() > 0;
@@ -90,7 +115,7 @@ class DrupalIssueCount
 
             preg_match('/page=(\\d+)/', $pagerNext->attr('href'), $urlMatches);
 
-            $request->getQuery()->set('page', (int) $urlMatches[1]);
+            $uri = Uri::withQueryValue($uri, 'page', (int) $urlMatches[1]);
         };
 
         return $issueRowCount;

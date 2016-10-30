@@ -1,6 +1,7 @@
 <?php
 namespace DrupalReleaseDate\Controllers;
 
+use GuzzleHttp\Client;
 use Silex\Application;
 use Doctrine\DBAL\Connection as DbConnection;
 
@@ -43,10 +44,11 @@ class Cron
      */
     public function fetchCounts(Application $app)
     {
-        $guzzleClient = new \Guzzle\Http\Client();
+        $guzzleClientConfig = [];
         if (!empty($app['config']['guzzle']['userAgent'])) {
-            $guzzleClient->setUserAgent($app['config']['guzzle']['userAgent'], true);
+            $guzzleClientConfig['headers']['User-Agent'] = $app['config']['guzzle']['userAgent'];
         }
+        $guzzleClient = new Client($guzzleClientConfig);
 
         $this->repositoryUpdater->samples($guzzleClient, $app['config']['drupal_issues']);
 

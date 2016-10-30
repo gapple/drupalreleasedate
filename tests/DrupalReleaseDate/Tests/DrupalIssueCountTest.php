@@ -1,31 +1,57 @@
 <?php
 namespace DrupalReleaseDate\Tests;
 
-use Guzzle\Plugin\Mock\MockPlugin;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use DrupalReleaseDate\DrupalIssueCount;
 
-class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
+/**
+ * Test retrieving correct issue counts from Drupal.org.
+ */
+class DrupalIssueCountTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var MockHandler
+     */
+    protected $mockHandler;
+
+    /**
+     * @var Client
+     */
+    protected $client;
+
+    /**
+     * @var DrupalIssueCount
+     */
+    protected $issueCounter;
+
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->mockHandler = new MockHandler();
+        $this->client = new Client([
+            'handler' => HandlerStack::create($this->mockHandler)
+        ]);
+
+        $this->issueCounter = new DrupalIssueCount($this->client);
+    }
 
     /**
      * Test a count request that encounters an error in the response.
      */
     public function testFailedCount()
     {
+        $this->mockHandler->append(new Response(503));
 
-        $mockPlugin = new MockPlugin();
-        $client = new \Guzzle\Http\Client();
-        $client->addSubscriber($mockPlugin);
-
-        $mockPlugin->addResponse(new \Guzzle\Http\Message\Response(503));
-
-        $issueCounter = new DrupalIssueCount($client);
-
-        $issueCount = $issueCounter->getCounts(
-            array(),
-            array(
-                'test' => array(),
-            )
+        $issueCount = $this->issueCounter->getCounts(
+            [],
+            [
+                'test' => [],
+            ]
         );
 
         $this->assertNull($issueCount['test']);
@@ -36,34 +62,27 @@ class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
      */
     public function testSinglePageCount()
     {
-
-        $responses = array(
-            MockPlugin::getMockFile(TEST_RESOURCE_PATH . '/http/drupal_org_critical_bugs')
+        $this->mockHandler->append(
+            new Response(200, [], fopen(TEST_RESOURCE_PATH . '/http/drupal_org_critical_bugs', 'r'))
         );
 
-        $mockPlugin = new MockPlugin($responses);
-        $client = new \Guzzle\Http\Client();
-        $client->addSubscriber($mockPlugin);
-
-        $issueCounter = new DrupalIssueCount($client);
-
-        $issueCount = $issueCounter->getCounts(
-            array(
-                'status' => array(
+        $issueCount = $this->issueCounter->getCounts(
+            [
+                'status' => [
                     1, // Active
                     13, // Needs work
                     8, // Needs review
                     14, // Reviewed & tested by the community
                     15, // Patch (to be ported)
                     4, // Postponed
-                ),
-            ),
-            array(
-                'critical_bugs' => array(
-                    'priorities' => array(400),
-                    'categories' => array(1),
-                ),
-            )
+                ],
+            ],
+            [
+                'critical_bugs' => [
+                    'priorities' => [400],
+                    'categories' => [1],
+                ],
+            ]
         );
 
         $this->assertEquals(49, $issueCount['critical_bugs']);
@@ -75,39 +94,32 @@ class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
      */
     public function testMultiPageCount()
     {
-
-        $responses = array(
-            MockPlugin::getMockFile(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_0'),
-            MockPlugin::getMockFile(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_1'),
-            MockPlugin::getMockFile(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_2'),
-            MockPlugin::getMockFile(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_3'),
-            MockPlugin::getMockFile(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_4'),
-            MockPlugin::getMockFile(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_5'),
+        $this->mockHandler->append(
+            new Response(200, [], fopen(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_0', 'r')),
+            new Response(200, [], fopen(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_1', 'r')),
+            new Response(200, [], fopen(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_2', 'r')),
+            new Response(200, [], fopen(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_3', 'r')),
+            new Response(200, [], fopen(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_4', 'r')),
+            new Response(200, [], fopen(TEST_RESOURCE_PATH . '/http/drupal_org_major_bugs_5', 'r'))
         );
 
-        $mockPlugin = new MockPlugin($responses);
-        $client = new \Guzzle\Http\Client();
-        $client->addSubscriber($mockPlugin);
-
-        $issueCounter = new DrupalIssueCount($client);
-
-        $issueCount = $issueCounter->getCounts(
-            array(
-                'status' => array(
+        $issueCount = $this->issueCounter->getCounts(
+            [
+                'status' => [
                     1, // Active
                     13, // Needs work
                     8, // Needs review
                     14, // Reviewed & tested by the community
                     15, // Patch (to be ported)
                     4, // Postponed
-                ),
-            ),
-            array(
-                'major_bugs' => array(
-                    'priorities' => array(300),
-                    'categories' => array(1),
-                ),
-            )
+                ],
+            ],
+            [
+                'major_bugs' => [
+                    'priorities' => [300],
+                    'categories' => [1],
+                ],
+            ]
         );
 
         $this->assertEquals(271, $issueCount['major_bugs']);

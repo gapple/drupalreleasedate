@@ -5,6 +5,7 @@ use DateTime;
 use DateInterval;
 use Doctrine\DBAL\Connection as DbConnection;
 
+use DrupalReleaseDate\DrupalIssueCount;
 use DrupalReleaseDate\NumberGenerator\GeometricWeighted;
 use DrupalReleaseDate\NumberGenerator\Random;
 use DrupalReleaseDate\Sampling\Sample;
@@ -13,6 +14,7 @@ use DrupalReleaseDate\Sampling\TimeGroupedRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
 use DrupalReleaseDate\MonteCarlo\IncreasingException;
 use DrupalReleaseDate\MonteCarlo\TimeoutException;
+use GuzzleHttp\ClientInterface;
 
 /**
  * Class to encapsulate methods that make updates to the database.
@@ -148,10 +150,10 @@ class Updater
      * Retrieve issue count samples according to the provided configuration,
      * and store them to the database.
      *
-     * @param  \Guzzle\Http\ClientInterface $httpClient
+     * @param  \GuzzleHttp\ClientInterface $httpClient
      * @param  array $config
      */
-    public function samples(\Guzzle\Http\ClientInterface $httpClient, array $config)
+    public function samples(ClientInterface $httpClient, array $config)
     {
         $db = $this->db;
 
@@ -167,7 +169,7 @@ class Updater
             $db->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
         );
 
-        $counter = new \DrupalReleaseDate\DrupalIssueCount($httpClient);
+        $counter = new DrupalIssueCount($httpClient);
 
         foreach ($versions as $versionId => $versionKey) {
             $commonParameters = array(
