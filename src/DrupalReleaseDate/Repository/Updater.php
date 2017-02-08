@@ -162,6 +162,7 @@ class Updater
             '8.1' => '8.1.x-dev',
             '8.2' => '8.2.x-dev',
             '8.3' => '8.3.x-dev',
+            '8.4' => '8.4.x-dev',
             '9.0' => '9.x', // 9.x has not been updated to semantic versioning yet
         );
 
