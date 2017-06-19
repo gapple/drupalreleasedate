@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @coversDefaultClass \DrupalReleaseDate\Controllers\Data
  */
-class DrupalReleaseDateTest extends \PHPUnit_Framework_TestCase
+class DataTest extends \PHPUnit_Framework_TestCase
 {
     public static function setUpBeforeClass() {
         date_default_timezone_set('America/Vancouver');
