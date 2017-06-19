@@ -25,6 +25,10 @@ $app->after(function (Request $request, Response $response) {
                 "connect-src 'self' www.drupal.org www.google-analytics.com;" .
                 "report-uri https://gapple.report-uri.io/r/default/csp/enforce;"
         );
+        $response->headers->set(
+            'Referrer-Policy',
+            'no-referrer-when-downgrade'
+        );
     }
 });
 
