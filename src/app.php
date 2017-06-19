@@ -17,13 +17,13 @@ $app->after(function (Request $request, Response $response) {
 
     if (stripos($response->headers->get('Content-Type'), 'text/html') !== false) {
         $response->headers->set(
-            'Content-Security-Policy-Report-Only',
+            'Content-Security-Policy',
             "default-src 'self'; " .
                 "script-src 'self' 'unsafe-inline' code.jquery.com www.google.com www.google-analytics.com; " .
                 "style-src 'self' 'unsafe-inline' netdna.bootstrapcdn.com www.google.com ajax.googleapis.com; " .
                 "img-src 'self' s3.amazonaws.com www.google-analytics.com stats.g.doubleclick.net; " .
                 "connect-src 'self' www.drupal.org www.google-analytics.com;" .
-                "report-uri https://gapple.report-uri.io/r/default/csp/reportOnly;"
+                "report-uri https://gapple.report-uri.io/r/default/csp/enforce;"
         );
     }
 });
