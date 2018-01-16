@@ -15,6 +15,7 @@ use DrupalReleaseDate\MonteCarlo;
 use DrupalReleaseDate\MonteCarlo\IncreasingException;
 use DrupalReleaseDate\MonteCarlo\TimeoutException;
 use GuzzleHttp\ClientInterface;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Class to encapsulate methods that make updates to the database.
@@ -157,15 +158,6 @@ class Updater
     {
         $db = $this->db;
 
-        $versions = array(
-            '8.0' => '8.0.x-dev',
-            '8.1' => '8.1.x-dev',
-            '8.2' => '8.2.x-dev',
-            '8.3' => '8.3.x-dev',
-            '8.4' => '8.4.x-dev',
-            '8.5' => '8.5.x-dev',
-            '9.0' => '9.x', // 9.x has not been updated to semantic versioning yet
-        );
 
         $queryDataDefaults = array(
             $db->quoteIdentifier('when') => date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']),
@@ -173,6 +165,7 @@ class Updater
 
         $counter = new DrupalIssueCount($httpClient);
 
+        $versions = $this->getVersions($httpClient);
         foreach ($versions as $versionId => $versionKey) {
             $commonParameters = array(
                 'version' => array($versionKey)
@@ -192,5 +185,33 @@ class Updater
                 $db->insert($db->quoteIdentifier('sample_values'), $queryData);
             }
         }
+    }
+
+    /**
+     * Retrieve available Drupal versions.
+     *
+     * @param ClientInterface $httpClient
+     * @return array
+     */
+    protected function getVersions(ClientInterface $httpClient)
+    {
+        // Retrieve all 8.x and 9.x versions from the issue queue select element.
+        $response = $httpClient->get('https://www.drupal.org/project/issues/drupal');
+        $document = new Crawler($response->getBody()->getContents());
+        $versions = $document
+            ->filter('#edit-version option')
+            ->reduce(function (Crawler $element) {
+                return !empty(preg_match('/^(8|9)(\\.\\d)?\\.x-dev$/', $element->attr('value')));
+            })
+            ->extract('value');
+
+        // Change the array keys to '{major}.{minor}'
+        foreach ($versions as $key => $version) {
+            $shortKey = str_replace('.x', '.0', substr($version, 0, 3));
+            $versions[$shortKey] = $version;
+            unset($versions[$key]);
+        }
+
+        return $versions;
     }
 }
