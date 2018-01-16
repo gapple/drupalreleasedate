@@ -4,8 +4,9 @@ namespace DrupalReleaseDate\Tests\Random;
 use DrupalReleaseDate\NumberGenerator\Cyclic as CyclicGenerator;
 use DrupalReleaseDate\NumberGenerator\GeometricWeighted;
 use DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
+use PHPUnit\Framework\TestCase;
 
-class GeometricWeightedTest extends \PHPUnit_Framework_TestCase
+class GeometricWeightedTest extends TestCase
 {
 
     /**

@@ -4,8 +4,9 @@ namespace DrupalReleaseDate\Sampling\Tests;
 use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
+use PHPUnit\Framework\TestCase;
 
-class SampleSetRandomSampleSelectorTest extends \PHPUnit_Framework_TestCase
+class SampleSetRandomSampleSelectorTest extends TestCase
 {
 
     protected $sampleSetStub;
@@ -13,7 +14,7 @@ class SampleSetRandomSampleSelectorTest extends \PHPUnit_Framework_TestCase
     protected $sampleSelector;
 
     protected function setUp() {
-        $this->sampleSetStub = $this->getMock('\DrupalReleaseDate\Sampling\SampleSet');
+        $this->sampleSetStub = $this->createMock('\DrupalReleaseDate\Sampling\SampleSet');
 
         $this->randomStub = $this->getMockBuilder('\DrupalReleaseDate\NumberGenerator\Random')
             ->disableOriginalConstructor()

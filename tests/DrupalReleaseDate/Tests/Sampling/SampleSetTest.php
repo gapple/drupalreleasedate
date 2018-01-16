@@ -3,8 +3,9 @@ namespace DrupalReleaseDate\Sampling\Tests;
 
 use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
+use PHPUnit\Framework\TestCase;
 
-class SampleSetTest extends \PHPUnit_Framework_TestCase
+class SampleSetTest extends TestCase
 {
 
     /**

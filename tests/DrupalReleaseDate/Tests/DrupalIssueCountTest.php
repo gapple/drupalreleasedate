@@ -10,7 +10,7 @@ use DrupalReleaseDate\DrupalIssueCount;
 /**
  * Test retrieving correct issue counts from Drupal.org.
  */
-class DrupalIssueCountTest extends \PHPUnit_Framework_TestCase
+class DrupalIssueCountTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var MockHandler

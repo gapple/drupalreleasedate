@@ -4,8 +4,9 @@ namespace DrupalReleaseDate\Tests;
 use DrupalReleaseDate\NumberGenerator\Cyclic as CyclicGenerator;
 use DrupalReleaseDate\NumberGenerator\LinearWeighted;
 use DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
+use PHPUnit\Framework\TestCase;
 
-class LinearWeightedTest extends \PHPUnit_Framework_TestCase
+class LinearWeightedTest extends TestCase
 {
 
     /**

@@ -2,8 +2,9 @@
 namespace DrupalReleaseDate\Tests;
 
 use DrupalReleaseDate\EstimateDistribution;
+use PHPUnit\Framework\TestCase;
 
-class EstimateDistributionTest extends \PHPUnit_Framework_TestCase
+class EstimateDistributionTest extends TestCase
 {
     /**
      * Test Success Counting.

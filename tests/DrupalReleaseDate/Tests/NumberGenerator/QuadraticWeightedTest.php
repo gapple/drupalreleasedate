@@ -3,8 +3,9 @@ namespace DrupalReleaseDate\Tests\Random;
 
 use DrupalReleaseDate\NumberGenerator\Cyclic as CyclicGenerator;
 use DrupalReleaseDate\NumberGenerator\QuadraticWeighted;
+use PHPUnit\Framework\TestCase;
 
-class QuadraticWeightedTest extends \PHPUnit_Framework_TestCase
+class QuadraticWeightedTest extends TestCase
 {
     /**
      * @var \DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface

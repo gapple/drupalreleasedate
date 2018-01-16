@@ -2,11 +2,12 @@
 namespace DrupalReleaseDate\Tests\NumberGenerator;
 
 use DrupalReleaseDate\NumberGenerator\Cyclic;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @coversDefaultClass \DrupalReleaseDate\NumberGenerator\Cyclic<extended>
  */
-class CyclicTest extends \PHPUnit_Framework_TestCase
+class CyclicTest extends TestCase
 {
 
     /**

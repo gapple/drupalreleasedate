@@ -2,8 +2,9 @@
 namespace DrupalReleaseDate\Sampling\Tests;
 
 use DrupalReleaseDate\Sampling\Sample;
+use PHPUnit\Framework\TestCase;
 
-class SampleTest extends \PHPUnit_Framework_TestCase
+class SampleTest extends TestCase
 {
 
     function setup()
