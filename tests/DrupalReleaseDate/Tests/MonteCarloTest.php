@@ -6,8 +6,9 @@ use DrupalReleaseDate\Sampling\Sample;
 use DrupalReleaseDate\Sampling\SampleSet;
 use DrupalReleaseDate\Sampling\SampleSetRandomSampleSelector;
 use DrupalReleaseDate\MonteCarlo;
+use PHPUnit\Framework\TestCase;
 
-class MonteCarloTest extends \PHPUnit_Framework_TestCase
+class MonteCarloTest extends TestCase
 {
 
     /**

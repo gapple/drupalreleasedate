@@ -3,8 +3,9 @@ namespace DrupalReleaseDate\Tests\NumberGenerator;
 
 use DrupalReleaseDate\NumberGenerator\NumberGeneratorInterface;
 use DrupalReleaseDate\NumberGenerator\Random;
+use PHPUnit\Framework\TestCase;
 
-class RandomTest extends \PHPUnit_Framework_TestCase
+class RandomTest extends TestCase
 {
     /**
      * Test that the generator only returns results in the specified range.

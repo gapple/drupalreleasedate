@@ -2,6 +2,7 @@
 namespace DrupalReleaseDate\Tests\Controllers;
 
 use DrupalReleaseDate\Controllers\Data;
+use PHPUnit\Framework\TestCase;
 use SebastianBergmann\Exporter\Exception;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -9,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @coversDefaultClass \DrupalReleaseDate\Controllers\Data
  */
-class DataTest extends \PHPUnit_Framework_TestCase
+class DataTest extends TestCase
 {
     public static function setUpBeforeClass() {
         date_default_timezone_set('America/Vancouver');
