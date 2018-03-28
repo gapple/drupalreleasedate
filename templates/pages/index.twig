@@ -76,6 +76,8 @@
     {{ parent() }}
 
     <script type="text/javascript">
+        "use strict";
+
         function dateToString(date) {
             var string;
 
@@ -128,8 +130,15 @@
                     if (response.list) {
                         var latestRelease;
                         do {
-                            latestRelease = response.list.shift();
-                        } while (latestRelease.field_release_version_extra !== null);
+                          var potentialRelease = response.list.shift();
+                          if (potentialRelease.field_release_version_extra !== null) {
+                            continue;
+                          }
+                          if (latestRelease && parseInt(potentialRelease.field_release_version_minor) < parseInt(latestRelease.field_release_version_minor)) {
+                            continue;
+                          }
+                          latestRelease = potentialRelease;
+                        } while (response.list.length);
 
                         release = {
                             value: '<a href="https://www.drupal.org/node/' + latestRelease.nid + '">' + latestRelease.field_release_version + '</a>',
