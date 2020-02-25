@@ -206,7 +206,7 @@ class Updater
         $versions = $document
             ->filter('#edit-version option')
             ->reduce(function (Crawler $element) {
-                return !empty(preg_match('/^(8|9)(\\.\\d)?\\.x-dev$/', $element->attr('value')));
+                return !empty(preg_match('/^(8|9)(\\.\\d+)?\\.x-dev$/', $element->attr('value')));
             })
             ->extract('value');
 
