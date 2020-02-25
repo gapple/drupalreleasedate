@@ -177,6 +177,11 @@ class Updater
                     $db->quoteIdentifier('version') => $versionId,
                 );
 
+            if ($db->ping() === false) {
+                $db->close();
+                $db->connect();
+            }
+
             $db->insert($db->quoteIdentifier('samples'), $queryData);
 
             foreach ($countResults as $resultKey => $resultValue) {
