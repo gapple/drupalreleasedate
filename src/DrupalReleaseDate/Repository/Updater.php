@@ -200,23 +200,23 @@ class Updater
      */
     protected function getVersions(ClientInterface $httpClient)
     {
-        // Retrieve all 8.x and 9.x versions from the issue queue select element.
+        // Retrieve all version >= 8.0.x from the issue queue select element.
         $response = $httpClient->get('https://www.drupal.org/project/issues/drupal');
         $document = new Crawler($response->getBody()->getContents());
         $versions = $document
             ->filter('#edit-version option')
             ->reduce(function (Crawler $element) {
-                return !empty(preg_match('/^(8|9)(\\.\\d+)?\\.x-dev$/', $element->attr('value')));
+                return !empty(preg_match('/^(8|9|\\d{2})\\.\\d+\\.x-dev$/', $element->attr('value')));
             })
-            ->extract('value');
+            ->extract(['value']);
 
         // Change the array keys to '{major}.{minor}'
+        $return = [];
         foreach ($versions as $key => $version) {
-            $shortKey = str_replace('.x', '.0', substr($version, 0, 3));
-            $versions[$shortKey] = $version;
-            unset($versions[$key]);
+            preg_match('/^(\\d+\\.\\d+)/', $version, $versionMatch);
+            $return[$versionMatch[1]] = $version;
         }
 
-        return $versions;
+        return $return;
     }
 }
