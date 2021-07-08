@@ -154,27 +154,30 @@ class Installation
         $schema = new Schema();
 
         $samples = $schema->createTable('samples');
-        $samples->addColumn('version', 'string', array('length' => 32));
+        $samples->addColumn('version_major', 'smallint');
+        $samples->addColumn('version_minor', 'smallint');
         $samples->addColumn('when', 'datetime');
         $samples->addColumn('notes', 'string', array('default' => ''));
-        $samples->setPrimaryKey(array('version', 'when'));
+        $samples->setPrimaryKey(array('version_major', 'version_minor', 'when'));
 
         $sample_values = $schema->createTable('sample_values');
-        $sample_values->addColumn('version', 'string', array('length' => 32));
+        $sample_values->addColumn('version_major', 'smallint');
+        $sample_values->addColumn('version_minor', 'smallint');
         $sample_values->addColumn('when', 'datetime');
         $sample_values->addColumn('key', 'string', array('length' => 64));
         $sample_values->addColumn('value', 'smallint', array('notnull' => false));
-        $sample_values->setPrimaryKey(array('version', 'when', 'key'));
+        $sample_values->setPrimaryKey(array('version_major', 'version_minor', 'when', 'key'));
 
         $estimates = $schema->createTable('estimates');
-        $estimates->addColumn('version', 'string', array('length' => 32));
+        $estimates->addColumn('version_major', 'smallint');
+        $estimates->addColumn('version_minor', 'smallint');
         $estimates->addColumn('when', 'datetime');
         $estimates->addColumn('started', 'datetime');
         $estimates->addColumn('completed', 'datetime', array('notnull' => false));
         $estimates->addColumn('estimate', 'datetime', array('notnull' => false));
         $estimates->addColumn('note', 'string', array('default' => ''));
         $estimates->addColumn('data', 'blob');
-        $estimates->setPrimaryKey(array('version', 'when'));
+        $estimates->setPrimaryKey(array('version_major', 'version_minor', 'when'));
 
         $state = $schema->createTable('state');
         $state->addColumn('key', 'string', array('length' => 255));
@@ -436,5 +439,63 @@ class Installation
         );
 
         unlink($this->configDir . '/InstallationVersion');
+    }
+
+    /**
+     * Split string version fields to major + minor integers.
+     */
+    protected function update_8()
+    {
+        $synchronizer = new SingleDatabaseSynchronizer($this->db);
+
+        $schema = $this->db->getSchemaManager()->createSchema();
+        $schema = clone $schema;
+
+        // Add fields.
+        $samplesTable = $schema->getTable('samples');
+        $samplesTable->addColumn('version_major', 'smallint');
+        $samplesTable->addColumn('version_minor', 'smallint');
+
+        $sampleValuesTable = $schema->getTable('sample_values');
+        $sampleValuesTable->addColumn('version_major', 'smallint');
+        $sampleValuesTable->addColumn('version_minor', 'smallint');
+
+        $estimatesTable = $schema->getTable('estimates');
+        $estimatesTable->addColumn('version_major', 'smallint');
+        $estimatesTable->addColumn('version_minor', 'smallint');
+
+        $synchronizer->updateSchema($schema);
+
+        // Copy values to new fields.
+        $this->db->createQueryBuilder()
+            ->update('samples')
+            ->set('version_major', 'SUBSTRING(version FROM 1 FOR 1)')
+            ->set('version_minor', 'SUBSTRING(version FROM 3 FOR 1)')
+            ->execute();
+        $this->db->createQueryBuilder()
+            ->update('sample_values')
+            ->set('version_major', 'SUBSTRING(version FROM 1 FOR 1)')
+            ->set('version_minor', 'SUBSTRING(version FROM 3 FOR 1)')
+            ->execute();
+        $this->db->createQueryBuilder()
+            ->update('estimates')
+            ->set('version_major', 'SUBSTRING(version FROM 1 FOR 1)')
+            ->set('version_minor', 'SUBSTRING(version FROM 3 FOR 1)')
+            ->execute();
+
+        // Update primary keys.
+        $samplesTable->dropPrimaryKey();
+        $samplesTable->setPrimaryKey(array('version_major', 'when', 'version_minor'));
+        $sampleValuesTable->dropPrimaryKey();
+        $sampleValuesTable->setPrimaryKey(array('version_major', 'when', 'key', 'version_minor'));
+        $estimatesTable->dropPrimaryKey();
+        $estimatesTable->setPrimaryKey(array('version_major', 'when', 'version_minor'));
+        $synchronizer->updateSchema($schema);
+
+        // Drop old version column.
+        $samplesTable->dropColumn('version');
+        $sampleValuesTable->dropColumn('version');
+        $estimatesTable->dropColumn('version');
+        $synchronizer->updateSchema($schema);
     }
 }
