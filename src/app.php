@@ -22,8 +22,8 @@ $app->after(function (Request $request, Response $response) {
                 "script-src 'self' 'unsafe-inline' code.jquery.com www.google.com www.google-analytics.com; " .
                 "style-src 'self' 'unsafe-inline' netdna.bootstrapcdn.com www.google.com ajax.googleapis.com; " .
                 "img-src 'self' s3.amazonaws.com www.google-analytics.com stats.g.doubleclick.net; " .
-                "connect-src 'self' www.drupal.org www.google-analytics.com;" .
-                "report-uri https://gapple.report-uri.io/r/default/csp/enforce;"
+                "connect-src 'self' www.drupal.org www.google-analytics.com; " .
+                "report-uri https://rprt.gapple.ca/r"
         );
         $response->headers->set(
             'Referrer-Policy',
