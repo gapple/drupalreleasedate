@@ -16,14 +16,16 @@ $app->after(function (Request $request, Response $response) {
     $response->headers->set('X-Xss-Protection', '1; mode=block');
 
     if (stripos($response->headers->get('Content-Type'), 'text/html') !== false) {
+        $reportUri = 'https://rprt.gapple.ca/r/zqy9vl1c01vj35b3';
+        $response->headers->set('Reporting-Endpoints', "default=\"{$reportUri}\"");
         $response->headers->set(
             'Content-Security-Policy',
             "default-src 'self'; " .
-                "script-src 'self' 'unsafe-inline' code.jquery.com www.google.com www.google-analytics.com; " .
-                "style-src 'self' 'unsafe-inline' netdna.bootstrapcdn.com www.google.com ajax.googleapis.com; " .
-                "img-src 'self' s3.amazonaws.com www.google-analytics.com stats.g.doubleclick.net; " .
-                "connect-src 'self' www.drupal.org www.google-analytics.com; " .
-                "report-uri https://rprt.gapple.ca/r"
+                "script-src 'self' 'unsafe-inline' code.jquery.com www.google.com" . (empty($_ENV['google']['analytics']) ? '' : " www.google-analytics.com"). "; " .
+                "style-src 'self' 'unsafe-inline' netdna.bootstrapcdn.com/bootstrap/2.3.2/ www.google.com ajax.googleapis.com; " .
+                "img-src 'self' s3.amazonaws.com/github/ribbons/ " . (empty($_ENV['google']['analytics']) ? '' : " www.google-analytics.com stats.g.doubleclick.net"). "; " .
+                "connect-src 'self' www.drupal.org " . (empty($_ENV['google']['analytics']) ? '' : " www.google-analytics.com"). "; " .
+                "report-uri {$reportUri}"
         );
         $response->headers->set(
             'Referrer-Policy',
