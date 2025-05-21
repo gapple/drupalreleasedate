@@ -11,6 +11,10 @@ $app['config'] = $config;
 
 $app['config.dir'] = __DIR__ . '/../config';
 
+if (empty($config['db']) || empty($config['db']['dbname'])) {
+    throw new \Exception('Database configuration is missing.');
+}
+
 $app->register(
     new Silex\Provider\DoctrineServiceProvider(),
     array(
