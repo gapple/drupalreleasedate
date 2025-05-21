@@ -87,13 +87,6 @@ footer .credits {
   }
 }
 
-.github-fork img {
-  position: absolute;
-  top: 0;
-  right: 0;
-  border: 0;
-}
-
 #chart {
   min-height: 200px;
   height: 80vh;

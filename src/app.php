@@ -23,7 +23,7 @@ $app->after(function (Request $request, Response $response) {
             "default-src 'self'; " .
                 "script-src 'self' 'unsafe-inline' code.jquery.com www.google.com" . (empty($_ENV['google']['analytics']) ? '' : " www.google-analytics.com"). "; " .
                 "style-src 'self' 'unsafe-inline' netdna.bootstrapcdn.com/bootstrap/2.3.2/ www.google.com ajax.googleapis.com; " .
-                "img-src 'self' s3.amazonaws.com/github/ribbons/ " . (empty($_ENV['google']['analytics']) ? '' : " www.google-analytics.com stats.g.doubleclick.net"). "; " .
+                "img-src 'self' " . (empty($_ENV['google']['analytics']) ? '' : " www.google-analytics.com stats.g.doubleclick.net"). "; " .
                 "connect-src 'self' www.drupal.org " . (empty($_ENV['google']['analytics']) ? '' : " www.google-analytics.com"). "; " .
                 "report-uri {$reportUri}"
         );
